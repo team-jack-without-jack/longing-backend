@@ -14,6 +14,6 @@ public class AuthController {
     @GetMapping("/google-oauth-login")
     public String oauthLogin() {
 //        return "/oauthLoginPage";
-        return "/oauth2/authorization/kakao";
+        return "/oauth2/authorization/google";
     }
 }

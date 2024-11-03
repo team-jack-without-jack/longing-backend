@@ -1,6 +1,6 @@
 package com.longing.longing.config;
 
-import com.longing.longing.auth.service.CustomOAuth2UserService;
+import com.longing.longing.config.auth.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +22,8 @@ public class SecurityConfig {
                         .loginPage("/google-oauth-login")
                         .userInfoEndpoint(userInfoEndpointConfig ->
                                 userInfoEndpointConfig.userService(customOAuth2UserService)));
+
+        http.logout().logoutSuccessUrl("/");
 
         http
                 .authorizeHttpRequests((auth) -> auth
