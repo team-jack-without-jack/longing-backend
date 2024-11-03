@@ -1,0 +1,11 @@
+branchName: 'feature/${issue.number}-${issue.title}'
+autoCloseIssue: true
+openDraftPR: true
+copyIssueLabelsToPR: true
+copyIssueAssigneeToPR: true
+
+branches:
+  - label: bug
+    prefix: bugfix/
+  - label: enhancement
+    prefix: feature/
