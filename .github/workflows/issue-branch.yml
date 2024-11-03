@@ -7,5 +7,5 @@ copyIssueAssigneeToPR: true
 branches:
   - label: bug
     prefix: bugfix/
-  - label: enhancement
+  - label: '*'
     prefix: feature/
