@@ -27,7 +27,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .antMatchers("/", "oauth2/**","/login/**", "/oauth-login/**").permitAll()
+                        .antMatchers("/", "/google-oauth-login", "oauth2/**","/login/**", "/oauth-login/**").permitAll()
                         .anyRequest().authenticated());
 
         // 개발시에만 disabled
