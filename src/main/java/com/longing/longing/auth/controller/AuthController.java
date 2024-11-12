@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @GetMapping("/google-oauth-login")
+    @GetMapping("/oauth-login")
     public String oauthLogin() {
 //        return "/oauthLoginPage";
         return "login";

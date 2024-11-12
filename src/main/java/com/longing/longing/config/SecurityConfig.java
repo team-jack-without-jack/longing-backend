@@ -19,7 +19,7 @@ public class SecurityConfig {
         http
                 .oauth2Login((oauth2) -> oauth2
 //                        .loginPage("/oauth-login")
-                        .loginPage("/google-oauth-login")
+                        .loginPage("/oauth-login")
                         .userInfoEndpoint(userInfoEndpointConfig ->
                                 userInfoEndpointConfig.userService(customOAuth2UserService)));
 
@@ -27,7 +27,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .antMatchers("/", "/google-oauth-login", "oauth2/**","/login/**", "/oauth-login/**").permitAll()
+                        .antMatchers("/", "oauth2/**","/login/**", "/oauth-login/**").permitAll()
                         .anyRequest().authenticated());
 
         // 개발시에만 disabled
