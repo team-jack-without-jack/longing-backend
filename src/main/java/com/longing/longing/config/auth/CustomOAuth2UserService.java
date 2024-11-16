@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,8 +35,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         log.info("oAuth2User>> " + oAuth2User.getAttributes().toString());
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
+
+//        log.info("registrationId>> " + registrationId);
+
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
+
+
+//        log.info("userNameAttributeName>> " + userNameAttributeName);
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
