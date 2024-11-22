@@ -38,3 +38,7 @@ out/
 
 application-oauth.yml
 application.properties
+application.yml
+
+docker-compose.yml
+Dockerfile
