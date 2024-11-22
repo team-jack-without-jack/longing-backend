@@ -3,6 +3,7 @@ autoCloseIssue: true
 openDraftPR: true
 copyIssueLabelsToPR: true
 copyIssueAssigneeToPR: true
+defaultBranch: 'develop'
 
 branches:
   - label: bug
