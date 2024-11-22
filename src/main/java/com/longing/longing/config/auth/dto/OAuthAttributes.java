@@ -1,0 +1,97 @@
+package com.longing.longing.config.auth.dto;
+
+import com.longing.longing.user.Provider;
+import com.longing.longing.user.Role;
+import com.longing.longing.user.User;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+
+@Slf4j
+@Getter
+public class OAuthAttributes {
+
+    private Map<String, Object> attributes;
+    private String nameAttributeKey;
+    private String name;
+    private String email;
+    private String picture;
+    private Provider provider;
+
+    @Builder
+    public OAuthAttributes (Map<String, Object> attributes,
+                            String nameAttributeKey,
+                            String name,
+                            String email,
+                            String picture,
+                            Provider provider) {
+        this.attributes = attributes;
+        this.nameAttributeKey = nameAttributeKey;
+        this.name = name;
+        this.email = email;
+        this.picture = picture;
+        this.provider = provider;
+    }
+
+    public static OAuthAttributes of (String registrationId,
+                                      String userNameAttributeName,
+                                      Map<String, Object> attributes) {
+        if ("google".equals(registrationId)) {
+            return ofGoogle(userNameAttributeName, attributes);
+        } else if ("kakao".equals(registrationId)) {
+            return ofKakao(userNameAttributeName, attributes);
+        } else if ("facebook".equals(registrationId)) {
+            return ofFacebook(userNameAttributeName, attributes);
+        } else {
+            throw new IllegalArgumentException("Unsupported registration ID: " + registrationId);
+        }
+    }
+
+    private static OAuthAttributes ofFacebook(String userNameAttributeName, Map<String, Object> attributes) {
+        return OAuthAttributes.builder()
+                .name((String) attributes.get("name"))
+                .email((String) attributes.get("email"))
+                .picture((String) attributes.get("picture"))
+                .provider(Provider.FACEBOOK)
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
+                .build();
+    }
+
+    private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
+//        log.info("userNameAttributeName>> " +  userNameAttributeName);
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
+        return OAuthAttributes.builder()
+                .name((String) properties.get("nickname"))
+                .email((String) kakaoAccount.get("email"))
+                .picture((String) properties.get("profile_image"))
+                .provider(Provider.KAKAO)
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
+                .build();
+    }
+
+    private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        return OAuthAttributes.builder()
+                .name((String) attributes.get("name"))
+                .email((String) attributes.get("email"))
+                .picture((String) attributes.get("picture"))
+                .provider(Provider.GOOGLE)
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
+                .build();
+    }
+
+    public User toEntity() {
+        return User.builder()
+                .name(name)
+                .email(email)
+                .picture(picture)
+                .provider(provider)
+                .role(Role.GUEST)
+                .build();
+    }
+}
