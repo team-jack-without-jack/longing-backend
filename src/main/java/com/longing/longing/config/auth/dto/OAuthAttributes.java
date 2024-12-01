@@ -2,7 +2,7 @@ package com.longing.longing.config.auth.dto;
 
 import com.longing.longing.user.Provider;
 import com.longing.longing.user.Role;
-import com.longing.longing.user.User;
+import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -85,8 +85,8 @@ public class OAuthAttributes {
                 .build();
     }
 
-    public User toEntity() {
-        return User.builder()
+    public UserEntity toEntity() {
+        return UserEntity.builder()
                 .name(name)
                 .email(email)
                 .picture(picture)
