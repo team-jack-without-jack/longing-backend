@@ -1,9 +1,12 @@
 package com.longing.longing.post.infrastructure;
 
+import com.longing.longing.comment.infrastructure.CommentEntity;
+import com.longing.longing.like.infrastructure.LikeEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -18,9 +21,15 @@ public class PostEntity {
     @Column(nullable = false)
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @OneToMany(mappedBy = "post")
+    private List<CommentEntity> commentEntities;
+
+    @OneToMany(mappedBy = "post")
+    private List<LikeEntity> likeEntities;
 
     @Builder
     public PostEntity(String title, String content, UserEntity user) {
