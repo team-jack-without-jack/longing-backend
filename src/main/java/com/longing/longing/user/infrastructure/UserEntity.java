@@ -1,6 +1,8 @@
-package com.longing.longing.user;
+package com.longing.longing.user.infrastructure;
 
 import com.longing.longing.common.BaseTimeEntity;
+import com.longing.longing.user.Provider;
+import com.longing.longing.user.Role;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,7 +10,8 @@ import javax.persistence.*;
 
 @Getter
 @Entity
-public class User extends BaseTimeEntity {
+@Table(name = "users")
+public class UserEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +35,7 @@ public class User extends BaseTimeEntity {
     private Role role;
 
     @Builder
-    public User(String name, String email, String picture, Provider provider, Role role) {
+    public UserEntity(String name, String email, String picture, Provider provider, Role role) {
         this.name = name;
         this.email = email;
         this.picture = picture;
@@ -40,7 +43,7 @@ public class User extends BaseTimeEntity {
         this.role = role;
     }
 
-    public User update(String name, String picture) {
+    public UserEntity update(String name, String picture) {
         this.name = name;
         this.picture = picture;
 

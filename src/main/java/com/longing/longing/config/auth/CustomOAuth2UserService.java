@@ -2,7 +2,7 @@ package com.longing.longing.config.auth;
 
 import com.longing.longing.config.auth.dto.OAuthAttributes;
 import com.longing.longing.config.auth.dto.SessionUser;
-import com.longing.longing.user.User;
+import com.longing.longing.user.infrastructure.UserEntity;
 import com.longing.longing.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
-import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,14 +38,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        User user = saveOrUpdate(attributes);
+        UserEntity userEntity = saveOrUpdate(attributes);
 
-        httpSession.setAttribute("user", new SessionUser(user));
+        httpSession.setAttribute("user", new SessionUser(userEntity));
 
         return new DefaultOAuth2User(
                 Collections.singleton(
                         new SimpleGrantedAuthority(
-                                user.getRoleKey()
+                                userEntity.getRoleKey()
                         )
                 ),
                 attributes.getAttributes(),
@@ -54,11 +53,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         );
     }
 
-    private User saveOrUpdate(OAuthAttributes attributes) {
-        User user = userRepository.findByEmail(attributes.getEmail())
+    private UserEntity saveOrUpdate(OAuthAttributes attributes) {
+        UserEntity userEntity = userRepository.findByEmail(attributes.getEmail())
                 .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
                 .orElse(attributes.toEntity());
 
-        return userRepository.save(user);
+        return userRepository.save(userEntity);
     }
 }
