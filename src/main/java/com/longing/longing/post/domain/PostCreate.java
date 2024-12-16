@@ -11,12 +11,13 @@ public class PostCreate {
 
     private final String content;
 
-    private final User user;
+    private final Long userId;
+
 
     @Builder
-    public PostCreate(String title, String content, User user) {
+    public PostCreate(Long userId, String title, String content) {
         this.title = title;
         this.content = content;
-        this.user = user;
+        this.userId = userId;
     }
 }
