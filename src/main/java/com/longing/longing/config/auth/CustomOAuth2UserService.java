@@ -40,9 +40,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        UserEntity userEntity = UserEntity.from(saveOrUpdate(attributes));
-
-//        httpSession.setAttribute("user", new SessionUser(userEntity));
+        UserEntity userEntity = UserEntity.fromModel(saveOrUpdate(attributes));
 
         SessionUser ses = new SessionUser(userEntity);
         httpSession.setAttribute("user", ses);

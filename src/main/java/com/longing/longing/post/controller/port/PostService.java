@@ -3,14 +3,15 @@ package com.longing.longing.post.controller.port;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
 import com.longing.longing.post.domain.PostUpdate;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface PostService {
     Post createPost(String oauthId, PostCreate postCreate);
 
-    List<Post> getPostList();
-    Post getPost(Long postId);
-    Post updatePost(Long postId, PostUpdate postUpdate);
-    void deletePost(Long postId);
+    Page<Post> getPostList(String keyword, int page, int size, String sortBy, String sortDirection);
+    Post getPost(long postId);
+    Post updatePost(long postId, PostUpdate postUpdate);
+    void deletePost(long postId);
 }

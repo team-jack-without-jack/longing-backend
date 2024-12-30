@@ -2,16 +2,20 @@ package com.longing.longing.post.service.port;
 
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.infrastructure.PostEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository {
-//    Optional<PostEntity> findById(long id);
     Optional<Post> findById(long id);
 
     Post save(Post post);
 
-    List<Post> findAll();
+    Page<Post> findAll(Pageable pageable);
 
+    void deleteById(long postId);
+
+    Page<Post> findAllwithLikeCountAndSearch(String keyword, Pageable pageable);
 }

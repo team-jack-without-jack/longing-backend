@@ -2,7 +2,8 @@ package com.longing.longing.user.infrastructure;
 
 import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.common.BaseTimeEntity;
-import com.longing.longing.like.infrastructure.LikeEntity;
+import com.longing.longing.like.infrastructure.CommentLikeEntity;
+import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.location.infrastructure.LocationEntity;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.Provider;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -46,16 +48,27 @@ public class UserEntity extends BaseTimeEntity {
     private Role role;
 
     @OneToMany(mappedBy = "user")
-    private List<PostEntity> postEntities;
+    private List<PostEntity> postEntities = new ArrayList<>();
+
+//    @OneToMany(mappedBy = "user")
+//    private List<LikeEntity> likeEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<LikeEntity> likeEntities;
+    private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<CommentEntity> commentEntities;
+    private List<CommentLikeEntity> commentLikeEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<LocationEntity> locationEntities;
+    private List<CommentEntity> commentEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<LocationEntity> locationEntities = new ArrayList<>();
+
+    // 기본 생성자 추가
+    public UserEntity() {
+        // 기본 생성자
+    }
 
     @Builder
     public UserEntity(
@@ -87,7 +100,7 @@ public class UserEntity extends BaseTimeEntity {
         return this.role.getKey();
     }
 
-    public static UserEntity from(User user) {
+    public static UserEntity fromModel(User user) {
         return UserEntity.builder()
                 .id(user.getId())
                 .name(user.getName())

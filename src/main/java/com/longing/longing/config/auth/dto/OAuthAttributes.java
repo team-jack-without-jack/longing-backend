@@ -54,6 +54,7 @@ public class OAuthAttributes {
     }
 
     private static OAuthAttributes ofFacebook(String userNameAttributeName, Map<String, Object> attributes) {
+        log.info("<<faceBook>>");
         return OAuthAttributes.builder()
 //                .name((String) attributes.get("name"))
 //                .email((String) attributes.get("email"))
@@ -71,6 +72,7 @@ public class OAuthAttributes {
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
         Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
+        log.info("<<kakao>>");
         return OAuthAttributes.builder()
 //                .name((String) properties.get("nickname"))
 //                .email((String) kakaoAccount.get("email"))
@@ -86,6 +88,7 @@ public class OAuthAttributes {
     }
 
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        log.info("<<google>>");
         return OAuthAttributes.builder()
 //                .name((String) attributes.get("name"))
 //                .email((String) attributes.get("email"))

@@ -16,6 +16,8 @@ public class Post {
 
     private User user;
 
+    private int likeCount = 0;
+
     @Builder
     public Post(Long id, String title, String content, User user) {
         this.id = id;
@@ -33,9 +35,12 @@ public class Post {
     }
 
     public Post update(PostUpdate postUpdate) {
-        return Post.builder()
-                .title(postUpdate.getTitle())
-                .content(postUpdate.getContent())
-                .build();
+        if (postUpdate.getTitle() != null) {
+            this.title = postUpdate.getTitle();
+        }
+        if (postUpdate.getContent() != null) {
+            this.content = postUpdate.getContent();
+        }
+        return this;
     }
 }

@@ -5,20 +5,30 @@ import com.longing.longing.post.controller.port.PostService;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
 import com.longing.longing.post.domain.PostUpdate;
+import com.longing.longing.post.infrastructure.PostEntity;
+import com.longing.longing.post.infrastructure.PostJpaRepository;
 import com.longing.longing.post.service.port.PostRepository;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostJpaRepository postJpaRepository;
 
 
     @Override
@@ -30,25 +40,47 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<Post> getPostList() {
-        return postRepository.findAll();
+    public Page<Post> getPostList(String keyword, int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+//        return postRepository.findAll(pageable);
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return postRepository.findAll(pageable);
+        }
+        return postRepository.findAllwithLikeCountAndSearch(keyword, pageable);
     }
 
+//    @Override
+//    public List<Post> getPostList(String keyword) {
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            // 키워드가 없으면 모든 게시글 조회
+//            return postRepository.findAllWithLikeCount();
+//        }
+//        // 키워드가 있으면 검색된 게시글 조회
+//        return postRepository.findAllWithLikeCountByKeyword(keyword);
+//    }
+
     @Override
-    public Post getPost(Long postId) {
+    public Post getPost(long postId) {
         return null;
     }
 
     @Override
-    public Post updatePost(Long postId, PostUpdate postUpdate) {
-        Post post = postRepository.findById(postId)
+    @Transactional
+    public Post updatePost(long postId, PostUpdate postUpdate) {
+//        Post post = postRepository.findById(postId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
+        PostEntity postEntity = postJpaRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
-        post.update(postUpdate);
-        return postRepository.save(post);
+        Post post = postEntity.toModel();
+        Post updatedPost = post.update(postUpdate);
+        postEntity.update(postUpdate);
+        return updatedPost;
     }
 
     @Override
-    public void deletePost(Long postId) {
-
+    public void deletePost(long postId) {
+        postRepository.deleteById(postId);
     }
 }
