@@ -3,6 +3,7 @@ package com.longing.longing.auth.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +24,8 @@ public class AuthController {
     }
 
     @GetMapping("/test")
-    public String test() {
+    public String test(Authentication authentication) {
+        log.info("session>> " + authentication.getName());
         return "test";
     }
 

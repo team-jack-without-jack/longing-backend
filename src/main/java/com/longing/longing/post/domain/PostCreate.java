@@ -1,5 +1,6 @@
 package com.longing.longing.post.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.longing.longing.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,12 +12,11 @@ public class PostCreate {
 
     private final String content;
 
-    private final User user;
 
     @Builder
-    public PostCreate(String title, String content, User user) {
+    public PostCreate(@JsonProperty("title") String title,
+                      @JsonProperty("content") String content) {
         this.title = title;
         this.content = content;
-        this.user = user;
     }
 }

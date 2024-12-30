@@ -1,5 +1,6 @@
 package com.longing.longing.post.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,7 +12,9 @@ public class PostUpdate {
     private String content;
 
     @Builder
-    public PostUpdate(String title, String content) {
+    public PostUpdate(
+            @JsonProperty("title") String title,
+            @JsonProperty("content") String content) {
         this.title = title;
         this.content = content;
     }
