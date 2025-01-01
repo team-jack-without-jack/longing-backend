@@ -19,7 +19,6 @@ public class AuthController {
 
     @GetMapping("/oauth-login")
     public String oauthLogin() {
-//        return "/oauthLoginPage";
         return "login";
     }
 
@@ -49,9 +48,6 @@ public class AuthController {
 //                                HttpServletResponse response,
 //                                @PathVariable(value = "type") String type,
 //                                @RequestParam(value = "code") String code) {
-//
-//        log.info("code>> " + code);
-//        log.info("type>> " + type);
 //
 ////        String access_Token = kakaoService.getAccessToken(code);
 ////        System.out.println("###access_token#### : " + access_Token);

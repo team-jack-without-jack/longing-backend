@@ -46,4 +46,8 @@ public class User {
         this.picture = picture;
         return this;
     }
+
+    public Long getIdByProviderId(String providerId) {
+        return this.id;
+    }
 }

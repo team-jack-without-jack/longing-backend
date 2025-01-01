@@ -2,7 +2,7 @@ package com.longing.longing.like.infrastructure;
 
 import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.common.BaseTimeEntity;
-import com.longing.longing.like.domain.LikeComment;
+import com.longing.longing.like.domain.LikeCommentCreate;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,15 +32,15 @@ public class CommentLikeEntity extends BaseTimeEntity {
         this.comment = comment;
     }
 
-    public static CommentLikeEntity fromModel(LikeComment likeComment) {
+    public static CommentLikeEntity fromModel(LikeCommentCreate likeComment) {
         return CommentLikeEntity.builder()
                 .comment(CommentEntity.fromModel(likeComment.getComment()))
                 .user(UserEntity.fromModel(likeComment.getUser()))
                 .build();
     }
 
-    public LikeComment toModel() {
-        return LikeComment.builder()
+    public LikeCommentCreate toModel() {
+        return LikeCommentCreate.builder()
                 .id(id)
                 .comment(comment.toModel())
                 .user(user.toModel())

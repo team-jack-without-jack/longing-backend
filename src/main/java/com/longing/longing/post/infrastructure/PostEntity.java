@@ -8,6 +8,7 @@ import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -34,10 +35,10 @@ public class PostEntity extends BaseTimeEntity {
     @OneToMany(mappedBy = "post")
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
 
-    @Transient
+    @Column(columnDefinition = "integer default 0")
     private int likeCount = 0;
 
     public PostEntity() {
@@ -45,17 +46,21 @@ public class PostEntity extends BaseTimeEntity {
     }
 
     @Builder
-    public PostEntity(String title, String content, UserEntity user) {
+    public PostEntity(Long id, String title, String content, UserEntity user, int likeCount) {
+        this.id = id;
         this.title = title;
         this.content = content;
         this.user = user;
+        this.likeCount = likeCount;
     }
 
     public static PostEntity fromModel(Post post) {
         return PostEntity.builder()
+                .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .user(UserEntity.fromModel(post.getUser()))
+                .likeCount(post.getLikeCount())
                 .build();
     }
 
@@ -65,6 +70,7 @@ public class PostEntity extends BaseTimeEntity {
                 .title(title)
                 .content(content)
                 .user(user.toModel())
+                .likeCount(likeCount)
                 .build();
     }
 
@@ -80,5 +86,16 @@ public class PostEntity extends BaseTimeEntity {
             this.content = postUpdate.getContent();
         }
         return this;
+    }
+
+    // 연관 관계 관리 메서드
+    public void addLike() {
+        this.likeCount++;
+    }
+
+    public void removeLike(PostLikeEntity like) {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
     }
 }

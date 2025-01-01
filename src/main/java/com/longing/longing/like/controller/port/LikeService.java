@@ -1,8 +1,10 @@
 package com.longing.longing.like.controller.port;
 
-import com.longing.longing.like.domain.LikePost;
+import com.longing.longing.like.domain.LikePostCreate;
+import com.longing.longing.like.domain.LikePostDelete;
 
 public interface LikeService {
-    void likePost(LikePost likePost);
-    void unlikePost(long likeId);
+    void likePost(LikePostCreate likePostCreate);
+    void unlikePost(LikePostDelete likePostDelete);
+
 }
