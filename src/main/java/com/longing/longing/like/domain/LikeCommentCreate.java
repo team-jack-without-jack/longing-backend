@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class LikeComment {
+public class LikeCommentCreate {
 
     private final Long id;
 
@@ -15,7 +15,7 @@ public class LikeComment {
     private final Comment comment;
 
     @Builder
-    public LikeComment(Long id, User user, Comment comment) {
+    public LikeCommentCreate(Long id, User user, Comment comment) {
         this.id = id;
         this.user = user;
         this.comment = comment;

@@ -1,22 +1,20 @@
 package com.longing.longing.like.service.port;
 
 import com.longing.longing.comment.domain.Comment;
-import com.longing.longing.like.domain.LikeComment;
-import com.longing.longing.like.domain.LikePost;
-import com.longing.longing.post.domain.Post;
+import com.longing.longing.like.domain.LikeCommentCreate;
 import com.longing.longing.user.domain.User;
 
 import java.util.Optional;
 
 public interface CommentLikeRepository {
 
-    void likeComment(LikeComment likeComment);
+    void likeComment(LikeCommentCreate likeComment);
 
-    Optional<LikeComment> findByPostAndUser(Comment comment, User user);
+    Optional<LikeCommentCreate> findByPostAndUser(Comment comment, User user);
 
-    LikeComment save(LikeComment likeComment);
+    LikeCommentCreate save(LikeCommentCreate likeComment);
 
-    Optional<LikeComment> findById(long likeId);
+    Optional<LikeCommentCreate> findById(long likeId);
 
     void deleteById(long likeId);
 

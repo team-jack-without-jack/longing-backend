@@ -2,17 +2,22 @@ package com.longing.longing.like.service;
 
 
 import com.longing.longing.like.controller.port.LikeService;
-import com.longing.longing.like.domain.LikePost;
+import com.longing.longing.like.domain.LikePostCreate;
+import com.longing.longing.like.domain.LikePostDelete;
+import com.longing.longing.like.domain.PostLike;
 import com.longing.longing.like.service.port.PostLikeRepository;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.service.port.PostRepository;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
@@ -22,29 +27,39 @@ public class LikeServiceImpl implements LikeService {
     private final UserRepository userRepository;
 
     @Override
-    public void likePost(LikePost likePost) {
-        Post post = postRepository.findById(likePost.getPost().getId())
+    @Transactional
+    public void likePost(LikePostCreate likePostCreate) {
+        Post post = postRepository.findById(likePostCreate.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-        User user = userRepository.findById(likePost.getUser().getId())
+//        log.info(userRepository.find)
+        User user = userRepository.findById(likePostCreate.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
         // 이미 좋아요를 눌렀는지 확인
         if (postLikeRepository.findByPostAndUser(post, user).isPresent()) {
             throw new IllegalStateException("You already liked this post");
         }
 
+        post.like();
+        postRepository.save(post);
         // 좋아요 생성 및 저장
-        postLikeRepository.save(likePost);
+        postLikeRepository.save(likePostCreate, post, user);
     }
 
     @Override
-    public void unlikePost(long likeId) {
-        if (postLikeRepository.findById(likeId).isEmpty()) {
-            throw new IllegalStateException("You did not like this post");
-        }
+    @Transactional
+    public void unlikePost(LikePostDelete likePostDelete) {
+        Post post = postRepository.findById(likePostDelete.getPostId())
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
+        User user = userRepository.findById(likePostDelete.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        PostLike postLike = postLikeRepository.findByPostAndUser(post, user)
+                .orElseThrow(() -> new IllegalStateException("You did not like this post"));
+
+        post.unlike();
         // 좋아요 삭제
-        postLikeRepository.deleteById(likeId);
+        postLikeRepository.deleteById(postLike.getId());
     }
 }

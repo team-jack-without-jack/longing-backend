@@ -1,16 +1,22 @@
 package com.longing.longing.like.infrastructure;
 
 import com.longing.longing.common.BaseTimeEntity;
-import com.longing.longing.like.domain.LikePost;
+import com.longing.longing.like.domain.LikePostCreate;
+import com.longing.longing.like.domain.PostLike;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "post_likes")
 public class PostLikeEntity extends BaseTimeEntity {
     @Id
@@ -31,16 +37,21 @@ public class PostLikeEntity extends BaseTimeEntity {
         this.post = post;
     }
 
-    public static PostLikeEntity fromModel(LikePost likePost) {
+    public static PostLikeEntity fromModel(
+            LikePostCreate likePost,
+            PostEntity postEntity,
+            UserEntity userEntity
+    ) {
         return PostLikeEntity.builder()
-                .post(PostEntity.fromModel(likePost.getPost()))
-                .user(UserEntity.fromModel(likePost.getUser()))
+//                .post(PostEntity.fromModel(likePost.getPost()))
+//                .user(UserEntity.fromModel(likePost.getUser()))
+                .post(postEntity)
+                .user(userEntity)
                 .build();
     }
 
-    public LikePost toModel() {
-        return LikePost.builder()
-                .id(id)
+    public PostLike toModel() {
+        return PostLike.builder()
                 .post(post.toModel())
                 .user(user.toModel())
                 .build();
@@ -57,4 +68,5 @@ public class PostLikeEntity extends BaseTimeEntity {
             this.post.getPostLikeEntities().remove(this);
         }
     }
+
 }

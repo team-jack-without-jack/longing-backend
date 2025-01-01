@@ -47,7 +47,7 @@ public class UserEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Role role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PostEntity> postEntities = new ArrayList<>();
 
 //    @OneToMany(mappedBy = "user")

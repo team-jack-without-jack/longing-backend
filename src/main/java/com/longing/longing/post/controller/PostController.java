@@ -31,7 +31,6 @@ public class PostController {
             @RequestBody PostCreate postCreate,
             Authentication authentication) {
         String oauthId= authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        log.info("userId>> " + oauthId); // OAuth id
         Post createdPost = postService.createPost(oauthId, postCreate);
         return ResponseEntity.ok(createdPost);
     }
@@ -83,6 +82,5 @@ public class PostController {
             Authentication authentication
     ) {
         String userId = authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        log.info("userId>> " + authentication.toString());
     }
 }
