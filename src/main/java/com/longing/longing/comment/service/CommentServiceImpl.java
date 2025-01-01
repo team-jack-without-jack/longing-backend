@@ -12,11 +12,10 @@ import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @Service
@@ -38,15 +37,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Page<Comment> getCommentList(long postId, int page, int size, String sortBy, String sortDirection) {
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        return commentRepository.findByPostId(postId, pageable);
+    public void deletePost(long commentId) {
+
     }
 
     @Override
-    public void deletePost(long commentId) {
+    @Transactional
+    public List<Comment> getCommentsByPostId(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
 
+        // Lazy loading triggers here
+        return post.getCommentList();
     }
 
     @Override
@@ -57,8 +59,9 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.save(comment);
     }
 
-
-
-
+    @Override
+    public Page<Comment> getCommentList(long postId) {
+        return null;
+    }
 
 }

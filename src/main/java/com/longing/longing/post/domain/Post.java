@@ -1,9 +1,12 @@
 package com.longing.longing.post.domain;
 
+import com.longing.longing.comment.domain.Comment;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 public class Post {
@@ -16,14 +19,17 @@ public class Post {
 
     private User user;
 
+    private List<Comment> commentList;
+
     private int likeCount = 0;
 
     @Builder
-    public Post(Long id, String title, String content, User user, int likeCount) {
+    public Post(Long id, String title, String content, User user, List<Comment> commentList, int likeCount) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.user = user;
+        this.commentList = commentList;
         this.likeCount = likeCount;
     }
 
