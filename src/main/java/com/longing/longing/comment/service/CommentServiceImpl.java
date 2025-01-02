@@ -37,19 +37,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void deletePost(long commentId) {
+    public void deleteComment(long commentId) {
 
     }
 
-    @Override
-    @Transactional
-    public List<Comment> getCommentsByPostId(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
-
-        // Lazy loading triggers here
-        return post.getCommentList();
-    }
+//    @Override
+//    @Transactional
+//    public List<Comment> getCommentsByPostId(Long postId) {
+//        Post post = postRepository.findById(postId)
+//                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
+//
+//        return post.getCommentList();
+//    }
 
     @Override
     public Comment updateComment(long commentId, CommentUpdate commentUpdate) {
@@ -60,8 +59,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Page<Comment> getCommentList(long postId) {
-        return null;
+    public List<Comment> getCommentList(long postId, long lastCommentId, int limit) {
+        return commentRepository.getCommentList(postId, lastCommentId, limit);
     }
 
 }

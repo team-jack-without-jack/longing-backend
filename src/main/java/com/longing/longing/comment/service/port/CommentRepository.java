@@ -12,4 +12,6 @@ public interface CommentRepository {
     Comment save(Comment comment);
     Optional<Comment> findById(Long id);
     Page<Comment> findByPostId(long postId, Pageable pageable);
+
+    List<Comment> getCommentList(long postId, long lastCommentId, int limit);
 }

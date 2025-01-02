@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -15,14 +17,11 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/post/{id}/comment")
-    public ResponseEntity<Page<Comment>> getCommentByPost(
-            @PathVariable("id") Long postId
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//            @RequestParam(defaultValue = "id") String sortBy,
-//            @RequestParam(defaultValue = "DESC") String sortDirection
-    ) {
-        Page<Comment> commentList = commentService.getCommentList(postId);
+    public ResponseEntity<List<Comment>> getCommentListByPost(
+            @PathVariable("id") Long postId,
+            @RequestParam(required = false, defaultValue = "0") Long lastCommentId,
+            @RequestParam(required = false, defaultValue = "10") int limit) {
+        List<Comment> commentList = commentService.getCommentList(postId, lastCommentId, limit);
         return ResponseEntity.ok(commentList);
     }
 }

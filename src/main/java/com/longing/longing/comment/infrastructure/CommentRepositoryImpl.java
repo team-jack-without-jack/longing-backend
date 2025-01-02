@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -29,5 +30,13 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public Page<Comment> findByPostId(long postId, Pageable pageable) {
         return commentJpaRepository.findByPostId(postId, pageable).map(CommentEntity::toModel);
+    }
+
+    @Override
+    public List<Comment> getCommentList(long postId, long lastCommentId, int limit) {
+        return commentJpaRepository.findByPostEntityIdAndIdGreaterThanOrderByIdAsc(postId, lastCommentId, limit)
+                .stream()
+                .map(CommentEntity::toModel)
+                .collect(Collectors.toList());
     }
 }

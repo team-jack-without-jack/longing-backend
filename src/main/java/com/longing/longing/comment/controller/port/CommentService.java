@@ -12,9 +12,7 @@ public interface CommentService {
     Comment createComment(String oauthId, CommentCreate commentCreate);
     Comment updateComment(long commentId, CommentUpdate commentUpdate);
 
-    Page<Comment> getCommentList(long postId);
+    List<Comment> getCommentList(long postId, long lastCommentId, int limit);
 
-    void deletePost(long commentId);
-
-    List<Comment> getCommentsByPostId(Long postId);
+    void deleteComment(long commentId);
 }
