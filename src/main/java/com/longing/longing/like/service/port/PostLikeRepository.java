@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public interface PostLikeRepository {
 
-    void likePost(LikePostCreate likePost);
     Optional<PostLike> findByPostAndUser(Post post, User user);
     PostLike save(LikePostCreate likePostCreate, Post post, User user);
 

@@ -1,15 +1,19 @@
 package com.longing.longing.comment.infrastructure;
 
 import com.longing.longing.comment.domain.Comment;
+import com.longing.longing.comment.domain.CommentUpdate;
+import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "comments")
 public class CommentEntity {
 
@@ -27,6 +31,7 @@ public class CommentEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
 
     @Builder
     public CommentEntity(Long id, String content, PostEntity post, UserEntity user) {
@@ -52,5 +57,29 @@ public class CommentEntity {
                 .post(post.toModel())
                 .user(user.toModel())
                 .build();
+    }
+
+    public CommentEntity update(CommentUpdate commentUpdate) {
+        if (commentUpdate.getContent() != null) {
+            this.content = commentUpdate.getContent();
+        }
+
+        return this;
+    }
+
+    public void setPost(PostEntity post) {
+        if (this.post != null) {
+            this.post.getCommentEntities().remove(this);
+        }
+        this.post = post;
+        post.getCommentEntities().add(this);
+    }
+
+    public void setUser(UserEntity user) {
+        if (this.user != null) {
+            this.user.getCommentEntities().remove(this);
+        }
+        this.user = user;
+        user.getCommentEntities().add(this);
     }
 }

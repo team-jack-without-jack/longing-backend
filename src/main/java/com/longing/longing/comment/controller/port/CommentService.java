@@ -4,14 +4,15 @@ import com.longing.longing.comment.domain.Comment;
 import com.longing.longing.comment.domain.CommentCreate;
 import com.longing.longing.comment.domain.CommentUpdate;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface CommentService {
     Comment createComment(String oauthId, CommentCreate commentCreate);
-    Comment updateComment(long commentId, CommentUpdate commentUpdate);
+    Comment updateComment(String oauthId, long commentId, CommentUpdate commentUpdate);
 
-    Page<Comment> getCommentList(long postId, int page, int size, String sortBy, String sortDirection);
+    List<Comment> getCommentList(long postId, long lastCommentId, int limit);
 
-    void deletePost(long commentId);
+    void deleteComment(String oauthId, long commentId);
 }
