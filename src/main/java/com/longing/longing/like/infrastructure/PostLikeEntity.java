@@ -52,6 +52,7 @@ public class PostLikeEntity extends BaseTimeEntity {
 
     public PostLike toModel() {
         return PostLike.builder()
+                .id(id)
                 .post(post.toModel())
                 .user(user.toModel())
                 .build();

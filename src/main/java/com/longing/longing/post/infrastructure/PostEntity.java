@@ -8,7 +8,6 @@ import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
-import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class PostEntity extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
@@ -89,13 +88,21 @@ public class PostEntity extends BaseTimeEntity {
     }
 
     // 연관 관계 관리 메서드
-    public void addLike() {
+    public void like() {
         this.likeCount++;
     }
 
-    public void removeLike(PostLikeEntity like) {
+    public void unlike() {
         if (this.likeCount > 0) {
             this.likeCount--;
         }
+    }
+
+    public void setUser(UserEntity user) {
+        if (this.user != null) {
+            this.user.getPostEntities().remove(this);
+        }
+        this.user = user;
+        user.getPostEntities().add(this);
     }
 }

@@ -33,8 +33,12 @@ public class Comment {
     }
 
     public Comment update(CommentUpdate commentUpdate) {
-        return Comment.builder()
-                .content(commentUpdate.getContent())
-                .build();
+        if (commentUpdate.getContent() != null) {
+            this.content = commentUpdate.getContent();
+        }
+        return this;
+//        return Comment.builder()
+//                .content(commentUpdate.getContent())
+//                .build();
     }
 }

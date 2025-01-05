@@ -36,7 +36,7 @@ public class LikeController {
 
     @DeleteMapping("/post/{id}/unlike")
     public void unlikePost(
-            @PathVariable("id") long postId,
+            @PathVariable("id") Long postId,
             Authentication authentication
     ) {
         String providerId = authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴

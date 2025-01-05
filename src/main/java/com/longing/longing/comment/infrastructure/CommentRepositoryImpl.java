@@ -2,6 +2,7 @@ package com.longing.longing.comment.infrastructure;
 
 import com.longing.longing.comment.domain.Comment;
 import com.longing.longing.comment.service.port.CommentRepository;
+import com.longing.longing.post.infrastructure.PostEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,7 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public Optional<Comment> findById(Long id) {
-        return Optional.empty();
+        return commentJpaRepository.findById(id).map(CommentEntity::toModel);
     }
 
     @Override
@@ -33,10 +34,17 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> getCommentList(long postId, long lastCommentId, int limit) {
-        return commentJpaRepository.findByPostEntityIdAndIdGreaterThanOrderByIdAsc(postId, lastCommentId, limit)
+    public List<Comment> getCommentList(long postId, long lastCommentId, Pageable pageable) {
+        return commentJpaRepository.findByPostIdAndIdGreaterThanOrderByIdAsc(postId, lastCommentId, pageable)
                 .stream()
                 .map(CommentEntity::toModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteById(long commentId) {
+        commentJpaRepository.deleteById(commentId);
+    }
+
+
 }

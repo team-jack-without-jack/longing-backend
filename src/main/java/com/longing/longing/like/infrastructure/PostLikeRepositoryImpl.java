@@ -21,11 +21,6 @@ public class PostLikeRepositoryImpl implements PostLikeRepository {
     private final PostLikeJpaRepository postLikeJpaRepository;
 
     @Override
-    public void likePost(LikePostCreate likePost) {
-
-    }
-
-    @Override
     public Optional<PostLike> findByPostAndUser(Post post, User user) {
         return postLikeJpaRepository.findByPostIdAndUserId(post.getId(), user.getId()).map(PostLikeEntity::toModel);
     }
@@ -45,6 +40,6 @@ public class PostLikeRepositoryImpl implements PostLikeRepository {
 
     @Override
     public void deleteById(long likeId) {
-
+        postLikeJpaRepository.deleteById(likeId);
     }
 }

@@ -13,5 +13,6 @@ public interface CommentRepository {
     Optional<Comment> findById(Long id);
     Page<Comment> findByPostId(long postId, Pageable pageable);
 
-    List<Comment> getCommentList(long postId, long lastCommentId, int limit);
+    List<Comment> getCommentList(long postId, long lastCommentId, Pageable pageable);
+    void deleteById(long commentId);
 }

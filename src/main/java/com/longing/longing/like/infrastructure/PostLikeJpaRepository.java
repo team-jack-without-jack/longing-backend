@@ -8,9 +8,7 @@ import java.util.Optional;
 
 public interface PostLikeJpaRepository extends JpaRepository<PostLikeEntity, Long> {
 
-//    void likePost(LikePost likePost);
-//    Optional<PostLikeEntity> findByPostAndUser(Post post, User user);
-    Optional<PostLikeEntity> findByPostIdAndUserId(Long postId, Long userId);
+    Optional<PostLikeEntity> findByPostIdAndUserId(long postId, long userId);
 
     Optional<PostLikeEntity> findById(long id);
 
