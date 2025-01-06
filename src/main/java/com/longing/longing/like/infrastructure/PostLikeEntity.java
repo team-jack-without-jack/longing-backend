@@ -38,13 +38,10 @@ public class PostLikeEntity extends BaseTimeEntity {
     }
 
     public static PostLikeEntity fromModel(
-            LikePostCreate likePost,
             PostEntity postEntity,
             UserEntity userEntity
     ) {
         return PostLikeEntity.builder()
-//                .post(PostEntity.fromModel(likePost.getPost()))
-//                .user(UserEntity.fromModel(likePost.getUser()))
                 .post(postEntity)
                 .user(userEntity)
                 .build();

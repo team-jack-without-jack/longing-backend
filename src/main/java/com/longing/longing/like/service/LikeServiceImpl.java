@@ -1,17 +1,17 @@
 package com.longing.longing.like.service;
 
 
+import com.longing.longing.comment.infrastructure.CommentJpaRepository;
 import com.longing.longing.like.controller.port.LikeService;
 import com.longing.longing.like.domain.LikePostCreate;
 import com.longing.longing.like.domain.LikePostDelete;
-import com.longing.longing.like.domain.PostLike;
 import com.longing.longing.like.infrastructure.PostLikeEntity;
+import com.longing.longing.like.infrastructure.PostLikeJpaRepository;
 import com.longing.longing.like.service.port.PostLikeRepository;
-import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.post.infrastructure.PostJpaRepository;
-import com.longing.longing.post.service.port.PostRepository;
 import com.longing.longing.user.domain.User;
+import com.longing.longing.user.infrastructure.UserEntity;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,9 @@ import javax.persistence.EntityNotFoundException;
 public class LikeServiceImpl implements LikeService {
 
     private final PostLikeRepository postLikeRepository;
-    private final PostRepository postRepository;
+    private final PostLikeJpaRepository postLikeJpaRepository;
+    private final CommentJpaRepository commentJpaRepository;
+
     private final PostJpaRepository postJpaRepository;
     private final UserRepository userRepository;
 
@@ -45,8 +47,18 @@ public class LikeServiceImpl implements LikeService {
         }
 
         postEntity.like();
+
+        // 좋아요 엔티티 생성 및 관계 설정
+        PostLikeEntity postLikeEntity = PostLikeEntity.builder()
+                .user(UserEntity.fromModel(user))
+                .post(postEntity)
+                .build();
+
         // 좋아요 생성 및 저장
-        postLikeRepository.save(likePostCreate, postEntity.toModel(), user);
+        postLikeEntity.likePost(); // PostEntity와의 관계 설정
+        postLikeRepository.save(postLikeEntity);
+
+//        postLikeRepository.save(likePostCreate, postEntity.toModel(), user);
     }
 
     @Override
@@ -57,11 +69,13 @@ public class LikeServiceImpl implements LikeService {
         User user = userRepository.findById(likePostDelete.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        PostLike postLike = postLikeRepository.findByPostAndUser(postEntity.toModel(), user)
+        PostLikeEntity postLikeEntity = postLikeJpaRepository.findByPostIdAndUserId(postEntity.getId(), user.getId())
                 .orElseThrow(() -> new IllegalStateException("You did not like this post"));
 
         postEntity.unlike();
+        postLikeEntity.unlikePost();
         // 좋아요 삭제
-        postLikeRepository.deleteById(postLike.getId());
+        postLikeRepository.deleteById(postLikeEntity.getId());
     }
+
 }

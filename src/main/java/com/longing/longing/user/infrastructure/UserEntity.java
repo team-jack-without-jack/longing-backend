@@ -2,7 +2,6 @@ package com.longing.longing.user.infrastructure;
 
 import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.common.BaseTimeEntity;
-import com.longing.longing.like.infrastructure.CommentLikeEntity;
 import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.location.infrastructure.LocationEntity;
 import com.longing.longing.post.infrastructure.PostEntity;
@@ -56,8 +55,8 @@ public class UserEntity extends BaseTimeEntity {
     @OneToMany(mappedBy = "user")
     private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<CommentLikeEntity> commentLikeEntities = new ArrayList<>();
+//    @OneToMany(mappedBy = "user")
+//    private List<CommentLikeEntity> commentLikeEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<CommentEntity> commentEntities = new ArrayList<>();

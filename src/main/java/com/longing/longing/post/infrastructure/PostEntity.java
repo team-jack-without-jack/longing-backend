@@ -8,11 +8,13 @@ import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Getter
 @Entity
 @Table(name = "posts")
