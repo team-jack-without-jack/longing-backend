@@ -63,7 +63,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getPost(long postId) {
-        return null;
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
     @Override
