@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,18 +63,21 @@ public class PostServiceImpl implements PostService {
 //    }
 
     @Override
-    public Post getPost(long postId) {
+    public Post getPost(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
     @Override
     @Transactional
-    public Post updatePost(long postId, PostUpdate postUpdate) {
-//        Post post = postRepository.findById(postId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
+    public Post updatePost(String oauthId, Long postId, PostUpdate postUpdate) {
         PostEntity postEntity = postJpaRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
+        User user = userRepository.findByProviderId(oauthId)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+        if (!postEntity.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("you can not modify this location");
+        }
         Post post = postEntity.toModel();
         Post updatedPost = post.update(postUpdate);
         postEntity.update(postUpdate);
@@ -81,7 +85,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void deletePost(long postId) {
+    public void deletePost(Long postId) {
         postRepository.deleteById(postId);
     }
 }

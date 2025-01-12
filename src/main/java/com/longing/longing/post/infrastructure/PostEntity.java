@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @Getter
@@ -79,15 +80,28 @@ public class PostEntity extends BaseTimeEntity {
         return postLikeEntities.size();  // 실시간으로 계산
     }
 
+//    public PostEntity update(PostUpdate postUpdate) {
+//        if (postUpdate.getTitle() != null) {
+//            this.title = postUpdate.getTitle();
+//        }
+//        if (postUpdate.getContent() != null) {
+//            this.content = postUpdate.getContent();
+//        }
+//        return this;
+//    }
+
     public PostEntity update(PostUpdate postUpdate) {
-        if (postUpdate.getTitle() != null) {
-            this.title = postUpdate.getTitle();
-        }
-        if (postUpdate.getContent() != null) {
-            this.content = postUpdate.getContent();
-        }
+        updateField(postUpdate.getTitle(), value -> this.title = value);
+        updateField(postUpdate.getContent(), value -> this.content = value);
         return this;
     }
+
+    private <T> void updateField(T value, Consumer<T> updater) {
+        if (value != null) {
+            updater.accept(value);
+        }
+    }
+
 
     // 연관 관계 관리 메서드
     public void like() {

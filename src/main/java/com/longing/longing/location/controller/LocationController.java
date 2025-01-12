@@ -2,9 +2,13 @@ package com.longing.longing.location.controller;
 
 import com.longing.longing.location.controller.port.LocationService;
 import com.longing.longing.location.domain.Location;
+import com.longing.longing.location.domain.LocationCreate;
+import com.longing.longing.location.domain.LocationUpdate;
+import com.longing.longing.post.domain.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,4 +42,38 @@ public class LocationController {
         return ResponseEntity.ok(location);
     }
 
+    /**
+     *
+     * @param locationId
+     * @param locationUpdate
+     * @param authentication
+     * @return
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<Location> updateLocation(
+            @PathVariable("id") Long locationId,
+            @RequestBody LocationUpdate locationUpdate,
+            Authentication authentication
+    ) {
+        String oauthId = authentication.getName();
+        Location location = locationService.updateLocation(oauthId, locationId, locationUpdate);
+        return ResponseEntity.ok(location);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteLocation(
+            @PathVariable("id") Long locationId
+    ) {
+        locationService.deleteLocation(locationId);
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<Location> createLocation(
+            @RequestBody LocationCreate locationCreate,
+            Authentication authentication
+            ) {
+        String oauthId = authentication.getName();
+        Location location = locationService.createLocation(oauthId, locationCreate);
+        return ResponseEntity.ok(location);
+    }
 }

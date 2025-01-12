@@ -1,12 +1,17 @@
 package com.longing.longing.location.infrastructure;
 
+import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
 import com.longing.longing.location.domain.Location;
+import com.longing.longing.location.domain.LocationUpdate;
+import com.longing.longing.post.domain.PostUpdate;
+import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
 
 import javax.persistence.*;
+import java.util.function.Consumer;
 
 @Getter
 @Entity
@@ -65,5 +70,30 @@ public class LocationEntity {
                 .user(user.toModel())
                 .build();
     }
+
+//    public LocationEntity update(LocationUpdate locationUpdate) {
+//        if (locationUpdate.getTitle() != null) {
+//            this.title = postUpdate.getTitle();
+//        }
+//        if (locationUpdate.getContent() != null) {
+//            this.content = postUpdate.getContent();
+//        }
+//        return this;
+//    }
+
+    public LocationEntity update(CategoryEntity categoryEntity, LocationUpdate locationUpdate) {
+        updateField(locationUpdate.getName(), value -> this.name = value);
+        updateField(locationUpdate.getMapUrl(), value -> this.mapUrl = value);
+        updateField(locationUpdate.getPhoneNumber(), value -> this.phoneNumber = value);
+        updateField(locationUpdate.getCategoryId(), value -> this.category = categoryEntity);
+        return this;
+    }
+
+    private <T> void updateField(T value, Consumer<T> updater) {
+        if (value != null) {
+            updater.accept(value);
+        }
+    }
+
 
 }

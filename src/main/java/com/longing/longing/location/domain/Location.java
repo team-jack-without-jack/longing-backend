@@ -32,6 +32,15 @@ public class Location {
         this.category = category;
     }
 
+    public static Location from(User user, Category category, LocationCreate locationCreate) {
+        return Location.builder()
+                .name(locationCreate.getName())
+                .mapUrl(locationCreate.getMapUrl())
+                .phoneNumber(locationCreate.getPhoneNumber())
+                .user(user)
+                .category(category)
+                .build();
+    }
 //    public static Location from() {
 //        return Location.builder()
 //                .
