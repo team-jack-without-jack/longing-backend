@@ -2,7 +2,6 @@ package com.longing.longing.comment.infrastructure;
 
 import com.longing.longing.comment.domain.Comment;
 import com.longing.longing.comment.domain.CommentUpdate;
-import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
@@ -10,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -31,6 +32,9 @@ public class CommentEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+//    @OneToMany(mappedBy = "comment")
+//    private List<CommentLikeEntity> commentLikeEntities = new ArrayList<>();
 
 
     @Builder

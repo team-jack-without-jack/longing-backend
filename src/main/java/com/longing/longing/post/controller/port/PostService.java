@@ -11,7 +11,7 @@ public interface PostService {
     Post createPost(String oauthId, PostCreate postCreate);
 
     Page<Post> getPostList(String keyword, int page, int size, String sortBy, String sortDirection);
-    Post getPost(long postId);
-    Post updatePost(long postId, PostUpdate postUpdate);
-    void deletePost(long postId);
+    Post getPost(Long postId);
+    Post updatePost(String oauthId, Long postId, PostUpdate postUpdate);
+    void deletePost(Long postId);
 }

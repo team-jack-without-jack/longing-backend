@@ -25,12 +25,17 @@ public class PostLikeRepositoryImpl implements PostLikeRepository {
         return postLikeJpaRepository.findByPostIdAndUserId(post.getId(), user.getId()).map(PostLikeEntity::toModel);
     }
 
+//    @Override
+//    public PostLike save(LikePostCreate likePost, Post post, User user) {
+//        return postLikeJpaRepository.save(
+//                PostLikeEntity.fromModel(
+//                        likePost, PostEntity.fromModel(post), UserEntity.fromModel(user))
+//        ).toModel();
+//    }
+
     @Override
-    public PostLike save(LikePostCreate likePost, Post post, User user) {
-        return postLikeJpaRepository.save(
-                PostLikeEntity.fromModel(
-                        likePost, PostEntity.fromModel(post), UserEntity.fromModel(user))
-        ).toModel();
+    public PostLike save(PostLikeEntity postLikeEntity) {
+        return postLikeJpaRepository.save(postLikeEntity).toModel();
     }
 
     @Override

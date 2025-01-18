@@ -60,9 +60,11 @@ public class PostController {
     public ResponseEntity<Post> updatePost(
 //            @RequestParam long postId,
             @PathVariable("id") long postId,
-            @RequestBody PostUpdate postUpdate
+            @RequestBody PostUpdate postUpdate,
+            Authentication authentication
     ) {
-        Post post = postService.updatePost(postId, postUpdate);
+        String oauthId = authentication.getName();
+        Post post = postService.updatePost(oauthId, postId, postUpdate);
         return ResponseEntity.ok(post);
     }
 

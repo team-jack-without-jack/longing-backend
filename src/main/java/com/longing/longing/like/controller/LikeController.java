@@ -2,7 +2,6 @@ package com.longing.longing.like.controller;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.like.controller.port.LikeService;
-import com.longing.longing.like.domain.LikeCommentCreate;
 import com.longing.longing.like.domain.LikePostCreate;
 import com.longing.longing.like.domain.LikePostDelete;
 import com.longing.longing.user.domain.User;
@@ -47,12 +46,6 @@ public class LikeController {
         likeService.unlikePost(likePostDelete);
     }
 
-    @PostMapping("/comment/{id}/like")
-    public void likeComment(
-            @RequestBody LikeCommentCreate likeCommentCreate
-    ) {
-//        likeService.likeComment(likeComment);
-    }
 
     // OAuth2AuthenticationToken에서 사용자 ID 추출
 //    public Long getUserIdFromAuthentication(Authentication authentication) {
