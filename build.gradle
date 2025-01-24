@@ -31,6 +31,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'commons-io:commons-io:2.5'
 	implementation 'commons-fileupload:commons-fileupload:1.5'
+
+	// feature/issue-20
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 //	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 //	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'

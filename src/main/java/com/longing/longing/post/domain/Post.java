@@ -5,6 +5,7 @@ import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class Post {
     private User user;
 
     private List<Comment> commentList;
+
+    private List<MultipartFile> images;
 
     private int likeCount = 0;
 

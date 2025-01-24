@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,9 +30,11 @@ public class PostController {
     @PostMapping("/api/post")
     public ResponseEntity<Post> CreatePost(
             @RequestBody PostCreate postCreate,
-            Authentication authentication) {
+            Authentication authentication,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) {
         String oauthId= authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        Post createdPost = postService.createPost(oauthId, postCreate);
+        Post createdPost = postService.createPost(oauthId, postCreate, images);
         return ResponseEntity.ok(createdPost);
     }
 

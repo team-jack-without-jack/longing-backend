@@ -1,6 +1,7 @@
 package com.longing.longing.post.service;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.service.S3ImageService;
 import com.longing.longing.post.controller.port.PostService;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,13 +32,21 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostJpaRepository postJpaRepository;
+    private final S3ImageService s3ImageService;
 
 
     @Override
-    public Post createPost(String oauthId, PostCreate postCreate) {
+    public Post createPost(String oauthId, PostCreate postCreate, List<MultipartFile> images) {
         User user = userRepository.findByProviderId(oauthId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));;
         Post post = Post.from(user, postCreate);
+
+        /**
+         * TODO
+         * upload image
+         */
+        String profileImage = s3ImageService.upload(image);
+
         return postRepository.save(post);
     }
 
@@ -86,6 +96,11 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(Long postId) {
+        /**
+         * TODO
+         * delete image
+         */
+
         postRepository.deleteById(postId);
     }
 }
