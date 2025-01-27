@@ -28,7 +28,7 @@ public class PostController {
      * @param authentication
      * @return
      */
-    @PostMapping("/")
+    @PostMapping()
     public ApiResponse<Post> CreatePost(
             @RequestBody PostCreate postCreate,
             Authentication authentication) {
@@ -42,7 +42,7 @@ public class PostController {
      * 게시글 목록 가져오기
      * @return
      */
-    @GetMapping("/")
+    @GetMapping()
     public ApiResponse<Page<Post>> GetPostList(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
@@ -81,6 +81,16 @@ public class PostController {
     ) {
         postService.deletePost(postId);
         return ApiResponse.ok(null);
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Post> getPost(
+            @PathVariable("id") Long postId,
+            Authentication authentication
+    ) {
+        String oauthId = authentication.getName();
+        Post post = postService.getPost(oauthId, postId);
+        return ApiResponse.ok(post);
     }
 
     @GetMapping("/my")

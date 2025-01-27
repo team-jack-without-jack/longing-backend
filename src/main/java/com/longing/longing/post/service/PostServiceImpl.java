@@ -63,7 +63,10 @@ public class PostServiceImpl implements PostService {
 //    }
 
     @Override
-    public Post getPost(Long postId) {
+    public Post getPost(String oauthId, Long postId) {
+        User user = userRepository.findByProviderId(oauthId)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+
         return postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
