@@ -38,7 +38,6 @@ public class LikeServiceImpl implements LikeService {
         PostEntity postEntity = postJpaRepository.findById(likePostCreate.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-//        log.info(userRepository.find)
         User user = userRepository.findById(likePostCreate.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         // 이미 좋아요를 눌렀는지 확인

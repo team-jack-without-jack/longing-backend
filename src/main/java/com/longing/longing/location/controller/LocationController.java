@@ -1,5 +1,6 @@
 package com.longing.longing.location.controller;
 
+import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.location.controller.port.LocationService;
 import com.longing.longing.location.domain.Location;
 import com.longing.longing.location.domain.LocationCreate;
@@ -21,8 +22,8 @@ public class LocationController {
 
     private final LocationService locationService;
 
-    @GetMapping("/")
-    public ResponseEntity<Page<Location>> getLocationList(
+    @GetMapping()
+    public ApiResponse<Page<Location>> getLocationList(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -30,16 +31,16 @@ public class LocationController {
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
         Page<Location> locationList = locationService.getLocationList(keyword, page, size, sortBy, sortDirection);
-        return ResponseEntity.ok(locationList);
+        return ApiResponse.ok(locationList);
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Location> getLocation(
+    public ApiResponse<Location> getLocation(
             @PathVariable("id") Long locationId
     ) {
         Location location = locationService.getLocation(locationId);
-        return ResponseEntity.ok(location);
+        return ApiResponse.ok(location);
     }
 
     /**
@@ -50,30 +51,31 @@ public class LocationController {
      * @return
      */
     @PatchMapping("/{id}")
-    public ResponseEntity<Location> updateLocation(
+    public ApiResponse<Location> updateLocation(
             @PathVariable("id") Long locationId,
             @RequestBody LocationUpdate locationUpdate,
             Authentication authentication
     ) {
         String oauthId = authentication.getName();
         Location location = locationService.updateLocation(oauthId, locationId, locationUpdate);
-        return ResponseEntity.ok(location);
+        return ApiResponse.ok(location);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteLocation(
+    public ApiResponse<Void> deleteLocation(
             @PathVariable("id") Long locationId
     ) {
         locationService.deleteLocation(locationId);
+        return ApiResponse.ok(null);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Location> createLocation(
+    @PostMapping()
+    public ApiResponse<Location> createLocation(
             @RequestBody LocationCreate locationCreate,
             Authentication authentication
             ) {
         String oauthId = authentication.getName();
         Location location = locationService.createLocation(oauthId, locationCreate);
-        return ResponseEntity.ok(location);
+        return ApiResponse.created(location);
     }
 }

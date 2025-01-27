@@ -16,6 +16,7 @@ import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
@@ -38,9 +40,12 @@ public class LocationServiceImpl implements LocationService {
     public Location createLocation(String oauthId, LocationCreate locationCreate) {
         User user = userRepository.findByProviderId(oauthId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+
         Category category = categoryJpaRepository.findById(locationCreate.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId)).toModel();
+                .orElseThrow(() -> new ResourceNotFoundException("Categories", locationCreate.getCategoryId())).toModel();
+
         Location location = Location.from(user, category, locationCreate);
+
         return locationRepository.save(location);
     }
 
@@ -64,8 +69,11 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public Location updateLocation(String oauthId, Long locationId, LocationUpdate locationUpdate) {
+        // location data 있는지 확인
         LocationEntity locationEntity = locationJpaRepository.findById(locationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Locations", locationId));
+
+        // user data 있는지 확인
         User user = userRepository.findByProviderId(oauthId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
         if (!locationEntity.getUser().getId().equals(user.getId())) {

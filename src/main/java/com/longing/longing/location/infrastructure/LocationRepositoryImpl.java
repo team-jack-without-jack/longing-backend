@@ -20,7 +20,7 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     @Override
     public Optional<Location> findById(Long id) {
-        return Optional.empty();
+        return locationJpaRepository.findById(id).map(LocationEntity::toModel);
     }
 
     @Override
