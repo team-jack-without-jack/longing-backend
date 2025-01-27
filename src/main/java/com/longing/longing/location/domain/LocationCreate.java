@@ -1,5 +1,6 @@
 package com.longing.longing.location.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,10 +16,10 @@ public class LocationCreate {
 
     @Builder
     public LocationCreate(
-            String name,
-            String mapUrl,
-            String phoneNumber,
-            Long categoryId
+            @JsonProperty("name") String name,
+            @JsonProperty("mapUrl") String mapUrl,
+            @JsonProperty("phoneNumber") String phoneNumber,
+            @JsonProperty("categoryId") Long categoryId
     ) {
         this.name = name;
         this.mapUrl = mapUrl;

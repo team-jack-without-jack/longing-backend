@@ -18,9 +18,10 @@ public class PostRepositoryImpl implements PostRepository {
 
     private final PostJpaRepository postJpaRepository;
 
-    public Optional<Post> findById(long id) {
+    public Optional<Post> findById(Long id) {
         return postJpaRepository.findById(id).map(PostEntity::toModel);
     }
+
 
     @Override
     public Post save(Post post) {
@@ -36,7 +37,8 @@ public class PostRepositoryImpl implements PostRepository {
         return new PageImpl<>(posts, pageable, posts.size());
     }
 
-    public void deleteById(long postId) {
+
+    public void deleteById(Long postId) {
         postJpaRepository.deleteById(postId);
     }
 

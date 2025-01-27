@@ -9,11 +9,13 @@ import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.function.Consumer;
 
 @Getter
+@NoArgsConstructor
 @Entity
 @Table(name = "locations")
 public class LocationEntity {

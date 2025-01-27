@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository {
-    Optional<Post> findById(long id);
+    Optional<Post> findById(Long id);
 
     Post save(Post post);
 
     Page<Post> findAll(Pageable pageable);
 
-    void deleteById(long postId);
+    void deleteById(Long postId);
 
     Page<Post> findAllwithLikeCountAndSearch(String keyword, Pageable pageable);
 }

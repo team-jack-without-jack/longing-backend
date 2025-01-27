@@ -35,7 +35,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post createPost(String oauthId, PostCreate postCreate) {
         User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));;
+                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
         Post post = Post.from(user, postCreate);
         return postRepository.save(post);
     }

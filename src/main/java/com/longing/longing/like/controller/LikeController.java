@@ -1,6 +1,7 @@
 package com.longing.longing.like.controller;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.like.controller.port.LikeService;
 import com.longing.longing.like.domain.LikePostCreate;
 import com.longing.longing.like.domain.LikePostDelete;
@@ -21,7 +22,7 @@ public class LikeController {
     private final UserRepository userRepository;
 
     @PostMapping("/post/{id}/like")
-    public void likePost(
+    public ApiResponse<?> likePost(
             @PathVariable("id") long postId,
             Authentication authentication
     ) {
@@ -31,10 +32,11 @@ public class LikeController {
         Long userId = user.getId();
         LikePostCreate likePostCreate = new LikePostCreate(postId, userId);
         likeService.likePost(likePostCreate);
+        return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/post/{id}/unlike")
-    public void unlikePost(
+    public ApiResponse<?> unlikePost(
             @PathVariable("id") Long postId,
             Authentication authentication
     ) {
@@ -44,6 +46,7 @@ public class LikeController {
         Long userId = user.getId();
         LikePostDelete likePostDelete = new LikePostDelete(postId, userId);
         likeService.unlikePost(likePostDelete);
+        return ApiResponse.ok(null);
     }
 
 

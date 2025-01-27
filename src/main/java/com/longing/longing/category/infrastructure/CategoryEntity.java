@@ -5,12 +5,15 @@ import com.longing.longing.location.infrastructure.LocationEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Getter
-@Entity(name = "categories")
+@NoArgsConstructor
+@Entity
+@Table(name = "categories")
 public class CategoryEntity {
 
     @Id
@@ -45,7 +48,9 @@ public class CategoryEntity {
 
     public Category toModel() {
         return Category.builder()
-
+                .id(id)
+                .name(name)
+                .description(description)
                 .build();
     }
 }
