@@ -9,5 +9,7 @@ public interface CategoryRepository {
 
     Page<Category> findAll(Pageable pageable);
 
+    void deleteById(Long id);
+
 //    Page<Category> findAllwithSearch(String keyword, Pageable pageable);
 }

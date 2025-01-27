@@ -47,4 +47,14 @@ public class CategoryController {
         Page<Category> categoryList = categoryService.getCategoryList(keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(categoryList);
     }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> removeCategory(
+            @PathVariable("id") Long categoryId,
+            Authentication authentication
+    ) {
+        String oauthId = authentication.getName();
+        categoryService.deleteCategory(categoryId);
+        return ApiResponse.ok(null);
+    }
 }

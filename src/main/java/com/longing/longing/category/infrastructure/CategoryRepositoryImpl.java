@@ -40,6 +40,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
         return new PageImpl<>(categories, pageable, categories.size());
     }
 
+    @Override
+    public void deleteById(Long id) {
+        categoryJpaRepository.deleteById(id);
+    }
+
 //    @Override
 //    public Page<Category> findAllwithSearch(String keyword, Pageable pageable) {
 //        List<Category> postEntities = categoryJpaRepository.findAllwithSearch(keyword, pageable)

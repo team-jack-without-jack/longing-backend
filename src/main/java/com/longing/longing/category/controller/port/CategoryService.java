@@ -8,4 +8,6 @@ public interface CategoryService {
     Category createCategory(String oauthId, CategoryCreate categoryCreate);
 
     Page<Category> getCategoryList(String keyword, int page, int size, String sortBy, String sortDirection);
+
+    void deleteCategory(Long categoryId);
 }
