@@ -2,6 +2,7 @@ package com.longing.longing.post.infrastructure;
 
 import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.common.BaseTimeEntity;
+import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostUpdate;
@@ -14,6 +15,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -39,6 +41,9 @@ public class PostEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostImageEntity> postImageEntities = new ArrayList<>();
 
     @Column(columnDefinition = "integer default 0")
     private int likeCount = 0;
@@ -72,6 +77,9 @@ public class PostEntity extends BaseTimeEntity {
                 .title(title)
                 .content(content)
                 .user(user.toModel())
+                .postImageList(postImageEntities.stream()
+                        .map(PostImageEntity::toModel) // 변환 메서드 적용
+                        .collect(Collectors.toList()))
                 .likeCount(likeCount)
                 .build();
     }
@@ -93,6 +101,7 @@ public class PostEntity extends BaseTimeEntity {
     public PostEntity update(PostUpdate postUpdate) {
         updateField(postUpdate.getTitle(), value -> this.title = value);
         updateField(postUpdate.getContent(), value -> this.content = value);
+
         return this;
     }
 
@@ -120,5 +129,9 @@ public class PostEntity extends BaseTimeEntity {
         }
         this.user = user;
         user.getPostEntities().add(this);
+    }
+
+    public void addImage(PostImageEntity image, UserEntity user) {
+        this.postImageEntities.add(new PostImageEntity(image.getAddress(), this, user));
     }
 }

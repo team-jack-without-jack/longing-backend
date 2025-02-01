@@ -2,6 +2,7 @@ package com.longing.longing.user.infrastructure;
 
 import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.common.BaseTimeEntity;
+import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.location.infrastructure.LocationEntity;
 import com.longing.longing.post.infrastructure.PostEntity;
@@ -49,20 +50,17 @@ public class UserEntity extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PostEntity> postEntities = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "user")
-//    private List<LikeEntity> likeEntities = new ArrayList<>();
-
     @OneToMany(mappedBy = "user")
     private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "user")
-//    private List<CommentLikeEntity> commentLikeEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<LocationEntity> locationEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<PostImageEntity> postImageEntities = new ArrayList<>();
 
     // 기본 생성자 추가
     public UserEntity() {

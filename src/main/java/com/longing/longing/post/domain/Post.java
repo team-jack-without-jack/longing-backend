@@ -1,6 +1,7 @@
 package com.longing.longing.post.domain;
 
 import com.longing.longing.comment.domain.Comment;
+import com.longing.longing.common.domain.PostImage;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.Builder;
@@ -20,17 +21,27 @@ public class Post {
     private User user;
 
     private List<Comment> commentList;
+    private List<PostImage> postImageList;
 
     private int likeCount = 0;
 
     @Builder
-    public Post(Long id, String title, String content, User user, List<Comment> commentList, int likeCount) {
+    public Post(
+            Long id,
+            String title,
+            String content,
+            User user,
+            List<Comment> commentList,
+            int likeCount,
+            List<PostImage> postImageList
+    ) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.user = user;
         this.commentList = commentList;
         this.likeCount = likeCount;
+        this.postImageList = postImageList;
     }
 
     public static Post from(User user, PostCreate postCreate) {

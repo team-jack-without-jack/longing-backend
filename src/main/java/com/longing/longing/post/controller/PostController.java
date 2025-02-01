@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,11 +31,13 @@ public class PostController {
      */
     @PostMapping()
     public ApiResponse<Post> CreatePost(
-            @RequestBody PostCreate postCreate,
-            Authentication authentication) {
+            PostCreate postCreate,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            Authentication authentication
+    ) {
+        log.info("호출!!!!");
         String oauthId= authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        Post createdPost = postService.createPost(oauthId, postCreate);
-//        return ResponseEntity.ok(createdPost);
+        Post createdPost = postService.createPost(oauthId, postCreate, images);
         return ApiResponse.created(createdPost);
     }
 
@@ -63,11 +66,12 @@ public class PostController {
     public ApiResponse<Post> updatePost(
 //            @RequestParam long postId,
             @PathVariable("id") long postId,
-            @RequestBody PostUpdate postUpdate,
+            PostUpdate postUpdate,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
             Authentication authentication
     ) {
         String oauthId = authentication.getName();
-        Post post = postService.updatePost(oauthId, postId, postUpdate);
+        Post post = postService.updatePost(oauthId, postId, postUpdate, images);
         return ApiResponse.ok(post);
     }
 

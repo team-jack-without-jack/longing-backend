@@ -18,4 +18,5 @@ public interface PostRepository {
     void deleteById(Long postId);
 
     Page<Post> findAllwithLikeCountAndSearch(String keyword, Pageable pageable);
+    void flush();
 }

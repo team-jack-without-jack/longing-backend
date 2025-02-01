@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
+
+
+    @EntityGraph(attributePaths = {"postImageEntities"})
     Optional<PostEntity> findById(long id);
     void deleteById(long id);
 
