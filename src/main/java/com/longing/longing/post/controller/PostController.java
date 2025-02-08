@@ -98,10 +98,17 @@ public class PostController {
     }
 
     @GetMapping("/my")
-    public void getMyPosts(
-            Authentication authentication
+    public ApiResponse<Page<Post>> getMyPosts(
+            Authentication authentication,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
-//        postService.getPostList();
+        String oauthId = authentication.getName();
+        Page<Post> postList = postService.getMyPostList(oauthId, keyword, page, size, sortBy, sortDirection);
+        return ApiResponse.ok(postList);
     }
 
     // 응답 데이터를 담을 내부 정적 클래스

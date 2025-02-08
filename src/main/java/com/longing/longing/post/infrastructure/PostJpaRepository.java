@@ -20,10 +20,18 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
     @EntityGraph(attributePaths = {"postLikeEntities"})
     @Query("SELECT p FROM PostEntity p " +
             "WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%")
-//    @Query("SELECT p FROM PostEntity p " +
-//            "LEFT JOIN FETCH p.postLikeEntities " +
-//            "WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%")
-    Page<PostEntity> findAllWithLikeCountAndSearch(@Param("keyword") String keyword, Pageable pageable);
+    Page<PostEntity> findAllWithLikeCountAndSearch(
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
+    @EntityGraph(attributePaths = {"postLikeEntities"})
+    @Query("SELECT p FROM PostEntity p " +
+            "WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) " +
+            "AND p.user.id = :userId")
+    Page<PostEntity> findMyPostsWithLikeCountAndSearch(
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            Pageable pageable);
 
     @Query("SELECT p FROM PostEntity p LEFT JOIN FETCH p.postLikeEntities WHERE p.id = :id")
     Optional<PostEntity> findByIdWithLikeCount(@Param("id") Long id);
