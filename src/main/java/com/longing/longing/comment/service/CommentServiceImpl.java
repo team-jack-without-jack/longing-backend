@@ -9,6 +9,8 @@ import com.longing.longing.comment.infrastructure.CommentJpaRepository;
 import com.longing.longing.comment.service.port.CommentRepository;
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.post.domain.Post;
+import com.longing.longing.post.infrastructure.PostEntity;
+import com.longing.longing.post.infrastructure.PostJpaRepository;
 import com.longing.longing.post.service.port.PostRepository;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
@@ -31,27 +33,42 @@ public class CommentServiceImpl implements CommentService {
     private final CommentJpaRepository commentJpaRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostJpaRepository postJpaRepository;
 
     @Override
+    @Transactional
     public Comment createComment(String oauthId, CommentCreate commentCreate) {
         User user = userRepository.findByProviderId(oauthId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
-        Post post = postRepository.findById(commentCreate.getPostId())
+//        Post post = postRepository.findById(commentCreate.getPostId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
+
+        PostEntity postEntity = postJpaRepository.findById(commentCreate.getPostId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
-        Comment comment = Comment.from(user, post, commentCreate);
-        return commentRepository.save(comment);
+
+        Comment comment = Comment.from(user, postEntity.toModel(), commentCreate);
+
+        CommentEntity commentEntity = CommentEntity.fromModel(comment);
+        postEntity.addComment(commentEntity);
+        return comment;
     }
 
     @Override
+    @Transactional
     public void deleteComment(String oauthId, long commentId) {
         User user = userRepository.findByProviderId(oauthId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comments", oauthId));
+        CommentEntity commentEntity = commentJpaRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comments", commentId));
 
-        if (!comment.getUser().getId().equals(user.getId())) {
+        if (!commentEntity.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("not a user who created");
         }
+
+        PostEntity postEntity = commentEntity.getPost();
+        postEntity.removeComment(commentEntity);
+//        CommentEntity commentEntity = CommentEntity.fromModel(comment);
+//        PostEntity.fromModel(post).removeComment(commentEntity);
         commentRepository.deleteById(commentId);
     }
 

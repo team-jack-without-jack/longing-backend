@@ -57,6 +57,16 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
+        List<Post> postEntities = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable)
+                .stream()
+                .map(PostEntity::toModel)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(postEntities, pageable, postEntities.size());
+    }
+
+    @Override
     public void flush() {
         postJpaRepository.flush();
     }

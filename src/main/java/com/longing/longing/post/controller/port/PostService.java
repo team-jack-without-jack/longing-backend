@@ -12,6 +12,7 @@ public interface PostService {
     Post createPost(String oauthId, PostCreate postCreate, List<MultipartFile> images);
 
     Page<Post> getPostList(String keyword, int page, int size, String sortBy, String sortDirection);
+    Page<Post> getMyPostList(String oauthId, String keyword, int page, int size, String sortBy, String sortDirection);
     Post getPost(String oauthId, Long postId);
     Post updatePost(String oauthId, Long postId, PostUpdate postUpdate, List<MultipartFile> images);
     void deletePost(Long postId);

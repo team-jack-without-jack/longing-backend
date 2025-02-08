@@ -48,17 +48,28 @@ public class PostEntity extends BaseTimeEntity {
     @Column(columnDefinition = "integer default 0")
     private int likeCount = 0;
 
+    @Column(columnDefinition = "integer default 0")
+    private int commentCount = 0;
+
     public PostEntity() {
 
     }
 
     @Builder
-    public PostEntity(Long id, String title, String content, UserEntity user, int likeCount) {
+    public PostEntity(
+            Long id,
+            String title,
+            String content,
+            UserEntity user,
+            int likeCount,
+            int commentCount
+    ) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.user = user;
         this.likeCount = likeCount;
+        this.commentCount = commentCount;
     }
 
     public static PostEntity fromModel(Post post) {
@@ -68,6 +79,7 @@ public class PostEntity extends BaseTimeEntity {
                 .content(post.getContent())
                 .user(UserEntity.fromModel(post.getUser()))
                 .likeCount(post.getLikeCount())
+                .commentCount(post.getCommentCount())
                 .build();
     }
 
@@ -81,6 +93,7 @@ public class PostEntity extends BaseTimeEntity {
                         .map(PostImageEntity::toModel) // 변환 메서드 적용
                         .collect(Collectors.toList()))
                 .likeCount(likeCount)
+                .commentCount(commentCount)
                 .build();
     }
 
@@ -121,6 +134,18 @@ public class PostEntity extends BaseTimeEntity {
         if (this.likeCount > 0) {
             this.likeCount--;
         }
+    }
+
+    //== 연관관계 편의 메서드 ==//
+    public void addComment(CommentEntity comment) {
+        commentEntities.add(comment);
+        comment.setPost(this);
+        this.commentCount++;  // 댓글 개수 증가
+    }
+
+    public void removeComment(CommentEntity comment) {
+        commentEntities.remove(comment);
+        this.commentCount--;  // 댓글 개수 감소
     }
 
     public void setUser(UserEntity user) {

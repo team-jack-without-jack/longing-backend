@@ -107,6 +107,22 @@ public class PostServiceImpl implements PostService {
         return postRepository.findAllwithLikeCountAndSearch(keyword, pageable);
     }
 
+    @Override
+    public Page<Post> getMyPostList(String oauthId, String keyword, int page, int size, String sortBy, String sortDirection) {
+        User user = userRepository.findByProviderId(oauthId)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+//        return postRepository.findAll(pageable);
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return postRepository.findAll(pageable);
+        }
+        return postRepository.findMyPostsWithLikeCountAndSearch(user.getId(), keyword, pageable);
+
+    }
+
 //    @Override
 //    public List<Post> getPostList(String keyword) {
 //        if (keyword == null || keyword.trim().isEmpty()) {
