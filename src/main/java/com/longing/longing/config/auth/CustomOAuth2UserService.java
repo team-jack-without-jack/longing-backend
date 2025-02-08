@@ -2,8 +2,9 @@ package com.longing.longing.config.auth;
 
 import com.longing.longing.config.auth.dto.OAuthAttributes;
 import com.longing.longing.config.auth.dto.SessionUser;
-import com.longing.longing.user.User;
-import com.longing.longing.user.UserRepository;
+import com.longing.longing.user.domain.User;
+import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,10 +15,10 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
-import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,14 +40,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        User user = saveOrUpdate(attributes);
+        UserEntity userEntity = UserEntity.fromModel(saveOrUpdate(attributes));
 
-        httpSession.setAttribute("user", new SessionUser(user));
+        SessionUser ses = new SessionUser(userEntity);
+        httpSession.setAttribute("user", ses);
 
         return new DefaultOAuth2User(
                 Collections.singleton(
                         new SimpleGrantedAuthority(
-                                user.getRoleKey()
+                                userEntity.getRoleKey()
                         )
                 ),
                 attributes.getAttributes(),
@@ -55,10 +57,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     private User saveOrUpdate(OAuthAttributes attributes) {
-        User user = userRepository.findByEmail(attributes.getEmail())
+        UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
                 .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
                 .orElse(attributes.toEntity());
 
-        return userRepository.save(user);
+        return userRepository.save(userEntity.toModel());
     }
+
 }
