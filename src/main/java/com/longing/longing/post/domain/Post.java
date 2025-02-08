@@ -24,6 +24,7 @@ public class Post {
     private List<PostImage> postImageList;
 
     private int likeCount = 0;
+    private int commentCount = 0;
 
     @Builder
     public Post(
@@ -32,16 +33,18 @@ public class Post {
             String content,
             User user,
             List<Comment> commentList,
+            List<PostImage> postImageList,
             int likeCount,
-            List<PostImage> postImageList
+            int commentCount
     ) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.user = user;
         this.commentList = commentList;
-        this.likeCount = likeCount;
         this.postImageList = postImageList;
+        this.likeCount = likeCount;
+        this.commentCount = commentCount;
     }
 
     public static Post from(User user, PostCreate postCreate) {
