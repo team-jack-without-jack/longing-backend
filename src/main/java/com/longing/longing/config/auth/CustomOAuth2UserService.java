@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
 
@@ -25,7 +26,9 @@ import java.util.Collections;
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final HttpSession httpSession;
+    private final HttpServletResponse response; // JWT를 쿠키로 설정하기 위해 추가
 
 
     @Override
@@ -42,8 +45,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         UserEntity userEntity = UserEntity.fromModel(saveOrUpdate(attributes));
 
-        SessionUser ses = new SessionUser(userEntity);
-        httpSession.setAttribute("user", ses);
+//        SessionUser ses = new SessionUser(userEntity);
+//        httpSession.setAttribute("user", ses);
+
+        // ✅ JWT 발급
+        String token = jwtTokenProvider.generateToken(userEntity.getEmail());
+
+        // ✅ JWT를 쿠키에 저장
+        response.addHeader("Set-Cookie", "longing-token=" + token + "; Path=/; HttpOnly; Secure; SameSite=Strict");
+
 
         return new DefaultOAuth2User(
                 Collections.singleton(
