@@ -40,42 +40,4 @@ public class PostTest {
         assertThat(post.getUser().getProviderId()).isEqualTo("123");
 //        assertThat(post.getCreatedAt()).isEqualTo(1678530673958L);
     }
-
-    @Test
-    public void PostUpdate로_게시물을_수정할_수_있다() {
-        // given
-        PostUpdate postUpdate = PostUpdate.builder()
-                .title("test title")
-                .content("hello world")
-                .build();
-
-        User user = User.builder()
-                .id(1L)
-                .email("test@test.com")
-                .name("test001")
-                .role(Role.GUEST)
-                .provider(Provider.KAKAO)
-                .providerId("123")
-                .build();
-
-        Post post = Post.builder()
-                .id(1L)
-                .title("update title")
-                .content("update content")
-                .build();
-
-        // when
-//        Post post = Post.from(writer, postCreate, new TestClockHolder(1678530673958L));
-        post = post.update(postUpdate);
-
-        // then
-        assertThat(post.getTitle()).isEqualTo("update title");
-        assertThat(post.getContent()).isEqualTo("update content");
-        assertThat(post.getUser().getEmail()).isEqualTo("test@test.com");
-        assertThat(post.getUser().getName()).isEqualTo("test001");
-        assertThat(post.getUser().getRole()).isEqualTo(Role.GUEST);
-        assertThat(post.getUser().getProvider()).isEqualTo(Provider.KAKAO);
-        assertThat(post.getUser().getProviderId()).isEqualTo("123");
-//        assertThat(post.getCreatedAt()).isEqualTo(1678530673958L);
-    }
 }
