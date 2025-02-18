@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-//    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
 
 
@@ -44,6 +44,12 @@ public class SecurityConfig {
         // JWT 인증 필터 추가
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
+        // OAuth2 로그인 설정
+        http.oauth2Login(oauth2 -> oauth2
+                .loginPage("/oauth-login") // 로그인 페이지 경로 설정
+                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // ✅ CustomOAuth2UserService 적용
+        );
+
         // 로그아웃 설정
         http.logout()
                 .logoutSuccessUrl("/")
@@ -55,9 +61,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated());
 
         // 구글 로그인 설정 (oauth2Login 추가)
-        http.oauth2Login()
-                .loginPage("/oauth-login") // 구글 로그인 후 리다이렉트할 페이지 설정
-                .permitAll();
+//        http.oauth2Login()
+//                .loginPage("/oauth-login") // 구글 로그인 후 리다이렉트할 페이지 설정
+//                .permitAll();
 
         // CSRF 비활성화 (개발 환경에서만 사용)
         http.csrf().disable();
