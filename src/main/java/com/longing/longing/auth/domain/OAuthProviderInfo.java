@@ -3,19 +3,27 @@ package com.longing.longing.auth.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 
 @Getter
 @Setter
 @AllArgsConstructor
 public class OAuthProviderInfo {
-    private final String providerName;
-    private final String clientId;
-    private final String clientSecret;
-    private final String redirectUri;
-    private final String tokenUri;
-    private final String userInfoUri;
-    private final String userNameAttribute;
+//    private final String providerName;
+//    private final String clientId;
+//    private final String clientSecret;
+//    private final String redirectUri;
+//    private final String tokenUri;
+//    private final String userInfoUri;
+//    private final String userNameAttribute;
+
+    private String clientId;
+    private String clientSecret;
+    private String redirectUri;
+    private String tokenUri;
+    private String userInfoUri;
+    private String userNameAttribute;
+    private String providerName;  // 이 추가 필드가 필요할 수 있음
+
 //    @Value("${oauth.google.client-id}")
 //    private String googleClientId;
 //

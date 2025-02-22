@@ -57,7 +57,7 @@ public class SecurityConfig {
 
         // 권한 설정
         http.authorizeHttpRequests((auth) -> auth
-                .antMatchers("/", "/ping", "oauth2/**", "/login/**", "/oauth-login/**").permitAll()
+                .antMatchers("/", "/ping", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
                 .anyRequest().authenticated());
 
         // 구글 로그인 설정 (oauth2Login 추가)

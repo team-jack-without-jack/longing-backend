@@ -8,6 +8,7 @@ import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2Service {
@@ -30,6 +32,7 @@ public class OAuth2Service {
 
     public String authenticate(String provider, String code) {
         OAuthProviderInfo providerInfo = getProviderInfo(provider);
+        log.info("providerInfo>> " + providerInfo);
 
         // ✅ Authorization Code를 이용해 Access Token 요청
         String accessToken = requestAccessToken(providerInfo, code);
@@ -47,14 +50,42 @@ public class OAuth2Service {
     private OAuthProviderInfo getProviderInfo(String provider) {
         switch (provider.toLowerCase()) {
             case "google":
-                return oAuthProperties.getGoogle().get("google");  // "google" key로 직접 값 접근
+                return new OAuthProviderInfo(oAuthProperties.getGoogleClientId(),
+                        oAuthProperties.getGoogleClientSecret(),
+                        oAuthProperties.getGoogleRedirectUri(),
+                        "https://oauth2.googleapis.com/token",  // token uri
+                        "https://www.googleapis.com/oauth2/v3/userinfo", // user info uri
+                        "sub",
+                        "google"); // user name attribute
             case "kakao":
-                return oAuthProperties.getKakao().get("kakao");  // "kakao" key로 직접 값 접근
+                return new OAuthProviderInfo(oAuthProperties.getKakaoClientId(),
+                        oAuthProperties.getKakaoClientSecret(),
+                        oAuthProperties.getKakaoRedirectUri(),
+                        "https://kauth.kakao.com/oauth/token",
+                        "https://kapi.kakao.com/v2/user/me",
+                        "id",
+                        "kakao");
             case "facebook":
-                return oAuthProperties.getFacebook().get("facebook");  // "facebook" key로 직접 값 접근
+                return new OAuthProviderInfo(oAuthProperties.getFacebookClientId(),
+                        oAuthProperties.getFacebookClientSecret(),
+                        oAuthProperties.getFacebookRedirectUri(),
+                        "https://graph.facebook.com/v12.0/oauth/access_token",
+                        "https://graph.facebook.com/v12.0/me",
+                        "id",
+                        "kakao");
             default:
                 throw new IllegalArgumentException("지원하지 않는 OAuth 공급자: " + provider);
         }
+//        switch (provider.toLowerCase()) {
+//            case "google":
+//                return oAuthProperties.getGoogle();  // "google" key로 직접 값 접근
+//            case "kakao":
+//                return oAuthProperties.getKakao();  // "kakao" key로 직접 값 접근
+//            case "facebook":
+//                return oAuthProperties.getFacebook();  // "facebook" key로 직접 값 접근
+//            default:
+//                throw new IllegalArgumentException("지원하지 않는 OAuth 공급자: " + provider);
+//        }
     }
 
     private String requestAccessToken(OAuthProviderInfo provider, String code) {
@@ -63,6 +94,12 @@ public class OAuth2Service {
         headers.set("Content-Type", "application/x-www-form-urlencoded");
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        log.info("client_id>> " +provider.getClientId());
+        log.info("client_secret>> " +provider.getClientSecret());
+        log.info("code>> " + code);
+        log.info("redirect_uri>> " + provider.getRedirectUri());
+
         params.add("client_id", provider.getClientId());
         params.add("client_secret", provider.getClientSecret());
         params.add("code", code);
@@ -71,6 +108,7 @@ public class OAuth2Service {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(provider.getTokenUri(), request, Map.class);
+        log.info("response>> " + response);
 
         return (String) response.getBody().get("access_token");
     }
