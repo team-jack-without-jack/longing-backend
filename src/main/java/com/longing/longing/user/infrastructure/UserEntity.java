@@ -47,6 +47,9 @@ public class UserEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private Role role;
 
+    @Column
+    private String nationality;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PostEntity> postEntities = new ArrayList<>();
 
@@ -75,7 +78,8 @@ public class UserEntity extends BaseTimeEntity {
             String picture,
             Provider provider,
             String providerId,
-            Role role
+            Role role,
+            String nationality
     ) {
         this.id = id;
         this.name = name;
@@ -84,6 +88,7 @@ public class UserEntity extends BaseTimeEntity {
         this.provider = provider;
         this.providerId = providerId;
         this.role = role;
+        this.nationality = nationality;
     }
 
     public UserEntity update(String name, String picture) {
@@ -106,6 +111,7 @@ public class UserEntity extends BaseTimeEntity {
                 .provider(user.getProvider())
                 .providerId(user.getProviderId())
                 .role(user.getRole())
+                .nationality(user.getNationality())
                 .build();
     }
 
@@ -118,6 +124,7 @@ public class UserEntity extends BaseTimeEntity {
                 .provider(provider)
                 .providerId(providerId)
                 .role(role)
+                .nationality(nationality)
                 .build();
     }
 }

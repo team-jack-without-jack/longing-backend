@@ -23,6 +23,9 @@ public class OAuthProviderInfo {
     private String userInfoUri;
     private String userNameAttribute;
     private String providerName;  // 이 추가 필드가 필요할 수 있음
+    public boolean isIosClient() {
+        return this.redirectUri.startsWith("com."); // iOS 클라이언트 확인
+    }
 
 //    @Value("${oauth.google.client-id}")
 //    private String googleClientId;

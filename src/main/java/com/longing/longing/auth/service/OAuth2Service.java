@@ -106,6 +106,15 @@ public class OAuth2Service {
         params.add("redirect_uri", provider.getRedirectUri());
         params.add("grant_type", "authorization_code");
 
+        if (!"google".equalsIgnoreCase(provider.getProviderName()) || !provider.isIosClient()) {
+            params.add("client_secret", provider.getClientSecret());
+        }
+
+        // ✅ Google OAuth 2.0 Scope 추가
+        if ("google".equalsIgnoreCase(provider.getProviderName())) {
+            params.add("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile");
+        }
+
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(provider.getTokenUri(), request, Map.class);
         log.info("response>> " + response);

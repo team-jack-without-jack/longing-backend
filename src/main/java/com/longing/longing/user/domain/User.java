@@ -22,6 +22,8 @@ public class User {
 
     private Role role;
 
+    private String nationality;
+
     @Builder
     public User(
             Long id,
@@ -30,7 +32,8 @@ public class User {
             String picture,
             Provider provider,
             String providerId,
-            Role role
+            Role role,
+            String nationality
     ) {
         this.id = id;
         this.name = name;
@@ -39,6 +42,7 @@ public class User {
         this.provider = provider;
         this.providerId = providerId;
         this.role = role;
+        this.nationality = nationality;
     }
 
     public User update(String name, String picture) {
