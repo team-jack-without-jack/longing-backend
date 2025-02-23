@@ -30,12 +30,12 @@ public class OAuth2Service {
     private final RestTemplate restTemplate;
     private final OAuthProperties oAuthProperties;
 
-    public String authenticate(String provider, String code) {
+    public String authenticate(String provider, String code, String codeVerifier) {
         OAuthProviderInfo providerInfo = getProviderInfo(provider);
         log.info("providerInfo>> " + providerInfo);
 
         // ✅ Authorization Code를 이용해 Access Token 요청
-        String accessToken = requestAccessToken(providerInfo, code);
+        String accessToken = requestAccessToken(providerInfo, code, codeVerifier);
 
         // ✅ Access Token을 이용해 유저 정보 요청
         OAuthAttributes attributes = fetchUserInfo(providerInfo, accessToken);
@@ -88,7 +88,7 @@ public class OAuth2Service {
 //        }
     }
 
-    private String requestAccessToken(OAuthProviderInfo provider, String code) {
+    private String requestAccessToken(OAuthProviderInfo provider, String code, String codeVerifier) {
         HttpHeaders headers = new HttpHeaders();
         // headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.set("Content-Type", "application/x-www-form-urlencoded");
@@ -101,8 +101,9 @@ public class OAuth2Service {
         log.info("redirect_uri>> " + provider.getRedirectUri());
 
         params.add("client_id", provider.getClientId());
-        params.add("client_secret", provider.getClientSecret());
+//        params.add("client_secret", provider.getClientSecret());
         params.add("code", code);
+        params.add("code_verifier", codeVerifier);
         params.add("redirect_uri", provider.getRedirectUri());
         params.add("grant_type", "authorization_code");
 

@@ -21,8 +21,9 @@ public class OAuthController {
     public ResponseEntity<Map<String, String>> authenticate(@RequestBody Map<String, String> requestBody) {
         String provider = requestBody.get("provider"); // "google", "kakao" 등
         String code = requestBody.get("code");
+        String codeVerifier = requestBody.get("codeVerifier");
 
-        String token = oAuth2Service.authenticate(provider, code);
+        String token = oAuth2Service.authenticate(provider, code, codeVerifier);
 
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
