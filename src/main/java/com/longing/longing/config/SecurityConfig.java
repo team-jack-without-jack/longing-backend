@@ -46,30 +46,12 @@ public class SecurityConfig {
                 .antMatchers("/", "/ping", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
                 .anyRequest().authenticated());
 
-        // 구글 로그인 설정 (oauth2Login 추가)
-//        http.oauth2Login()
-//                .loginPage("/oauth-login") // 구글 로그인 후 리다이렉트할 페이지 설정
-//                .permitAll();
 
         // CSRF 비활성화 (개발 환경에서만 사용)
-        http.cors().and()  // ✅ CORS 설정 추가
-            .csrf().disable();
+        http.cors().configurationSource(corsConfigurationSource())
+                .and().csrf().disable();
 
         return http.build();
-
-
-//        http
-//                .csrf(csrf -> csrf.disable())  // JWT는 CSRF 필요 없음
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/public/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .oauth2Login()
-//                .and()
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
-//
-//        return http.build();
     }
 
     @Bean
