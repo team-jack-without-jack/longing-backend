@@ -6,6 +6,7 @@ import com.longing.longing.config.auth.JwtTokenProvider;
 import com.longing.longing.config.auth.dto.OAuthAttributes;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.user.infrastructure.UserJpaRepository;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OAuth2Service {
     private final UserRepository userRepository;
+    private final UserJpaRepository userJpaRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RestTemplate restTemplate;
     private final OAuthProperties oAuthProperties;
@@ -131,12 +133,24 @@ public class OAuth2Service {
         return OAuthAttributes.of(provider.getProviderName(), provider.getUserNameAttribute(), response.getBody());
     }
 
+//    private User saveOrUpdate(OAuthAttributes attributes) {
+//        UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
+//                .map(entity -> entity.update(attributes.getName(), attributes.getPicture())) // 기존 엔티티 수정
+//                .orElse(attributes.toEntity()); // 새로운 엔티티 생성
+//
+//        return userJpaRepository.save(userEntity).toModel(); // 그대로 저장
+//    }
+
     private User saveOrUpdate(OAuthAttributes attributes) {
         UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
-                .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
-                .orElse(attributes.toEntity());
+                .orElse(attributes.toEntity()); // 기존 유저가 없을 때만 새 엔티티 생성
 
-        return userRepository.save(userEntity.toModel());
+        // 기존 유저가 있으면 save() 하지 않고 그대로 반환
+        if (userEntity.getId() != null) {
+            return userEntity.toModel();
+        }
+
+        return userJpaRepository.save(userEntity).toModel(); // 새로운 유저만 저장 후 반환
     }
 
 //    public String authenticate(String provider, String code) {

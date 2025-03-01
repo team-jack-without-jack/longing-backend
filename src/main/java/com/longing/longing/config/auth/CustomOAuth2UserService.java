@@ -4,6 +4,7 @@ import com.longing.longing.config.auth.dto.OAuthAttributes;
 import com.longing.longing.config.auth.dto.SessionUser;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.user.infrastructure.UserJpaRepository;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.util.Collections;
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final UserRepository userRepository;
+    private final UserJpaRepository userJpaRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final HttpSession httpSession;
     private final HttpServletResponse response; // JWT를 쿠키로 설정하기 위해 추가
@@ -66,12 +68,24 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         );
     }
 
+//    private User saveOrUpdate(OAuthAttributes attributes) {
+//        UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
+//                .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
+//                .orElse(attributes.toEntity());
+//
+//        return userRepository.save(userEntity.toModel());
+//    }
+
     private User saveOrUpdate(OAuthAttributes attributes) {
         UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
-                .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
-                .orElse(attributes.toEntity());
+                .orElse(attributes.toEntity()); // 기존 유저가 없을 때만 새 엔티티 생성
 
-        return userRepository.save(userEntity.toModel());
+        // 기존 유저가 있으면 save() 하지 않고 그대로 반환
+        if (userEntity.getId() != null) {
+            return userEntity.toModel();
+        }
+
+        return userJpaRepository.save(userEntity).toModel(); // 새로운 유저만 저장 후 반환
     }
 
 }

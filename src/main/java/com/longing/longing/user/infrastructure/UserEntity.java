@@ -9,9 +9,11 @@ import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.Provider;
 import com.longing.longing.user.Role;
 import com.longing.longing.user.domain.User;
+import com.longing.longing.user.domain.UserUpdate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -50,6 +52,9 @@ public class UserEntity extends BaseTimeEntity {
     @Column
     private String nationality;
 
+    @Column
+    private String introduction;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PostEntity> postEntities = new ArrayList<>();
 
@@ -79,7 +84,8 @@ public class UserEntity extends BaseTimeEntity {
             Provider provider,
             String providerId,
             Role role,
-            String nationality
+            String nationality,
+            String introduction
     ) {
         this.id = id;
         this.name = name;
@@ -89,12 +95,19 @@ public class UserEntity extends BaseTimeEntity {
         this.providerId = providerId;
         this.role = role;
         this.nationality = nationality;
+        this.introduction = introduction;
     }
 
-    public UserEntity update(String name, String picture) {
+    public UserEntity update(
+            String name,
+            String nationality,
+            String introduction,
+            String picture
+    ) {
         this.name = name;
+        this.nationality = nationality;
+        this.introduction = introduction;
         this.picture = picture;
-
         return this;
     }
 
@@ -112,6 +125,7 @@ public class UserEntity extends BaseTimeEntity {
                 .providerId(user.getProviderId())
                 .role(user.getRole())
                 .nationality(user.getNationality())
+                .introduction(user.getIntroduction())
                 .build();
     }
 
@@ -125,6 +139,7 @@ public class UserEntity extends BaseTimeEntity {
                 .providerId(providerId)
                 .role(role)
                 .nationality(nationality)
+                .introduction(introduction)
                 .build();
     }
 }
