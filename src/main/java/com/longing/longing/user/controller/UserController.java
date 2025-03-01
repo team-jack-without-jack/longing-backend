@@ -1,7 +1,9 @@
 package com.longing.longing.user.controller;
 
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.domain.Post;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.controller.port.UserService;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.domain.UserUpdate;
@@ -9,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,22 +28,21 @@ public class UserController {
 
     @PatchMapping()
     public ApiResponse<User> updateUser(
-        Authentication authentication,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         UserUpdate userUpdate,
         MultipartFile profileImage
     ) {
-        String oauthId = authentication.getName();
-        log.info("oauthId>> " + oauthId);
-        User user = userService.updateUser(oauthId, userUpdate, profileImage);
+        User user = userService.updateUser(userDetails, userUpdate, profileImage);
         return ApiResponse.ok(user);
     }
 
     @GetMapping("/myProfile")
     public ApiResponse<User> getMyProfile(
-            Authentication authentication
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String oauthId = authentication.getName();
-        User user = userService.getUser(oauthId);
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userService.getUser(email, provider);
         return ApiResponse.ok(user);
     }
 }

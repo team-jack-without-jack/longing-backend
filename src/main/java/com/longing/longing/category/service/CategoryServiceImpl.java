@@ -5,7 +5,9 @@ import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.domain.CategoryCreate;
 import com.longing.longing.category.service.port.CategoryRepository;
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.domain.Post;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,11 @@ public class CategoryServiceImpl implements CategoryService {
     private final UserRepository userRepository;
 
     @Override
-    public Category createCategory(String oauthId, CategoryCreate categoryCreate) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));;
+    public Category createCategory(CustomUserDetails userDetails, CategoryCreate categoryCreate) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Category category = Category.from(categoryCreate);
         return categoryRepository.save(category);
     }

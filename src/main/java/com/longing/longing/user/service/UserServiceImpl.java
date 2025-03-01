@@ -2,6 +2,8 @@ package com.longing.longing.user.service;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageService;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.controller.port.UserService;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.domain.UserUpdate;
@@ -10,6 +12,7 @@ import com.longing.longing.user.infrastructure.UserJpaRepository;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,18 +32,28 @@ public class UserServiceImpl implements UserService {
         return s3ImageService.upload(image, directoryPath);
     }
 
-    @Override
-    public User getUser(String oauthId) {
-        return userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+//    @Override
+//    public User getUser(String oauthId) {
+//        return userRepository.findByProviderId(oauthId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+//
+//    }
 
+    @Override
+    public User getUser(String email, Provider provider) {
+        return userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
     }
 
     @Override
     @Transactional
-    public User updateUser(String oauthId, UserUpdate userUpdate, MultipartFile profileImage) {
-        UserEntity userEntity = userJpaRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+    public User updateUser(CustomUserDetails userDetails, UserUpdate userUpdate, MultipartFile profileImage) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        UserEntity userEntity = userJpaRepository.findByEmailAndProvider(
+                email,
+                provider
+                ).orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         log.info(userUpdate.getName());
         log.info(userUpdate.getNationality());

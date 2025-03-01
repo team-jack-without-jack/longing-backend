@@ -46,7 +46,7 @@ public class OAuth2Service {
         UserEntity userEntity = UserEntity.fromModel(saveOrUpdate(attributes));
 
         // ✅ JWT 발급
-        return jwtTokenProvider.generateToken(userEntity.getEmail());
+        return jwtTokenProvider.generateToken(userEntity.getEmail(), provider);
     }
 
     private OAuthProviderInfo getProviderInfo(String provider) {
@@ -142,7 +142,7 @@ public class OAuth2Service {
 //    }
 
     private User saveOrUpdate(OAuthAttributes attributes) {
-        UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
+        UserEntity userEntity = userJpaRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
                 .orElse(attributes.toEntity()); // 기존 유저가 없을 때만 새 엔티티 생성
 
         // 기존 유저가 있으면 save() 하지 않고 그대로 반환

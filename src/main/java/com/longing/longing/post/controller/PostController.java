@@ -1,6 +1,7 @@
 package com.longing.longing.post.controller;
 
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.controller.port.PostService;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,18 +28,16 @@ public class PostController {
     /**
      * 게시글 생성
      * @param postCreate
-     * @param authentication
+     * @param userDetails
      * @return
      */
     @PostMapping()
     public ApiResponse<Post> CreatePost(
             PostCreate postCreate,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            Authentication authentication
-    ) {
-        log.info("호출!!!!");
-        String oauthId= authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        Post createdPost = postService.createPost(oauthId, postCreate, images);
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ) {
+        Post createdPost = postService.createPost(userDetails, postCreate, images);
         return ApiResponse.created(createdPost);
     }
 
@@ -68,10 +68,9 @@ public class PostController {
             @PathVariable("id") long postId,
             PostUpdate postUpdate,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            Authentication authentication
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String oauthId = authentication.getName();
-        Post post = postService.updatePost(oauthId, postId, postUpdate, images);
+        Post post = postService.updatePost(userDetails, postId, postUpdate, images);
         return ApiResponse.ok(post);
     }
 
@@ -89,25 +88,22 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ApiResponse<Post> getPost(
-            @PathVariable("id") Long postId,
-            Authentication authentication
+            @PathVariable("id") Long postId
     ) {
-        String oauthId = authentication.getName();
-        Post post = postService.getPost(oauthId, postId);
+        Post post = postService.getPost(postId);
         return ApiResponse.ok(post);
     }
 
     @GetMapping("/my")
     public ApiResponse<Page<Post>> getMyPosts(
-            Authentication authentication,
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String oauthId = authentication.getName();
-        Page<Post> postList = postService.getMyPostList(oauthId, keyword, page, size, sortBy, sortDirection);
+        Page<Post> postList = postService.getMyPostList(userDetails, keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(postList);
     }
 

@@ -1,7 +1,7 @@
 package com.longing.longing.config;
 
-import com.longing.longing.common.filter.JwtAuthenticationFilter;
 import com.longing.longing.config.auth.CustomOAuth2UserService;
+import com.longing.longing.config.auth.JwtAuthenticationFilter;
 import com.longing.longing.config.auth.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+        private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
 
 
@@ -43,8 +43,9 @@ public class SecurityConfig {
 
         // 권한 설정
         http.authorizeHttpRequests((auth) -> auth
-                .antMatchers("/", "/ping", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
-                .anyRequest().authenticated());
+                        .antMatchers("/", "/ping", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
+                        .anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
 
         // CSRF 비활성화 (개발 환경에서만 사용)

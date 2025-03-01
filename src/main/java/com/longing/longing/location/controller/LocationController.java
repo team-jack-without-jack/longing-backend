@@ -1,6 +1,7 @@
 package com.longing.longing.location.controller;
 
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.location.controller.port.LocationService;
 import com.longing.longing.location.domain.Location;
 import com.longing.longing.location.domain.LocationCreate;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,17 +49,16 @@ public class LocationController {
      *
      * @param locationId
      * @param locationUpdate
-     * @param authentication
+     * @param userDetails
      * @return
      */
     @PatchMapping("/{id}")
     public ApiResponse<Location> updateLocation(
             @PathVariable("id") Long locationId,
             @RequestBody LocationUpdate locationUpdate,
-            Authentication authentication
-    ) {
-        String oauthId = authentication.getName();
-        Location location = locationService.updateLocation(oauthId, locationId, locationUpdate);
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ) {
+        Location location = locationService.updateLocation(userDetails, locationId, locationUpdate);
         return ApiResponse.ok(location);
     }
 
@@ -72,10 +73,9 @@ public class LocationController {
     @PostMapping()
     public ApiResponse<Location> createLocation(
             @RequestBody LocationCreate locationCreate,
-            Authentication authentication
+            @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
-        String oauthId = authentication.getName();
-        Location location = locationService.createLocation(oauthId, locationCreate);
+        Location location = locationService.createLocation(userDetails, locationCreate);
         return ApiResponse.created(location);
     }
 }

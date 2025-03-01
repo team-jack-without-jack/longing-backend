@@ -51,7 +51,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 //        httpSession.setAttribute("user", ses);
 
         // ✅ JWT 발급
-        String token = jwtTokenProvider.generateToken(userEntity.getEmail());
+        String token = jwtTokenProvider.generateToken(userEntity.getEmail(), userEntity.getProvider().toString());
 
         // ✅ JWT를 쿠키에 저장
         response.addHeader("Set-Cookie", "longing-token=" + token + "; Path=/; HttpOnly; Secure; SameSite=Strict");
@@ -77,7 +77,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 //    }
 
     private User saveOrUpdate(OAuthAttributes attributes) {
-        UserEntity userEntity = userRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
+        UserEntity userEntity = userJpaRepository.findByEmailAndProvider(attributes.getEmail(), attributes.getProvider())
                 .orElse(attributes.toEntity()); // 기존 유저가 없을 때만 새 엔티티 생성
 
         // 기존 유저가 있으면 save() 하지 않고 그대로 반환
