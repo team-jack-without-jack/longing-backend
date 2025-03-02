@@ -10,9 +10,13 @@ import com.longing.longing.user.Provider;
 import com.longing.longing.user.Role;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.domain.UserUpdate;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
@@ -23,6 +27,8 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted = true, deleted_date = NOW() WHERE id = ?")
+@Where(clause = "deleted = false")
 public class UserEntity extends BaseTimeEntity {
 
     @Id

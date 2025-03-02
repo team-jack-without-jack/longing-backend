@@ -1,20 +1,26 @@
 package com.longing.longing.common.infrastructure;
 
+import com.longing.longing.common.BaseTimeEntity;
 import com.longing.longing.common.domain.PostImage;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
 @Getter
-@NoArgsConstructor
 @Entity
 @Table(name = "post_images")
-public class PostImageEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE post_images SET deleted = true, deleted_date = NOW() WHERE id = ?")
+@Where(clause = "deleted = false")
+public class PostImageEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
