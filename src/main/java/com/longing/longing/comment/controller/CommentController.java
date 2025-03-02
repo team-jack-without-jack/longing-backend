@@ -6,12 +6,14 @@ import com.longing.longing.comment.domain.CommentCreate;
 import com.longing.longing.comment.domain.CommentResponse;
 import com.longing.longing.comment.domain.CommentUpdate;
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.infrastructure.PostEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,32 +40,29 @@ public class CommentController {
 
     @PostMapping("/comment")
     public ApiResponse<Comment> createComment(
-            Authentication authentication,
-            @RequestBody CommentCreate commentCreate
+            @RequestBody CommentCreate commentCreate,
+            @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
-        String oauthId= authentication.getName();
-        Comment comment = commentService.createComment(oauthId, commentCreate);
+        Comment comment = commentService.createComment(userDetails, commentCreate);
         return ApiResponse.created(comment);
     }
 
     @PatchMapping("/comment/{id}")
     public ApiResponse<Comment> updateComment(
-            Authentication authentication,
             @PathVariable("id") Long commentId,
-            @RequestBody CommentUpdate commentUpdate
+            @RequestBody CommentUpdate commentUpdate,
+            @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
-        String oauthId = authentication.getName();
-        Comment comment = commentService.updateComment(oauthId, commentId, commentUpdate);
+        Comment comment = commentService.updateComment(userDetails, commentId, commentUpdate);
         return ApiResponse.ok(comment);
     }
 
     @DeleteMapping("/comment/{id}")
     public ApiResponse<Void> deleteComment(
             @PathVariable("id") Long commentId,
-            Authentication authentication
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String oauthId = authentication.getName();
-        commentService.deleteComment(oauthId, commentId);
+        commentService.deleteComment(userDetails, commentId);
         return ApiResponse.ok(null);
     }
 }

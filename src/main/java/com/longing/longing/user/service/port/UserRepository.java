@@ -17,7 +17,7 @@ public interface UserRepository {
 
     Optional<User> findByProviderId(String providerId);
 
-    Optional<UserEntity> findByEmailAndProvider(String email, Provider provider);
+    Optional<User> findByEmailAndProvider(String email, Provider provider);
 
     User getById(long id);
 

@@ -7,9 +7,13 @@ import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.user.infrastructure.UserEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +25,8 @@ import java.util.stream.Collectors;
 @Getter
 @Entity
 @Table(name = "posts")
+@SQLDelete(sql = "UPDATE posts SET deleted = true, deleted_date = NOW() WHERE id = ?")
+@Where(clause = "deleted = false")
 public class PostEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

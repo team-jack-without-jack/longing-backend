@@ -37,11 +37,27 @@ public class S3ImageService {
     @Value("${cloud.aws.s3.bucketName}")
     private String bucketName;
 
+    // overload
     public String upload(MultipartFile image) {
         if(image.isEmpty() || Objects.isNull(image.getOriginalFilename())){
             throw new S3Exception(ErrorCode.EMPTY_FILE_EXCEPTION);
         }
         return this.uploadImage(image);
+    }
+
+    // overload
+    public String upload(MultipartFile file, String directoryPath) {
+        String fileName = directoryPath + file.getOriginalFilename(); // 디렉토리 포함 경로 설정
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+
+        try (InputStream inputStream = file.getInputStream()) {
+            amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 실패", e);
+        }
+
+        return amazonS3.getUrl(bucketName, fileName).toString(); // 업로드된 파일 URL 반환
     }
 
     private String uploadImage(MultipartFile image) {

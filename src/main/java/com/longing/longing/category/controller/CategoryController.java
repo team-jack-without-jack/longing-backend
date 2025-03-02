@@ -4,10 +4,13 @@ import com.longing.longing.category.controller.port.CategoryService;
 import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.domain.CategoryCreate;
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
+import com.longing.longing.user.Provider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -27,10 +30,9 @@ public class CategoryController {
     @PostMapping()
     public ApiResponse<Category> createCategory(
             @RequestBody CategoryCreate categoryCreate,
-            Authentication authentication
-    ) {
-        String oauthId = authentication.getName();
-        Category category = categoryService.createCategory(oauthId, categoryCreate);
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ) {
+        Category category = categoryService.createCategory(userDetails, categoryCreate);
         return ApiResponse.created(category);
     }
 
@@ -40,20 +42,16 @@ public class CategoryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection,
-            Authentication authentication
+            @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
-        String oauthId = authentication.getName();
         Page<Category> categoryList = categoryService.getCategoryList(keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(categoryList);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> removeCategory(
-            @PathVariable("id") Long categoryId,
-            Authentication authentication
+            @PathVariable("id") Long categoryId
     ) {
-        String oauthId = authentication.getName();
         categoryService.deleteCategory(categoryId);
         return ApiResponse.ok(null);
     }
