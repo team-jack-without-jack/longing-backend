@@ -82,7 +82,8 @@ jobs:
       # S3에서 파일 다운로드
       - name: Download JAR file from S3
         run: |
-          aws s3 cp s3://your-bucket-name/longing-0.0.1-SNAPSHOT.jar ./longing-0.0.1-SNAPSHOT.jar
+          aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar ./longing-0.0.1-SNAPSHOT.jar
+
 
       # EC2에서 application.yml 생성
       - name: Create application.yml on EC2
