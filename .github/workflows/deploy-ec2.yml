@@ -13,7 +13,7 @@ jobs:
   deploy:
     if: github.event.pull_request.merged == true &&
       contains(github.event.pull_request.labels.*.name, 'deployment')
-    runs-on: ubuntu-latest
+    runs-on: amazonlinux
 
     steps:
       # 소스 코드를 체크아웃
@@ -34,7 +34,8 @@ jobs:
 
       # Spring Boot 애플리케이션 빌드
       - name: Build project in longing-backend folder
-        run: ./gradlew bootJar
+#        run: ./gradlew bootJar
+        run: ./gradlew build -x test
         working-directory: ./  # 최상위 디렉토리에서 작업
 
       # EC2에 빌드 파일 전송
