@@ -62,15 +62,27 @@ jobs:
           AWS_REGION: ap-northeast-2 # 해당 지역에 맞게 수정
 
       # EC2에서 S3로부터 파일 다운로드
-      - name: Download build file from S3 to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST_BACK }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY_BACK }}
-          script: |
-            aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar /home/ec2-user/action/longing-0.0.1-SNAPSHOT.jar
+#      - name: Download build file from S3 to EC2
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.EC2_HOST_BACK }}
+#          username: ec2-user
+#          key: ${{ secrets.EC2_SSH_KEY_BACK }}
+#          script: |
+#            aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar /home/ec2-user/action/longing-0.0.1-SNAPSHOT.jar
 
+            # AWS 자격증명 설정
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # S3에서 파일 다운로드
+      - name: Download JAR file from S3
+        run: |
+          aws s3 cp s3://your-bucket-name/longing-0.0.1-SNAPSHOT.jar ./longing-0.0.1-SNAPSHOT.jar
 
       # EC2에서 application.yml 생성
       - name: Create application.yml on EC2
