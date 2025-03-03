@@ -18,6 +18,7 @@ public class HealthController {
 
     @GetMapping("/test")
     public ApiResponse<Boolean> test() {
+
         return ApiResponse.ok(true);
     }
 
