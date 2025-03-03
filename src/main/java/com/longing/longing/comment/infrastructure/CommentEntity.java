@@ -2,11 +2,15 @@ package com.longing.longing.comment.infrastructure;
 
 import com.longing.longing.comment.domain.Comment;
 import com.longing.longing.comment.domain.CommentUpdate;
+import com.longing.longing.common.BaseTimeEntity;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,9 +18,11 @@ import java.util.List;
 
 @Getter
 @Entity
-@NoArgsConstructor
 @Table(name = "comments")
-public class CommentEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE comments SET deleted = true, deleted_date = NOW() WHERE id = ?")
+@Where(clause = "deleted = false")
+public class CommentEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

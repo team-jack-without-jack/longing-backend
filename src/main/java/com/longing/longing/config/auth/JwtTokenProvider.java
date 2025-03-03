@@ -1,5 +1,6 @@
 package com.longing.longing.config.auth;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -23,17 +24,18 @@ public class JwtTokenProvider {
     }
 
     // JWT 생성
-    public String generateToken(String email) {
+    public String generateToken(String email, String provider) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION);
 
         return Jwts.builder()
                 .claims()
-                .subject(email)    // setSubject() 대신 subject()
-                .issuedAt(now)     // setIssuedAt() 대신 issuedAt()
-                .expiration(expiryDate)  // setExpiration() 대신 expiration()
+                .subject(email)    // 이메일을 subject로 설정
+                .add("provider", provider) // OAuth 제공자 추가 (google, facebook, kakao 등)
+                .issuedAt(now)
+                .expiration(expiryDate)
                 .and()
-                .signWith(key)  // signWith() 방식 변경
+                .signWith(key)
                 .compact();
     }
 
@@ -58,5 +60,13 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith((SecretKey) key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

@@ -5,19 +5,18 @@ import com.longing.longing.like.domain.LikePostCreate;
 import com.longing.longing.like.domain.PostLike;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "post_likes")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostLikeEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

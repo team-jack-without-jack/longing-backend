@@ -2,23 +2,29 @@ package com.longing.longing.location.infrastructure;
 
 import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
+import com.longing.longing.common.BaseTimeEntity;
 import com.longing.longing.location.domain.Location;
 import com.longing.longing.location.domain.LocationUpdate;
 import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.function.Consumer;
 
 @Getter
-@NoArgsConstructor
 @Entity
 @Table(name = "locations")
-public class LocationEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE locations SET deleted = true, deleted_date = NOW() WHERE id = ?")
+@Where(clause = "deleted = false")
+public class LocationEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

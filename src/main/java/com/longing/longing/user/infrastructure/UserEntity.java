@@ -9,9 +9,15 @@ import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.Provider;
 import com.longing.longing.user.Role;
 import com.longing.longing.user.domain.User;
+import com.longing.longing.user.domain.UserUpdate;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +27,8 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted = true, deleted_date = NOW() WHERE id = ?")
+@Where(clause = "deleted = false")
 public class UserEntity extends BaseTimeEntity {
 
     @Id
@@ -46,6 +54,12 @@ public class UserEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Column
+    private String nationality;
+
+    @Column
+    private String introduction;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PostEntity> postEntities = new ArrayList<>();
@@ -75,7 +89,9 @@ public class UserEntity extends BaseTimeEntity {
             String picture,
             Provider provider,
             String providerId,
-            Role role
+            Role role,
+            String nationality,
+            String introduction
     ) {
         this.id = id;
         this.name = name;
@@ -84,12 +100,20 @@ public class UserEntity extends BaseTimeEntity {
         this.provider = provider;
         this.providerId = providerId;
         this.role = role;
+        this.nationality = nationality;
+        this.introduction = introduction;
     }
 
-    public UserEntity update(String name, String picture) {
+    public UserEntity update(
+            String name,
+            String nationality,
+            String introduction,
+            String picture
+    ) {
         this.name = name;
+        this.nationality = nationality;
+        this.introduction = introduction;
         this.picture = picture;
-
         return this;
     }
 
@@ -106,6 +130,8 @@ public class UserEntity extends BaseTimeEntity {
                 .provider(user.getProvider())
                 .providerId(user.getProviderId())
                 .role(user.getRole())
+                .nationality(user.getNationality())
+                .introduction(user.getIntroduction())
                 .build();
     }
 
@@ -118,6 +144,8 @@ public class UserEntity extends BaseTimeEntity {
                 .provider(provider)
                 .providerId(providerId)
                 .role(role)
+                .nationality(nationality)
+                .introduction(introduction)
                 .build();
     }
 }

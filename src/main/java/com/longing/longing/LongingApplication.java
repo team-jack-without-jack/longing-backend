@@ -1,8 +1,12 @@
 package com.longing.longing;
 
+import com.longing.longing.auth.domain.OAuthProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.web.client.RestTemplate;
 
 @EnableJpaAuditing // JPA Auditing 활성화
 @SpringBootApplication(
@@ -12,10 +16,16 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 				org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration.class
 		}
 )
+//@EnableConfigurationProperties(OAuthProperties.class)  // OAuthProperties 활성화
 public class LongingApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(LongingApplication.class, args);
+	}
+
+	@Bean
+	public RestTemplate restTemplate(){
+		return new RestTemplate();
 	}
 
 }

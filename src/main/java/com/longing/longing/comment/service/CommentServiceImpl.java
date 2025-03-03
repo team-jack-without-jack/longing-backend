@@ -8,10 +8,12 @@ import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.comment.infrastructure.CommentJpaRepository;
 import com.longing.longing.comment.service.port.CommentRepository;
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.post.infrastructure.PostJpaRepository;
 import com.longing.longing.post.service.port.PostRepository;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +39,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment createComment(String oauthId, CommentCreate commentCreate) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
-//        Post post = postRepository.findById(commentCreate.getPostId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
+    public Comment createComment(CustomUserDetails userDetails, CommentCreate commentCreate) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         PostEntity postEntity = postJpaRepository.findById(commentCreate.getPostId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
@@ -55,9 +57,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteComment(String oauthId, long commentId) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+    public void deleteComment(CustomUserDetails userDetails, long commentId) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         CommentEntity commentEntity = commentJpaRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comments", commentId));
 
@@ -67,8 +71,6 @@ public class CommentServiceImpl implements CommentService {
 
         PostEntity postEntity = commentEntity.getPost();
         postEntity.removeComment(commentEntity);
-//        CommentEntity commentEntity = CommentEntity.fromModel(comment);
-//        PostEntity.fromModel(post).removeComment(commentEntity);
         commentRepository.deleteById(commentId);
     }
 
@@ -83,9 +85,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment updateComment(String oauthId, long commentId, CommentUpdate commentUpdate) {
-        User writer = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
+    public Comment updateComment(CustomUserDetails userDetails, long commentId, CommentUpdate commentUpdate) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User writer = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("User", email));
         CommentEntity commentEntity = commentJpaRepository.findByIdAndUserId(commentId, writer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
 

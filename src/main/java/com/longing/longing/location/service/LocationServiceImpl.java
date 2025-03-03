@@ -4,6 +4,7 @@ import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
 import com.longing.longing.category.infrastructure.CategoryJpaRepository;
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.location.controller.port.LocationService;
 import com.longing.longing.location.domain.Location;
 import com.longing.longing.location.domain.LocationCreate;
@@ -13,6 +14,7 @@ import com.longing.longing.location.infrastructure.LocationJpaRepository;
 import com.longing.longing.location.service.port.LocationRepository;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.infrastructure.PostEntity;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +39,11 @@ public class LocationServiceImpl implements LocationService {
     private final CategoryJpaRepository categoryJpaRepository;
 
     @Override
-    public Location createLocation(String oauthId, LocationCreate locationCreate) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+    public Location createLocation(CustomUserDetails userDetails, LocationCreate locationCreate) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         Category category = categoryJpaRepository.findById(locationCreate.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categories", locationCreate.getCategoryId())).toModel();
@@ -68,14 +72,16 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public Location updateLocation(String oauthId, Long locationId, LocationUpdate locationUpdate) {
+    public Location updateLocation(CustomUserDetails userDetails, Long locationId, LocationUpdate locationUpdate) {
         // location data 있는지 확인
         LocationEntity locationEntity = locationJpaRepository.findById(locationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Locations", locationId));
 
         // user data 있는지 확인
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         if (!locationEntity.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("you can not modify this location");
         }

@@ -2,14 +2,17 @@ package com.longing.longing.like.controller;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.like.controller.port.LikeService;
 import com.longing.longing.like.domain.LikePostCreate;
 import com.longing.longing.like.domain.LikePostDelete;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -24,11 +27,12 @@ public class LikeController {
     @PostMapping("/post/{id}/like")
     public ApiResponse<?> likePost(
             @PathVariable("id") long postId,
-            Authentication authentication
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String providerId = authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        User user = userRepository.findByProviderId(providerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", providerId));
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Long userId = user.getId();
         LikePostCreate likePostCreate = new LikePostCreate(postId, userId);
         likeService.likePost(likePostCreate);
@@ -38,11 +42,12 @@ public class LikeController {
     @DeleteMapping("/post/{id}/unlike")
     public ApiResponse<?> unlikePost(
             @PathVariable("id") Long postId,
-            Authentication authentication
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        String providerId = authentication.getName(); // 현재 인증된 사용자의 ID를 가져옴
-        User user = userRepository.findByProviderId(providerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", providerId));
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Long userId = user.getId();
         LikePostDelete likePostDelete = new LikePostDelete(postId, userId);
         likeService.unlikePost(likePostDelete);

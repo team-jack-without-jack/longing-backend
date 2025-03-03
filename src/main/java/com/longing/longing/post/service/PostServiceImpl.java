@@ -6,6 +6,7 @@ import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.common.infrastructure.PostImageJpaRepository;
 import com.longing.longing.common.service.S3ImageService;
 import com.longing.longing.common.service.port.PostImageRepository;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.controller.port.PostService;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
@@ -13,6 +14,7 @@ import com.longing.longing.post.domain.PostUpdate;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.post.infrastructure.PostJpaRepository;
 import com.longing.longing.post.service.port.PostRepository;
+import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
 import com.longing.longing.user.service.port.UserRepository;
@@ -58,9 +60,11 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public Post createPost(String oauthId, PostCreate postCreate, List<MultipartFile> images) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+    public Post createPost(CustomUserDetails userDetails, PostCreate postCreate, List<MultipartFile> images) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         // PostEntity 저장 (영속 상태로 만듦)
         Post post = Post.from(user, postCreate);
@@ -108,9 +112,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<Post> getMyPostList(String oauthId, String keyword, int page, int size, String sortBy, String sortDirection) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+    public Page<Post> getMyPostList(CustomUserDetails userDetails, String keyword, int page, int size, String sortBy, String sortDirection) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -134,45 +140,29 @@ public class PostServiceImpl implements PostService {
 //    }
 
     @Override
-    public Post getPost(String oauthId, Long postId) {
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
-
+    public Post getPost(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
     @Override
     @Transactional
-    public Post updatePost(String oauthId, Long postId, PostUpdate postUpdate, List<MultipartFile> images) {
-//        PostEntity postEntity = postJpaRepository.findById(postId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
-//        User user = userRepository.findByProviderId(oauthId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
-//        if (!postEntity.getUser().getId().equals(user.getId())) {
-//            throw new AccessDeniedException("you can not modify this location");
-//        }
-//        Post post = postEntity.toModel();
-//        Post updatedPost = post.update(postUpdate);
-//        postEntity.update(postUpdate);
-//        return updatedPost;
-
+    public Post updatePost(CustomUserDetails userDetails, Long postId, PostUpdate postUpdate, List<MultipartFile> images) {
         // 1. 기존 포스트 엔티티 조회
         PostEntity postEntity = postJpaRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
 
         // 2. 유저 조회 및 권한 체크
-        User user = userRepository.findByProviderId(oauthId)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         if (!postEntity.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("You cannot modify this post.");
         }
 
         // 3. 포스트 정보 업데이트
-//        Post post = postEntity.toModel();
-//        Post updatedPost = post.update(postUpdate);  // update() 메서드는 제목, 내용 등의 정보를 업데이트
-//        PostEntity updatedPost = postEntity.update(postUpdate);
         UserEntity userEntity = UserEntity.fromModel(user);
 
         // 4. 기존 이미지 삭제 (리스트를 비워서 JPA가 삭제하도록 유도)
