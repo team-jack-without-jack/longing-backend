@@ -13,7 +13,7 @@ jobs:
   deploy:
     if: github.event.pull_request.merged == true &&
       contains(github.event.pull_request.labels.*.name, 'deployment')
-    runs-on: amazonlinux
+    runs-on: ubuntu-latest
 
     steps:
       # 소스 코드를 체크아웃
