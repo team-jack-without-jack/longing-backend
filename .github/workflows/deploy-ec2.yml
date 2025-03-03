@@ -12,8 +12,7 @@ on:
 jobs:
   deploy:
     if: github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'backend') &&
-      contains(github.event.pull_request.labels.*.name, 'operation')
+      contains(github.event.pull_request.labels.*.name, 'deployment')
     runs-on: ubuntu-latest
 
     steps:
@@ -44,7 +43,7 @@ jobs:
           host: ${{ secrets.EC2_HOST_BACK }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY_BACK }}
-          source: "./longing-backend/build/libs/backend-0.0.1-SNAPSHOT.jar"
+          source: "./longing-backend/build/libs/longing-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu/action/"
 
       # EC2에서 application.yml 생성
@@ -70,4 +69,4 @@ jobs:
               kill -9 $(lsof -i:8080 -t)
             fi
             # application.yml을 적용하여 새로운 애플리케이션 실행
-            nohup java -jar -Dspring.config.location=/home/ubuntu/config/application.yml /home/ubuntu/action/backend-0.0.1-SNAPSHOT.jar > /home/ubuntu/action/cgb.log 2>&1 &
+            nohup java -jar -Dspring.config.location=/home/ubuntu/config/application.yml /home/ubuntu/action/longing-0.0.1-SNAPSHOT.jar > /home/ubuntu/action/cgb.log 2>&1 &
