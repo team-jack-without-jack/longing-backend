@@ -13,13 +13,11 @@ public class HealthController {
 
     @GetMapping("/ping")
     public ApiResponse<Boolean> ping() {
-
         return ApiResponse.ok(true);
     }
 
     @GetMapping("/test")
     public ApiResponse<Boolean> test() {
-
         return ApiResponse.ok(true);
     }
 
