@@ -58,7 +58,10 @@ public class UserServiceImpl implements UserService {
         log.info(userUpdate.getName());
         log.info(userUpdate.getNationality());
         log.info(userUpdate.getIntroduction());
-        String imageUrl = uploadImage(profileImage, userEntity);
+        String imageUrl = null;
+        if (!profileImage.isEmpty()) {
+            imageUrl = uploadImage(profileImage, userEntity);
+        }
         log.info(imageUrl);
         return userEntity.update(
                 userUpdate.getName(),
