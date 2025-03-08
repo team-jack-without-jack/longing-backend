@@ -110,10 +110,18 @@ public class UserEntity extends BaseTimeEntity {
             String introduction,
             String picture
     ) {
-        this.name = name;
-        this.nationality = nationality;
-        this.introduction = introduction;
-        this.picture = picture;
+        if (name != null) {
+            this.name = name;
+        }
+        if (nationality != null) {
+            this.nationality = nationality;
+        }
+        if (introduction != null) {
+            this.introduction = introduction;
+        }
+        if (picture != null) {
+            this.picture = picture;
+        }
         return this;
     }
 

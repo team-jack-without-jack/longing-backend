@@ -4,6 +4,9 @@ name: Deploy to AWS EC2
 # 1) backend/main -> main MERGE
 # 2) Labeling
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [closed]
     branches:
@@ -27,85 +30,114 @@ jobs:
           java-version: '11'
           distribution: 'zulu'
 
-      # 권한 부여
-      - name: Grant permission
+      - name: Grant permission for gradlew
         run: chmod +x ./gradlew
-        working-directory: ./  # 최상위 디렉토리에서 작업
 
-      # Spring Boot 애플리케이션 빌드
-      - name: Build project in longing-backend folder
-#        run: ./gradlew bootJar
+      - name: Build the project
         run: ./gradlew build -x test
-        working-directory: ./  # 최상위 디렉토리에서 작업
 
-      - name: List build artifacts
-        run: ls -l ./build/libs/
-        working-directory: ./
-
-      # EC2에 빌드 파일 전송
-#      - name: Copy build files to EC2
-#        uses: appleboy/scp-action@master
-#        with:
-#          host: ${{ secrets.EC2_HOST_BACK }}
-#          username: ec2-user
-#          key: ${{ secrets.EC2_SSH_KEY_BACK }}
-#          source: "./build/libs/longing-0.0.1-SNAPSHOT.jar"
-#          target: "/home/ec2-user/action/"
-
-      # S3에 빌드 파일 업로드
       - name: Upload build file to S3
         run: |
-          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://longing-dev/longing-0.0.1-SNAPSHOT.jar
+          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://deploy-build-file/longing-0.0.1-SNAPSHOT.jar
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ap-northeast-2 # 해당 지역에 맞게 수정
+          AWS_REGION: ap-northeast-2
 
-      # EC2에서 S3로부터 파일 다운로드
-#      - name: Download build file from S3 to EC2
+      - name: Deploy to AWS CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name longing-api \
+            --deployment-group-name deploy-deploy-group \
+            --s3-location bucket=deploy-build-file,bundleType=zip,key=longing-0.0.1-SNAPSHOT.jar
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+
+
+
+#      # EC2에서 application.yml 생성
+#      - name: Create application.yml on EC2
 #        uses: appleboy/ssh-action@master
 #        with:
 #          host: ${{ secrets.EC2_HOST_BACK }}
 #          username: ec2-user
 #          key: ${{ secrets.EC2_SSH_KEY_BACK }}
 #          script: |
-#            aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar /home/ec2-user/action/longing-0.0.1-SNAPSHOT.jar
-
-            # AWS 자격증명 설정
-      - name: Set up AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
-
-      # S3에서 파일 다운로드
-      - name: Download JAR file from S3
-        run: |
-          aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar ./longing-0.0.1-SNAPSHOT.jar
-
-
-      # EC2에서 application.yml 생성
-      - name: Create application.yml on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST_BACK }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY_BACK }}
-          script: |
-            echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > /home/ec2-user/config/application.yml
-
-      # EC2에서 애플리케이션 실행
-      - name: Run application on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST_BACK }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY_BACK }}
-          script: |
-            # 8080 포트에서 실행 중인 기존 프로세스 종료
-            if lsof -i:8080 -t >/dev/null; then
-              kill -9 $(lsof -i:8080 -t)
-            fi
-            # application.yml을 적용하여 새로운 애플리케이션 실행
-            nohup java -jar -Dspring.config.location=/home/ec2-user/config/application.yml /home/ec2-user/action/longing-0.0.1-SNAPSHOT.jar > /home/ec2-user/action/cgb.log 2>&1 &
+#            echo "${{ secrets.APPLICATION_YML }}" | base64 --decode > /home/ec2-user/config/application.yml
+#
+#
+#      # 권한 부여
+#      - name: Grant permission
+#        run: chmod +x ./gradlew
+#        working-directory: ./  # 최상위 디렉토리에서 작업
+#
+#      # Spring Boot 애플리케이션 빌드
+#      - name: Build project in longing-backend folder
+##        run: ./gradlew bootJar
+#        run: ./gradlew build -x test
+#        working-directory: ./  # 최상위 디렉토리에서 작업
+#
+#      - name: List build artifacts
+#        run: ls -l ./build/libs/
+#        working-directory: ./
+#
+#      # EC2에 빌드 파일 전송
+##      - name: Copy build files to EC2
+##        uses: appleboy/scp-action@master
+##        with:
+##          host: ${{ secrets.EC2_HOST_BACK }}
+##          username: ec2-user
+##          key: ${{ secrets.EC2_SSH_KEY_BACK }}
+##          source: "./build/libs/longing-0.0.1-SNAPSHOT.jar"
+##          target: "/home/ec2-user/action/"
+#
+#      # S3에 빌드 파일 업로드
+#      - name: Upload build file to S3
+#        run: |
+#          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://longing-dev/longing-0.0.1-SNAPSHOT.jar
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: ap-northeast-2 # 해당 지역에 맞게 수정
+#
+#      # EC2에서 S3로부터 파일 다운로드
+##      - name: Download build file from S3 to EC2
+##        uses: appleboy/ssh-action@master
+##        with:
+##          host: ${{ secrets.EC2_HOST_BACK }}
+##          username: ec2-user
+##          key: ${{ secrets.EC2_SSH_KEY_BACK }}
+##          script: |
+##            aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar /home/ec2-user/action/longing-0.0.1-SNAPSHOT.jar
+#
+#            # AWS 자격증명 설정
+#      - name: Set up AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ap-northeast-2
+#
+#      # S3에서 파일 다운로드
+#      - name: Download JAR file from S3
+#        run: |
+#          aws s3 cp s3://longing-dev/longing-0.0.1-SNAPSHOT.jar ./longing-0.0.1-SNAPSHOT.jar
+#
+#
+#
+#      # EC2에서 애플리케이션 실행
+#      - name: Run application on EC2
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.EC2_HOST_BACK }}
+#          username: ec2-user
+#          key: ${{ secrets.EC2_SSH_KEY_BACK }}
+#          script: |
+#            # 8080 포트에서 실행 중인 기존 프로세스 종료
+#            if lsof -i:8080 -t >/dev/null; then
+#              kill -9 $(lsof -i:8080 -t)
+#            fi
+#            # application.yml을 적용하여 새로운 애플리케이션 실행
+#            nohup java -jar -Dspring.config.location=/home/ec2-user/config/application.yml /home/ec2-user/action/longing-0.0.1-SNAPSHOT.jar > /home/ec2-user/action/cgb.log 2>&1 &

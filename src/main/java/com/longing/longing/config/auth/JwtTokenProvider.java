@@ -17,7 +17,7 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final Key key;
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 30; // 30분
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 24시간
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
