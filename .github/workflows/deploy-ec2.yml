@@ -14,8 +14,8 @@ on:
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'deployment')
+#    if: github.event.pull_request.merged == true &&
+#      contains(github.event.pull_request.labels.*.name, 'deployment')
     runs-on: ubuntu-latest
 
     steps:
