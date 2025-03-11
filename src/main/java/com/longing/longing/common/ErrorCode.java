@@ -10,7 +10,9 @@ public enum ErrorCode {
     // Test Error
     TEST_ERROR(10000, HttpStatus.BAD_REQUEST, "테스트 에러입니다."),
     // 404 Not Found
-    NOT_FOUND_END_POINT(40400, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
+    NOT_FOUND_END_POINT(400, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
+    RESOURCE_NOT_FOUND(404, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND"),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
 
