@@ -26,6 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+
+        // ✅ 인증이 필요 없는 경로 설정
+        if (requestURI.startsWith("/ping") || requestURI.startsWith("/test")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String token = extractToken(request);
 
