@@ -9,6 +9,7 @@ import com.longing.longing.post.domain.PostUpdate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,7 +32,7 @@ public class PostController {
      * @param userDetails
      * @return
      */
-    @PostMapping()
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Post> CreatePost(
             PostCreate postCreate,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
