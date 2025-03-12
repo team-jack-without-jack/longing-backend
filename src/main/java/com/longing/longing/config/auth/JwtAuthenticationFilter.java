@@ -30,7 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
 
         // ✅ 인증이 필요 없는 경로 설정
-        if (requestURI.startsWith("/ping") || requestURI.startsWith("/test")) {
+        if (requestURI.startsWith("/ping") ||
+                requestURI.startsWith("/test") ||
+                requestURI.startsWith("/favicon.ico")) {
             filterChain.doFilter(request, response);
             return;
         }
