@@ -73,9 +73,11 @@ public class PostServiceImpl implements PostService {
         postEntity = postJpaRepository.save(postEntity); // 🔥 여기서 먼저 저장
 
         // 이미지 업로드 및 저장
-        for (MultipartFile image : images) {
-            log.info("Uploading image: " + image.getOriginalFilename());
-            uploadAndSaveImage(image, postEntity, userEntity);
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile image : images) {
+                log.info("Uploading image: " + image.getOriginalFilename());
+                uploadAndSaveImage(image, postEntity, userEntity);
+            }
         }
 
         return post;

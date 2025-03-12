@@ -1,5 +1,6 @@
 package com.longing.longing.common;
 
+import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -31,5 +32,11 @@ public class GlobalExceptionHandler {
         log.error("handleException() in GlobalExceptionHandler throw Exception : {}", e.getMessage());
         e.printStackTrace();
         return ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
+    @ExceptionHandler(value = {ResourceNotFoundException.class})
+    public ApiResponse<?> handleResourceNotFoundException(ResourceNotFoundException e) {
+        log.error("handleResourceNotFoundException() in GlobalExceptionHandler: {}", e.getMessage());
+        return ApiResponse.fail(new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
     }
 }
