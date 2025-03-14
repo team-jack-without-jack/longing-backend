@@ -27,8 +27,8 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted = true, deleted_date = NOW() WHERE id = ?")
-@Where(clause = "deleted = false")
+//@SQLDelete(sql = "UPDATE users SET deleted = true, deleted_date = NOW() WHERE id = ?")
+//@Where(clause = "deleted = false")
 public class UserEntity extends BaseTimeEntity {
 
     @Id

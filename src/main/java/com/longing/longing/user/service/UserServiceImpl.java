@@ -12,7 +12,6 @@ import com.longing.longing.user.infrastructure.UserJpaRepository;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,5 +68,13 @@ public class UserServiceImpl implements UserService {
                 userUpdate.getIntroduction(),
                 imageUrl
         ).toModel();
+    }
+
+    @Override
+    public void deavtivateUser(String email, Provider provider) {
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+
+        userRepository.deleteById(user.getId());
     }
 }

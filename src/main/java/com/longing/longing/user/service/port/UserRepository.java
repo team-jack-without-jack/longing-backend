@@ -19,7 +19,9 @@ public interface UserRepository {
 
     Optional<User> findByEmailAndProvider(String email, Provider provider);
 
-    User getById(long id);
+//    User getById(long id);
+
+    void deleteById(long id);
 
 }
 

@@ -42,4 +42,14 @@ public class UserController {
         User user = userService.getUser(email, provider);
         return ApiResponse.ok(user);
     }
+
+    @PostMapping("/deactivate")
+    public ApiResponse<Boolean> deavtivateMe(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        userService.deavtivateUser(email, provider);
+        return ApiResponse.ok(true);
+    }
 }
