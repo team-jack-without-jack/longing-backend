@@ -19,6 +19,7 @@ public class GlobalExceptionHandler {
     }
 
 
+
     // 커스텀 예외
     @ExceptionHandler(value = {CustomException.class})
     public ApiResponse<?> handleCustomException(CustomException e) {
