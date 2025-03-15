@@ -43,6 +43,7 @@ public class UserController {
         return ApiResponse.ok(user);
     }
 
+
     @PostMapping("/deactivate")
     public ApiResponse<Boolean> deavtivateMe(
             @AuthenticationPrincipal CustomUserDetails userDetails
