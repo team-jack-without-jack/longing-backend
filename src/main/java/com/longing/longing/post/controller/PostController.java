@@ -108,6 +108,7 @@ public class PostController {
         return ApiResponse.ok(postList);
     }
 
+
     // 응답 데이터를 담을 내부 정적 클래스
     static class DeleteResponse {
         private final boolean result;

@@ -56,8 +56,6 @@ public class LikeServiceImpl implements LikeService {
         // 좋아요 생성 및 저장
         postLikeEntity.likePost(); // PostEntity와의 관계 설정
         postLikeRepository.save(postLikeEntity);
-
-//        postLikeRepository.save(likePostCreate, postEntity.toModel(), user);
     }
 
     @Override

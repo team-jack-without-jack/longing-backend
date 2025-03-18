@@ -33,6 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (requestURI.startsWith("/ping") ||
                 requestURI.startsWith("/ping2") ||
                 requestURI.startsWith("/test") ||
+                requestURI.startsWith("/oauth-login") ||
+                requestURI.startsWith("/oauth/authenticate") ||
                 requestURI.startsWith("/favicon.ico")) {
             filterChain.doFilter(request, response);
             return;

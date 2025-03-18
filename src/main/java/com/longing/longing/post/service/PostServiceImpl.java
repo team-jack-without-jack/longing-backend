@@ -7,6 +7,7 @@ import com.longing.longing.common.infrastructure.PostImageJpaRepository;
 import com.longing.longing.common.service.S3ImageService;
 import com.longing.longing.common.service.port.PostImageRepository;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
+import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.post.controller.port.PostService;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
@@ -30,10 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -49,9 +49,6 @@ public class PostServiceImpl implements PostService {
     private final S3ImageService s3ImageService;
     private final PostImageRepository postImageRepository;
     private final PostImageJpaRepository postImageJpaRepository;
-
-
-
 
 
     private boolean isPersistent(PostEntity postEntity) {
@@ -188,4 +185,5 @@ public class PostServiceImpl implements PostService {
     public void deletePost(Long postId) {
         postRepository.deleteById(postId);
     }
+
 }

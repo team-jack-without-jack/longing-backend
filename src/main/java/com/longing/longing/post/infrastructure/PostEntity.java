@@ -1,5 +1,6 @@
 package com.longing.longing.post.infrastructure;
 
+import com.longing.longing.bookmark.infrastructure.PostBookmarkEntity;
 import com.longing.longing.comment.infrastructure.CommentEntity;
 import com.longing.longing.common.BaseTimeEntity;
 import com.longing.longing.common.infrastructure.PostImageEntity;
@@ -47,6 +48,9 @@ public class PostEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostBookmarkEntity> postBookmarkEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImageEntity> postImageEntities = new ArrayList<>();

@@ -1,0 +1,15 @@
+package com.longing.longing.bookmark.service.port;
+
+import com.longing.longing.bookmark.infrastructure.PostBookmarkEntity;
+import com.longing.longing.post.domain.Post;
+import com.longing.longing.bookmark.domain.PostBookmark;
+import com.longing.longing.user.domain.User;
+
+import java.util.Optional;
+
+public interface BookmarkRepository {
+    Optional<PostBookmark> findByPostAndUser(Post post, User user);
+    void save(PostBookmarkEntity postBookmarkEntity);
+
+    void deleteById(Long postId);
+}

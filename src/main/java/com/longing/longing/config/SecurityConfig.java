@@ -59,9 +59,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOrigin("*"); // ✅ iOS에서 오는 요청 허용 (배포 시 변경 필요)
-        configuration.addAllowedOrigin("http://localhost:8000");
-        configuration.addAllowedOrigin("http://localhost:8001");
-        configuration.addAllowedOrigin("http://localhost:8002");
+//        configuration.addAllowedOrigin("http://localhost:8000");
+//        configuration.addAllowedOrigin("http://localhost:8001");
+//        configuration.addAllowedOrigin("http://localhost:8002");
+//        configuration.addAllowedOrigin("http://localhost:8080");
         configuration.addAllowedMethod("*"); // ✅ 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // ✅ 모든 헤더 허용
         configuration.setAllowCredentials(true); // ✅ 인증 정보 포함 허용
