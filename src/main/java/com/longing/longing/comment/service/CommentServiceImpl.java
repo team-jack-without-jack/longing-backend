@@ -17,6 +17,7 @@ import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +28,7 @@ import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -103,7 +105,8 @@ public class CommentServiceImpl implements CommentService {
     public List<Comment> getCommentList(long postId, long lastCommentId, int limit) {
         // Pageable 객체 생성 (페이지 0, 지정된 limit)
         Pageable pageable = PageRequest.of(0, limit);
-        return commentRepository.getCommentList(postId, lastCommentId, pageable);
+        List<Comment> comments = commentRepository.getCommentList(postId, lastCommentId, pageable);
+        return comments;
         /**
          * TODO or not?
          * Post domain commentListAdd

@@ -26,6 +26,9 @@ public class Post {
     private int likeCount = 0;
     private int commentCount = 0;
 
+    private Boolean bookmarked = false;
+    private Boolean liked = false;
+
     @Builder
     public Post(
             Long id,
@@ -35,7 +38,9 @@ public class Post {
             List<Comment> commentList,
             List<PostImage> postImageList,
             int likeCount,
-            int commentCount
+            int commentCount,
+            Boolean bookmarked,
+            Boolean liked
     ) {
         this.id = id;
         this.title = title;
@@ -45,6 +50,8 @@ public class Post {
         this.postImageList = postImageList;
         this.likeCount = likeCount;
         this.commentCount = commentCount;
+        this.bookmarked = bookmarked;
+        this.liked = liked;
     }
 
     public static Post from(User user, PostCreate postCreate) {

@@ -52,9 +52,10 @@ public class PostController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Page<Post> postList = postService.getPostList(keyword, page, size, sortBy, sortDirection);
+        Page<Post> postList = postService.getPostList(userDetails, keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(postList);
     }
 

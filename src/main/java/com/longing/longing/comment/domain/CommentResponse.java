@@ -1,5 +1,6 @@
 package com.longing.longing.comment.domain;
 
+import com.longing.longing.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,14 +10,14 @@ public class CommentResponse {
 
     private final Long id;
     private final String content;
-    private final Long userId;
+    private final User user;
     private final Long postId;
 
     @Builder
-    public CommentResponse(Long id, String content, Long userId, Long postId) {
+    public CommentResponse(Long id, String content, User user, Long postId) {
         this.id = id;
         this.content = content;
-        this.userId = userId;
+        this.user = user;
         this.postId = postId;
     }
 
@@ -24,7 +25,7 @@ public class CommentResponse {
         return CommentResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
-                .userId(comment.getUser().getId())
+                .user(comment.getUser())
                 .postId(comment.getPost().getId())
                 .build();
     }

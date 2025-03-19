@@ -107,6 +107,22 @@ public class PostEntity extends BaseTimeEntity {
                 .build();
     }
 
+    public Post toModel(Boolean bookmarked, Boolean liked) {
+        return Post.builder()
+                .id(id)
+                .title(title)
+                .content(content)
+                .user(user.toModel())
+                .postImageList(postImageEntities.stream()
+                        .map(PostImageEntity::toModel) // 변환 메서드 적용
+                        .collect(Collectors.toList()))
+                .likeCount(likeCount)
+                .commentCount(commentCount)
+                .bookmarked(bookmarked)
+                .liked(liked)
+                .build();
+    }
+
     public int getLikeCount() {
         return postLikeEntities.size();  // 실시간으로 계산
     }

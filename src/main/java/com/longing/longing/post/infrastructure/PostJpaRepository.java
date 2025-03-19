@@ -18,9 +18,29 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
     void deleteById(long id);
 
     @EntityGraph(attributePaths = {"postLikeEntities"})
-    @Query("SELECT p FROM PostEntity p " +
+    @Query("SELECT p, " +
+            "CASE WHEN pb.user.id = :userId THEN TRUE ELSE FALSE END AS bookmarked, " +
+            "CASE WHEN pl.user.id = :userId THEN TRUE ELSE FALSE END AS liked " +
+            "FROM PostEntity p " +
+            "LEFT JOIN PostBookmarkEntity pb ON p.id = pb.post.id AND pb.user.id = :userId " +
+            "LEFT JOIN PostLikeEntity pl ON p.id = pl.post.id AND pl.user.id = :userId")
+    Page<PostEntity> findAll(
+        @Param("userId") Long userId,
+        Pageable pageable);
+
+
+    @EntityGraph(attributePaths = {"postLikeEntities"})
+//    @Query("SELECT p FROM PostEntity p " +
+//            "WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%")
+    @Query("SELECT p, " +
+            "CASE WHEN pb.user.id = :userId THEN TRUE ELSE FALSE END AS bookmarked, " +
+            "CASE WHEN pl.user.id = :userId THEN TRUE ELSE FALSE END AS liked " +
+            "FROM PostEntity p " +
+            "LEFT JOIN PostBookmarkEntity pb ON p.id = pb.post.id AND pb.user.id = :userId " +
+            "LEFT JOIN PostLikeEntity pl ON p.id = pl.post.id AND pl.user.id = :userId " +
             "WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%")
-    Page<PostEntity> findAllWithLikeCountAndSearch(
+    Page<Object[]> findAllWithLikeCountAndSearch(
+            @Param("userId") Long userId,
             @Param("keyword") String keyword,
             Pageable pageable);
 

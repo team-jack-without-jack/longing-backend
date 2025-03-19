@@ -13,11 +13,11 @@ public interface PostRepository {
 
     Post save(Post post);
 
-    Page<Post> findAll(Pageable pageable);
+    Page<Post> findAll(Long userId, Pageable pageable);
 
     void deleteById(Long postId);
 
-    Page<Post> findAllwithLikeCountAndSearch(String keyword, Pageable pageable);
+    Page<Post> findAllwithLikeCountAndSearch(Long userId, String keyword, Pageable pageable);
     Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable);
     void flush();
 }
