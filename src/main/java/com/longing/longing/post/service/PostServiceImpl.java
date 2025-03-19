@@ -77,7 +77,7 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        return post;
+        return postEntity.toModel();
     }
 
     private void uploadAndSaveImage(MultipartFile image, PostEntity postEntity, UserEntity userEntity) {
