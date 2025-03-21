@@ -1,6 +1,6 @@
 package com.longing.longing.test;
 
-import com.longing.longing.common.CustomException;
+import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.ErrorCode;
 import com.longing.longing.common.response.ApiResponse;
 import org.springframework.http.ResponseEntity;

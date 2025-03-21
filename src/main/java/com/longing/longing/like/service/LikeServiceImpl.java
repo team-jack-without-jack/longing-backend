@@ -2,6 +2,7 @@ package com.longing.longing.like.service;
 
 
 import com.longing.longing.comment.infrastructure.CommentJpaRepository;
+import com.longing.longing.common.exceptions.AlreadyLikedException;
 import com.longing.longing.like.controller.port.LikeService;
 import com.longing.longing.like.domain.LikePostCreate;
 import com.longing.longing.like.domain.LikePostDelete;
@@ -42,7 +43,7 @@ public class LikeServiceImpl implements LikeService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         // 이미 좋아요를 눌렀는지 확인
         if (postLikeRepository.findByPostAndUser(postEntity.toModel(), user).isPresent()) {
-            throw new IllegalStateException("You already liked this post");
+            throw new AlreadyLikedException("You already liked this post");
         }
 
         postEntity.like();

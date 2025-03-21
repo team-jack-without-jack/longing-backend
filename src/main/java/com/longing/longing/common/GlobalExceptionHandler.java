@@ -1,6 +1,8 @@
 package com.longing.longing.common;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.exceptions.AlreadyLikedException;
+import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -40,4 +42,12 @@ public class GlobalExceptionHandler {
         log.error("handleResourceNotFoundException() in GlobalExceptionHandler: {}", e.getMessage());
         return ApiResponse.fail(new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
     }
+
+    // 이미 좋아요를 눌렀을 때 발생하는 예외 처리 (IllegalStateException)
+    @ExceptionHandler(value = {AlreadyLikedException.class})
+    public ApiResponse<?> handleAlreadyLikedException(AlreadyLikedException e) {
+        log.error("handleAlreadyLikedException() in GlobalExceptionHandler: {}", e.getMessage());
+        return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_LIKED));
+    }
+
 }

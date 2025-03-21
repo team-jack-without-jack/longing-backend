@@ -2,7 +2,7 @@ package com.longing.longing.common.response;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.longing.longing.common.CustomException;
+import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.ExceptionDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;

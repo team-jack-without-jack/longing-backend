@@ -1,5 +1,6 @@
-package com.longing.longing.common;
+package com.longing.longing.common.exceptions;
 
+import com.longing.longing.common.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

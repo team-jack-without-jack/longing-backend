@@ -25,7 +25,7 @@ public class LikeController {
     private final UserRepository userRepository;
 
     @PostMapping("/post/{id}/like")
-    public ApiResponse<?> likePost(
+    public ApiResponse<Boolean> likePost(
             @PathVariable("id") long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -36,7 +36,7 @@ public class LikeController {
         Long userId = user.getId();
         LikePostCreate likePostCreate = new LikePostCreate(postId, userId);
         likeService.likePost(likePostCreate);
-        return ApiResponse.ok(null);
+        return ApiResponse.ok(true);
     }
 
     @DeleteMapping("/post/{id}/unlike")
