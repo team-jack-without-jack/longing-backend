@@ -4,6 +4,7 @@ import com.longing.longing.config.auth.CustomOAuth2UserService;
 import com.longing.longing.config.auth.JwtAuthenticationFilter;
 import com.longing.longing.config.auth.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,6 +15,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
@@ -21,6 +24,8 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -58,7 +63,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("*"); // ✅ iOS에서 오는 요청 허용 (배포 시 변경 필요)
+        Arrays.stream(allowedOrigins.split(","))
+                .forEach(configuration::addAllowedOrigin);
+//        configuration.addAllowedOrigin("*"); // ✅ iOS에서 오는 요청 허용 (배포 시 변경 필요)
 //        configuration.addAllowedOrigin("http://localhost:8000");
 //        configuration.addAllowedOrigin("http://localhost:8001");
 //        configuration.addAllowedOrigin("http://localhost:8002");
