@@ -24,7 +24,7 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
             "FROM PostEntity p " +
             "LEFT JOIN PostBookmarkEntity pb ON p.id = pb.post.id AND pb.user.id = :userId " +
             "LEFT JOIN PostLikeEntity pl ON p.id = pl.post.id AND pl.user.id = :userId")
-    Page<PostEntity> findAll(
+    Page<Object[]> findAll(
         @Param("userId") Long userId,
         Pageable pageable);
 

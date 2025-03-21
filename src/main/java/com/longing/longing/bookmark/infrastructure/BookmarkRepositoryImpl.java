@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.Optional;
 
 import static com.longing.longing.bookmark.domain.QPostBookmark.postBookmark;
+import static com.longing.longing.like.domain.QPostLike.postLike;
 import static com.longing.longing.post.domain.QPost.post;
 
 @Repository
@@ -43,22 +44,62 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
         bookmarkJpaRepository.deleteById(postId);
     }
 
+//    @Override
+//    public Page<Post> getBookmarkPost(Long userId, Pageable pageable) {
+//        // QueryDSL에서 사용할 정렬 기준 가져오기
+//        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(pageable);
+//
+//        // 북마크한 게시글 리스트 가져오기
+//        List<Post> posts = queryFactory
+//                .select(post)
+//                .from(postBookmark)
+//                .join(postBookmark.post, post)
+//                .where(postBookmark.user.id.eq(userId))
+//                .orderBy(orderSpecifier) // 동적 정렬 적용
+//                .offset(pageable.getOffset())
+//                .limit(pageable.getPageSize())
+//                .fetch()
+//                .stream().map(PostEntity::toModel)
+//                .collect(Collectors.toList());
+//
+//        // 전체 개수 조회
+//        Long totalCount = queryFactory
+//                .select(post.count())
+//                .from(postBookmark)
+//                .join(postBookmark.post, post)
+//                .where(postBookmark.user.id.eq(userId))
+//                .fetchOne();
+//
+//        return new PageImpl<>(posts, pageable, totalCount != null ? totalCount : 0);
+//    }
+
     @Override
     public Page<Post> getBookmarkPost(Long userId, Pageable pageable) {
-        // QueryDSL에서 사용할 정렬 기준 가져오기
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(pageable);
 
-        // 북마크한 게시글 리스트 가져오기
+        // 북마크한 게시글 리스트 가져오기 (liked, bookmarked 값 함께 조회)
         List<Post> posts = queryFactory
-                .select(post)
+                .select(
+                        post,
+                        postBookmark.isNotNull(), // 북마크 여부
+                        postLike.isNotNull() // 좋아요 여부
+                )
                 .from(postBookmark)
                 .join(postBookmark.post, post)
+                .leftJoin(postLike) // 좋아요 테이블과 조인
+                .on(postLike.post.eq(post).and(postLike.user.id.eq(userId)))
                 .where(postBookmark.user.id.eq(userId))
-                .orderBy(orderSpecifier) // 동적 정렬 적용
+                .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch()
-                .stream().map(PostEntity::toModel)
+                .stream()
+                .map(result -> {
+                    PostEntity postEntity = result.get(0, PostEntity.class);
+                    Boolean bookmarked = result.get(1, Boolean.class);
+                    Boolean liked = result.get(2, Boolean.class);
+                    return postEntity.toModel(bookmarked, liked);
+                })
                 .collect(Collectors.toList());
 
         // 전체 개수 조회
@@ -71,6 +112,7 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
 
         return new PageImpl<>(posts, pageable, totalCount != null ? totalCount : 0);
     }
+
 
     private OrderSpecifier<?> getOrderSpecifier(Pageable pageable) {
         if (pageable.getSort().isEmpty()) {
