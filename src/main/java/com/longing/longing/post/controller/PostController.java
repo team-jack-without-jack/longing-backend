@@ -90,9 +90,10 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ApiResponse<Post> getPost(
-            @PathVariable("id") Long postId
+            @PathVariable("id") Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Post post = postService.getPost(postId);
+        Post post = postService.getPost(userDetails, postId);
         return ApiResponse.ok(post);
     }
 

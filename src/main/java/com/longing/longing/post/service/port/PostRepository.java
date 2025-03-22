@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository {
-    Optional<Post> findById(Long id);
+    Optional<Post> findById(Long id, Long userId);
 
     Post save(Post post);
 

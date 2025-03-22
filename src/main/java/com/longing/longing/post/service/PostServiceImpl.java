@@ -141,8 +141,14 @@ public class PostServiceImpl implements PostService {
 //    }
 
     @Override
-    public Post getPost(Long postId) {
-        return postRepository.findById(postId)
+    public Post getPost(CustomUserDetails userDetails, Long postId) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+
+
+        return postRepository.findById(postId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
