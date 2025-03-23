@@ -2,6 +2,8 @@ package com.longing.longing.post.infrastructure;
 
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.service.port.PostRepository;
+import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static com.longing.longing.bookmark.domain.QPostBookmark.postBookmark;
 import static com.longing.longing.like.domain.QPostLike.postLike;
+import static com.longing.longing.post.domain.QPost.post;
 
 
 @Slf4j
@@ -56,22 +59,53 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findAll(Long userId, Pageable pageable) {
-//        List<Post> posts = postJpaRepository.findAll(userId, pageable).stream()
-//                .map(PostEntity::toModel)
-//                .collect(Collectors.toList());
+//        Page<Object[]> results = postJpaRepository.findAll(userId, pageable);
 //
-//        return new PageImpl<>(posts, pageable, posts.size());
-        Page<Object[]> results = postJpaRepository.findAll(userId, pageable);
+//        List<Post> postEntities = results.getContent().stream().map(result -> {
+//            PostEntity postEntity = (PostEntity) result[0]; // 첫 번째 항목은 PostEntity
+//            Boolean bookmarked = (Boolean) result[1]; // 두 번째 항목은 bookmarked 값
+//            Boolean liked = (Boolean) result[2]; // 세 번째 항목은 liked 값
+//
+//            return postEntity.toModel(bookmarked, liked); // PostEntity를 Post로 변환
+//        }).collect(Collectors.toList());
+//
+//        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
+        List<Tuple> results = queryFactory
+                .select(
+                        post,
+                        JPAExpressions.selectOne()
+                                .from(postBookmark)
+                                .where(postBookmark.post.eq(post)
+                                        .and(postBookmark.user.id.eq(userId)))
+                                .exists(),
+                        JPAExpressions.selectOne()
+                                .from(postLike)
+                                .where(postLike.post.eq(post)
+                                        .and(postLike.user.id.eq(userId)))
+                                .exists()
+                )
+                .from(post)
+                .where(post.getIsDeleted().eq(false))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
 
-        List<Post> postEntities = results.getContent().stream().map(result -> {
-            PostEntity postEntity = (PostEntity) result[0]; // 첫 번째 항목은 PostEntity
-            Boolean bookmarked = (Boolean) result[1]; // 두 번째 항목은 bookmarked 값
-            Boolean liked = (Boolean) result[2]; // 세 번째 항목은 liked 값
+        List<Post> posts = results.stream()
+                .map(tuple -> {
+                    PostEntity postEntity = tuple.get(post);
+                    Boolean bookmarked = tuple.get(1, Boolean.class);
+                    Boolean liked = tuple.get(2, Boolean.class);
+                    return postEntity.toModel(bookmarked, liked);
+                })
+                .collect(Collectors.toList());
 
-            return postEntity.toModel(bookmarked, liked); // PostEntity를 Post로 변환
-        }).collect(Collectors.toList());
+        long total = queryFactory
+                .select(post.count())
+                .from(post)
+                .where(post.isDeleted.eq(false))
+                .fetchOne();
 
-        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
+        return new PageImpl<>(posts, pageable, total);
     }
 
 

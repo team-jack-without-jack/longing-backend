@@ -18,16 +18,18 @@ public class Location {
 
     private String phoneNumber;
 
+    private String address;
     private User user;
 
     private Category category;
 
     @Builder
-    public Location(Long id, String name, String mapUrl, String phoneNumber, User user, Category category) {
+    public Location(Long id, String name, String mapUrl, String phoneNumber, String address, User user, Category category) {
         this.id = id;
         this.name = name;
         this.mapUrl = mapUrl;
         this.phoneNumber = phoneNumber;
+        this.address = address;
         this.user = user;
         this.category = category;
     }
@@ -37,6 +39,7 @@ public class Location {
                 .name(locationCreate.getName())
                 .mapUrl(locationCreate.getMapUrl())
                 .phoneNumber(locationCreate.getPhoneNumber())
+                .address(locationCreate.getAddress())
                 .user(user)
                 .category(category)
                 .build();

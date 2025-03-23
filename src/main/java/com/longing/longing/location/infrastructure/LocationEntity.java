@@ -39,6 +39,9 @@ public class LocationEntity extends BaseTimeEntity {
     @Column
     private String phoneNumber;
 
+    @Column
+    private String address;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
@@ -48,10 +51,18 @@ public class LocationEntity extends BaseTimeEntity {
     private CategoryEntity category;
 
     @Builder
-    public LocationEntity(Long id, String name, String mapUrl, String phoneNumber, UserEntity user, CategoryEntity category) {
+    public LocationEntity(Long id,
+                          String name,
+                          String mapUrl,
+                          String phoneNumber,
+                          String address,
+                          UserEntity user,
+                          CategoryEntity category
+                          ) {
         this.id = id;
         this.name = name;
         this.mapUrl = mapUrl;
+        this.address = address;
         this.phoneNumber = phoneNumber;
         this.user = user;
         this.category = category;
@@ -62,6 +73,7 @@ public class LocationEntity extends BaseTimeEntity {
                 .id(location.getId())
                 .name(location.getName())
                 .mapUrl(location.getMapUrl())
+                .address(location.getAddress())
                 .phoneNumber(location.getPhoneNumber())
                 .user(UserEntity.fromModel(location.getUser()))
                 .category(CategoryEntity.fromModel(location.getCategory()))
@@ -75,6 +87,7 @@ public class LocationEntity extends BaseTimeEntity {
                 .mapUrl(mapUrl)
                 .category(category.toModel())
                 .phoneNumber(phoneNumber)
+                .address(address)
                 .user(user.toModel())
                 .build();
     }

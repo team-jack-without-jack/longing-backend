@@ -24,6 +24,8 @@ public class QLocationEntity extends EntityPathBase<LocationEntity> {
 
     public final com.longing.longing.common.QBaseTimeEntity _super = new com.longing.longing.common.QBaseTimeEntity(this);
 
+    public final StringPath address = createString("address");
+
     public final com.longing.longing.category.infrastructure.QCategoryEntity category;
 
     //inherited
