@@ -28,7 +28,8 @@ public class QPost extends EntityPathBase<PostEntity> {
     public final NumberPath<Long> id = createNumber("id", Long.class);
     public final StringPath title = createString("title");
     public final StringPath content = createString("content");
-    public final BooleanPath isDeleted = createBoolean("isDeleted");
+//    public final BooleanPath isDeleted = createBoolean("isDeleted");
+    public final BooleanPath deleted = createBoolean("deleted");
 
     public QPost(String variable) {
         super(PostEntity.class, forVariable(variable));

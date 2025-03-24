@@ -85,7 +85,7 @@ public class PostRepositoryImpl implements PostRepository {
                                 .exists()
                 )
                 .from(post)
-                .where(post.getIsDeleted().eq(false))
+                .where(post.getDeleted().eq(false))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -102,7 +102,7 @@ public class PostRepositoryImpl implements PostRepository {
         long total = queryFactory
                 .select(post.count())
                 .from(post)
-                .where(post.isDeleted.eq(false))
+                .where(post.getDeleted().eq(false))
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total);
