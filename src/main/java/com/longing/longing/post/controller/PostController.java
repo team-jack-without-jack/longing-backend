@@ -16,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Slf4j
@@ -28,17 +30,28 @@ public class PostController {
 
     /**
      * 게시글 생성
-     * @param postCreate
+     * @param title
+     * @param content
+     * @param images
      * @param userDetails
      * @return
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Post> CreatePost(
-            PostCreate postCreate,
+            // @RequestPart("postCreate") @Valid PostCreate postCreate,
+//            @ModelAttribute @Valid PostCreate postCreate,  // 하나의 DTO로 받기
+            @RequestPart("title") @NotBlank String title, // title 필드 받기
+            @RequestPart("content") @NotBlank String content, // content 필드 받기
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
+
+        PostCreate postCreate = PostCreate.builder()
+                .title(title)
+                .content(content)
+                .build();
         Post createdPost = postService.createPost(userDetails, postCreate, images);
+//        Post createdPost = postService.createPost(userDetails, postCreate);
         return ApiResponse.created(createdPost);
     }
 
@@ -53,8 +66,15 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection,
+            @RequestParam(name = "myPost") Boolean myPost,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        log.info("myPost>> " + myPost);
+        if (myPost) {
+            log.info("??????");
+            Page<Post> myPostList = postService.getMyPostList(userDetails, keyword, page, size, sortBy, sortDirection);
+            return ApiResponse.ok(myPostList);
+        }
         Page<Post> postList = postService.getPostList(userDetails, keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(postList);
     }

@@ -5,10 +5,18 @@ import com.longing.longing.common.exceptions.AlreadyLikedException;
 import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -48,6 +56,20 @@ public class GlobalExceptionHandler {
     public ApiResponse<?> handleAlreadyLikedException(AlreadyLikedException e) {
         log.error("handleAlreadyLikedException() in GlobalExceptionHandler: {}", e.getMessage());
         return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_LIKED));
+    }
+
+    // 유효성 검사 실패 예외 처리
+    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
+    public ApiResponse<?> handleValidationException(MethodArgumentNotValidException e) {
+        log.error("handleValidationException() in GlobalExceptionHandler: {}", e.getMessage());
+        return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
+    }
+
+    // 멀티파트 관련 예외 처리 (RequestPart 누락 시 발생)
+    @ExceptionHandler({MultipartException.class, MissingServletRequestPartException.class})
+    public ApiResponse<?> handleMultipartException(Exception e) {
+        log.error("handleMultipartException() in GlobalExceptionHandler: {}", e.getMessage());
+        return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
     }
 
 }

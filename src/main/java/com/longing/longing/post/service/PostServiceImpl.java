@@ -63,6 +63,8 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
+//        List<MultipartFile> images = postCreate.getImages();
+
         // PostEntity 저장 (영속 상태로 만듦)
         Post post = Post.from(user, postCreate);
         PostEntity postEntity = PostEntity.fromModel(post);
@@ -121,11 +123,10 @@ public class PostServiceImpl implements PostService {
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
-//        return postRepository.findAll(pageable);
 
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return postRepository.findAll(user.getId(), pageable);
-        }
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            return postRepository.findMyPostsWithLikeCountAndSearch(user.getId(), keyword, pageable);
+//        }
         return postRepository.findMyPostsWithLikeCountAndSearch(user.getId(), keyword, pageable);
 
     }

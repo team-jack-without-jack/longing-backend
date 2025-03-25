@@ -9,6 +9,7 @@ import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.post.infrastructure.PostEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +42,7 @@ public class CommentController {
 
     @PostMapping("/comment")
     public ApiResponse<Comment> createComment(
-            @RequestBody CommentCreate commentCreate,
+            @RequestBody @Valid CommentCreate commentCreate,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
         Comment comment = commentService.createComment(userDetails, commentCreate);

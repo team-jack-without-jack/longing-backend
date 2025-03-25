@@ -10,7 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface PostService {
-    Post createPost(CustomUserDetails userDtails, PostCreate postCreate, List<MultipartFile> images);
+     Post createPost(CustomUserDetails userDtails, PostCreate postCreate, List<MultipartFile> images);
+//    Post createPost(CustomUserDetails userDtails, PostCreate postCreate);
 
     Page<Post> getPostList(CustomUserDetails userDetails, String keyword, int page, int size, String sortBy, String sortDirection);
     Page<Post> getMyPostList(CustomUserDetails userDetails, String keyword, int page, int size, String sortBy, String sortDirection);
