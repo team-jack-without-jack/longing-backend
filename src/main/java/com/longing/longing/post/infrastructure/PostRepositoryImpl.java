@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -129,15 +130,66 @@ public class PostRepositoryImpl implements PostRepository {
         return new PageImpl<>(postEntities, pageable, results.getTotalElements());
     }
 
+//    @Override
+//    public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
+//        List<Post> postEntities = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable)
+//                .stream()
+//                .map(PostEntity::toModel)
+//                .collect(Collectors.toList());
+//
+//        return new PageImpl<>(postEntities, pageable, postEntities.size());
+//    }
+
+//    @Override
+//    public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
+//        Page<Object[]> results = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable);
+//
+//        List<Post> postEntities = results.getContent().stream().map(result -> {
+//            if (result.length < 3) {
+//                throw new IllegalStateException("Unexpected query result format: expected at least 3 elements but got " + result.length);
+//            }
+//
+//            // 안전한 타입 변환
+//            PostEntity postEntity = (result[0] instanceof PostEntity) ? (PostEntity) result[0] : null;
+//            Boolean bookmarked = (result[1] instanceof Boolean) ? (Boolean) result[1] : false;
+//            Boolean liked = (result[2] instanceof Boolean) ? (Boolean) result[2] : false;
+//
+//            if (postEntity == null) {
+//                throw new IllegalStateException("PostEntity is null in query result");
+//            }
+//
+//            return postEntity.toModel(bookmarked, liked); // PostEntity를 Post로 변환
+//        }).collect(Collectors.toList());
+//
+//        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
+//    }
+
+
     @Override
     public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
-        List<Post> postEntities = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable)
-                .stream()
-                .map(PostEntity::toModel)
-                .collect(Collectors.toList());
+        Page<Object[]> results = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable);
 
-        return new PageImpl<>(postEntities, pageable, postEntities.size());
+        // Object[]를 안전하게 Post로 변환
+        List<Post> postEntities = results.getContent().stream().map(result -> {
+            if (result.length < 3) {
+                throw new IllegalStateException("Query result is invalid: " + Arrays.toString(result));
+            }
+
+            PostEntity postEntity = (result[0] instanceof PostEntity) ? (PostEntity) result[0] : null;
+            Boolean bookmarked = (result[1] instanceof Boolean) ? (Boolean) result[1] : false;
+            Boolean liked = (result[2] instanceof Boolean) ? (Boolean) result[2] : false;
+
+            if (postEntity == null) {
+                throw new IllegalStateException("PostEntity is null in query result");
+            }
+
+            return postEntity.toModel(bookmarked, liked);
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
     }
+
+
 
     @Override
     public void flush() {
