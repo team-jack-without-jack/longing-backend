@@ -32,6 +32,7 @@ dependencies {
 	implementation 'commons-io:commons-io:2.5'
 	implementation 'commons-fileupload:commons-fileupload:1.5'
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.9'
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'  // jjwt-api
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3' // jjwt-impl
@@ -53,6 +54,7 @@ dependencies {
 //	implementation 'com.google.apis:google-api-services-places:v1-rev205-1.25.0'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+	testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.9'
 //	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 //	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 //	implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'

@@ -7,13 +7,8 @@ import com.longing.longing.comment.domain.CommentResponse;
 import com.longing.longing.comment.domain.CommentUpdate;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
-import com.longing.longing.post.infrastructure.PostEntity;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
