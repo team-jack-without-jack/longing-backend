@@ -50,11 +50,9 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
 //            "AND p.user.id = :userId")
     @EntityGraph(attributePaths = {"postLikeEntities"})
     @Query("SELECT p, " +
-            "CASE WHEN pb.user.id = :userId THEN TRUE ELSE FALSE END, " +
-            "CASE WHEN pl.user.id = :userId THEN TRUE ELSE FALSE END " +
+            "EXISTS (SELECT 1 FROM PostBookmarkEntity pb WHERE pb.post.id = p.id AND pb.user.id = :userId), " +
+            "EXISTS (SELECT 1 FROM PostLikeEntity pl WHERE pl.post.id = p.id AND pl.user.id = :userId) " +
             "FROM PostEntity p " +
-            "LEFT JOIN PostBookmarkEntity pb ON p.id = pb.post.id AND pb.user.id = :userId " +
-            "LEFT JOIN PostLikeEntity pl ON p.id = pl.post.id AND pl.user.id = :userId " +
             "WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) " +
             "AND p.user.id = :userId")
     Page<Object[]> findMyPostsWithLikeCountAndSearch(
