@@ -47,3 +47,6 @@ logback-spring.xml
 
 docker-compose.yml
 Dockerfile
+
+./longing-logs
+

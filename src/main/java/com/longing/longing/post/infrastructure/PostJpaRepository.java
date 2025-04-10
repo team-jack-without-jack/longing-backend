@@ -48,17 +48,17 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
 //    @Query("SELECT p FROM PostEntity p " +
 //            "WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) " +
 //            "AND p.user.id = :userId")
-    @EntityGraph(attributePaths = {"postLikeEntities"})
-    @Query("SELECT p, " +
-            "EXISTS (SELECT 1 FROM PostBookmarkEntity pb WHERE pb.post.id = p.id AND pb.user.id = :userId), " +
-            "EXISTS (SELECT 1 FROM PostLikeEntity pl WHERE pl.post.id = p.id AND pl.user.id = :userId) " +
-            "FROM PostEntity p " +
-            "WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) " +
-            "AND p.user.id = :userId")
-    Page<Object[]> findMyPostsWithLikeCountAndSearch(
-            @Param("userId") Long userId,
-            @Param("keyword") String keyword,
-            Pageable pageable);
+//    @EntityGraph(attributePaths = {"postLikeEntities"})
+//    @Query("SELECT p, " +
+//            "EXISTS (SELECT 1 FROM PostBookmarkEntity pb WHERE pb.post.id = p.id AND pb.user.id = :userId), " +
+//            "EXISTS (SELECT 1 FROM PostLikeEntity pl WHERE pl.post.id = p.id AND pl.user.id = :userId) " +
+//            "FROM PostEntity p " +
+//            "WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) " +
+//            "AND p.user.id = :userId")
+//    Page<Object[]> findMyPostsWithLikeCountAndSearch(
+//            @Param("userId") Long userId,
+//            @Param("keyword") String keyword,
+//            Pageable pageable);
 
     @Query("SELECT p FROM PostEntity p LEFT JOIN FETCH p.postLikeEntities WHERE p.id = :id")
     Optional<PostEntity> findByIdWithLikeCount(@Param("id") Long id);

@@ -1,5 +1,7 @@
 package com.longing.longing.post.infrastructure;
 
+import com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity;
+import com.longing.longing.like.infrastructure.QPostLikeEntity;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.service.port.PostRepository;
 import com.querydsl.core.Tuple;
@@ -167,26 +169,78 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
-        Page<Object[]> results = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable);
+//        Page<Object[]> results = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable);
+//
+//        // Object[]를 안전하게 Post로 변환
+//        List<Post> postEntities = results.getContent().stream().map(result -> {
+//            if (result.length < 3) {
+//                throw new IllegalStateException("Query result is invalid: " + Arrays.toString(result));
+//            }
+//
+//            PostEntity postEntity = (result[0] instanceof PostEntity) ? (PostEntity) result[0] : null;
+//            Boolean bookmarked = (result[1] instanceof Boolean) ? (Boolean) result[1] : false;
+//            Boolean liked = (result[2] instanceof Boolean) ? (Boolean) result[2] : false;
+//
+//            if (postEntity == null) {
+//                throw new IllegalStateException("PostEntity is null in query result");
+//            }
+//
+//            return postEntity.toModel(bookmarked, liked);
+//        }).collect(Collectors.toList());
+//
+//        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
 
-        // Object[]를 안전하게 Post로 변환
-        List<Post> postEntities = results.getContent().stream().map(result -> {
-            if (result.length < 3) {
-                throw new IllegalStateException("Query result is invalid: " + Arrays.toString(result));
-            }
+        QPostEntity post = QPostEntity.postEntity;
+        QPostBookmarkEntity bookmark = QPostBookmarkEntity.postBookmarkEntity;
+        QPostLikeEntity like = QPostLikeEntity.postLikeEntity;
 
-            PostEntity postEntity = (result[0] instanceof PostEntity) ? (PostEntity) result[0] : null;
-            Boolean bookmarked = (result[1] instanceof Boolean) ? (Boolean) result[1] : false;
-            Boolean liked = (result[2] instanceof Boolean) ? (Boolean) result[2] : false;
+        // --- content 쿼리 ---
+        List<Tuple> results = queryFactory
+                .select(
+                        post,
+                        JPAExpressions.selectOne()
+                                .from(bookmark)
+                                .where(bookmark.post.id.eq(post.id)
+                                        .and(bookmark.user.id.eq(userId)))
+                                .exists(),
+                        JPAExpressions.selectOne()
+                                .from(like)
+                                .where(like.post.id.eq(post.id)
+                                        .and(like.user.id.eq(userId)))
+                                .exists()
+                )
+                .from(post)
+                .where(
+                        post.user.id.eq(userId),
+                        post.title.containsIgnoreCase(keyword)
+                                .or(post.content.containsIgnoreCase(keyword))
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(post.createdDate.desc()) // 또는 post.id.desc() 등
+                .fetch();
 
-            if (postEntity == null) {
-                throw new IllegalStateException("PostEntity is null in query result");
-            }
+        // --- count 쿼리 ---
+        long total = queryFactory
+                .select(post.count())
+                .from(post)
+                .where(
+                        post.user.id.eq(userId),
+                        post.title.containsIgnoreCase(keyword)
+                                .or(post.content.containsIgnoreCase(keyword))
+                )
+                .fetchOne();
 
-            return postEntity.toModel(bookmarked, liked);
+        // --- Tuple -> Post 변환 ---
+        List<Post> posts = results.stream().map(tuple -> {
+            PostEntity postEntity = tuple.get(post);
+            Boolean bookmarked = tuple.get(1, Boolean.class);
+            Boolean liked = tuple.get(2, Boolean.class);
+            return postEntity.toModel(bookmarked, liked); // ← 이 메서드가 Post 객체 반환한다고 가정
         }).collect(Collectors.toList());
 
-        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
+        return new PageImpl<>(posts, pageable, total);
+
     }
 
 
