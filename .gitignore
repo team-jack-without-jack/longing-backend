@@ -49,4 +49,5 @@ docker-compose.yml
 Dockerfile
 
 /longing-logs/
+/nohup.out
 
