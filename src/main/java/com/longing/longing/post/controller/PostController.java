@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
 
@@ -38,10 +39,8 @@ public class PostController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Post> CreatePost(
-            // @RequestPart("postCreate") @Valid PostCreate postCreate,
-//            @ModelAttribute @Valid PostCreate postCreate,  // 하나의 DTO로 받기
-            @RequestPart("title") @NotBlank String title, // title 필드 받기
-            @RequestPart("content") @NotBlank String content, // content 필드 받기
+            @RequestPart("title") @NotBlank @Max(100) String title, // title 필드 받기
+            @RequestPart("content") @NotBlank @Max(3000) String content, // content 필드 받기
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
@@ -51,7 +50,6 @@ public class PostController {
                 .content(content)
                 .build();
         Post createdPost = postService.createPost(userDetails, postCreate, images);
-//        Post createdPost = postService.createPost(userDetails, postCreate);
         return ApiResponse.created(createdPost);
     }
 

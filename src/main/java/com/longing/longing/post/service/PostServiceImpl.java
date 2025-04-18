@@ -83,15 +83,9 @@ public class PostServiceImpl implements PostService {
     }
 
     private void uploadAndSaveImage(MultipartFile image, PostEntity postEntity, UserEntity userEntity) {
-//        // S3에 이미지 업로드
-//        String imageUrl = s3ImageService.upload(image);
-//
-//        // PostEntity가 영속 상태이므로 바로 저장 가능
-//        PostImageEntity postImage = new PostImageEntity(imageUrl, postEntity, userEntity);
-//        postEntity.addImage(postImage, userEntity); // 🔥 Post에 이미지 추가
-//        postJpaRepository.save(postEntity); // 🔥 다시 저장하여 이미지도 반영
+        String s3Dir = "postImage/post_" + postEntity.getId() + "/";
         // S3에 이미지 업로드
-        String imageUrl = s3ImageService.upload(image);
+        String imageUrl = s3ImageService.upload(image, s3Dir);
 
         // PostEntity가 영속 상태이므로 바로 저장 가능
         PostImageEntity postImage = new PostImageEntity(imageUrl, postEntity, userEntity);
@@ -175,7 +169,6 @@ public class PostServiceImpl implements PostService {
 
         // 4. 기존 이미지 삭제 (리스트를 비워서 JPA가 삭제하도록 유도)
         postEntity.getPostImageEntities().clear();  // 이미지를 모두 제거 (orphanRemoval이 적용되어 있으면 DB에서 삭제됨)
-
 
         // 5. 새 이미지 업로드 및 저장
         for (MultipartFile image : images) {

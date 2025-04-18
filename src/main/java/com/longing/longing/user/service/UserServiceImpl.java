@@ -27,16 +27,9 @@ public class UserServiceImpl implements UserService {
 
     private String uploadImage(MultipartFile image, UserEntity userEntity) {
         // S3 업로드 경로 설정: profileImages/{userId}/{originalFilename}
-        String directoryPath = "profileImages/" + userEntity.getId() + "/";
+        String directoryPath = "profileImages/user_" + userEntity.getId() + "/";
         return s3ImageService.upload(image, directoryPath);
     }
-
-//    @Override
-//    public User getUser(String oauthId) {
-//        return userRepository.findByProviderId(oauthId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Users", oauthId));
-//
-//    }
 
     @Override
     public User getUser(String email, Provider provider) {

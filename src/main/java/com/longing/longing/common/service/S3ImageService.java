@@ -85,13 +85,9 @@ public class S3ImageService {
 
     private String uploadImageToS3(MultipartFile image) throws IOException {
         String originalFilename = image.getOriginalFilename(); //원본 파일 명
-        log.info("originalFilename>> " + originalFilename);
         String extention = originalFilename.substring(originalFilename.lastIndexOf(".")); //확장자 명
 
-        log.info("extention>> " + extention);
-
         String s3FileName = UUID.randomUUID().toString().substring(0, 10) + originalFilename; //변경된 파일 명
-        log.info("s3FileName>> " + s3FileName);
 
         InputStream is = image.getInputStream();
         byte[] bytes = IOUtils.toByteArray(is);
@@ -100,8 +96,6 @@ public class S3ImageService {
         metadata.setContentType("image/" + extention);
         metadata.setContentLength(bytes.length);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-
-        log.info("bucketName>> " + bucketName);
 
         try{
             PutObjectRequest putObjectRequest =
@@ -112,7 +106,6 @@ public class S3ImageService {
 
             amazonS3.putObject(putObjectRequest); // put image to S3
         }catch (Exception e){
-            log.info("error>> " + e);
             throw new S3Exception(ErrorCode.PUT_OBJECT_EXCEPTION);
         }finally {
             byteArrayInputStream.close();
