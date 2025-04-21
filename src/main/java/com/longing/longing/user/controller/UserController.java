@@ -44,7 +44,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/deactivate")
+    @DeleteMapping("/deactivate")
     public ApiResponse<Boolean> deavtivateMe(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
