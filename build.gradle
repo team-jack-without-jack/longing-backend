@@ -33,6 +33,7 @@ dependencies {
 	implementation 'commons-fileupload:commons-fileupload:1.5'
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.9'
+	implementation 'com.slack.api:slack-api-client:1.45.3'
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'  // jjwt-api
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3' // jjwt-impl
