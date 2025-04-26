@@ -39,36 +39,40 @@ public class GlobalExceptionHandler {
 
     // 커스텀 예외
     @ExceptionHandler(value = {CustomException.class})
-    public ApiResponse<?> handleCustomException(CustomException e) {
+    public ApiResponse<?> handleCustomException(CustomException e, HttpServletRequest request) {
         log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(e);
     }
 
     // 기본 예외
     @ExceptionHandler(value = {Exception.class})
-    public ApiResponse<?> handleException(Exception e) {
+    public ApiResponse<?> handleException(Exception e, HttpServletRequest request) {
         log.error("handleException() in GlobalExceptionHandler throw Exception : {}", e.getMessage());
-        e.printStackTrace();
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 
     @ExceptionHandler(value = {ResourceNotFoundException.class})
-    public ApiResponse<?> handleResourceNotFoundException(ResourceNotFoundException e) {
+    public ApiResponse<?> handleResourceNotFoundException(ResourceNotFoundException e, HttpServletRequest request) {
         log.error("handleResourceNotFoundException() in GlobalExceptionHandler: {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     // 이미 좋아요를 눌렀을 때 발생하는 예외 처리 (IllegalStateException)
     @ExceptionHandler(value = {AlreadyLikedException.class})
-    public ApiResponse<?> handleAlreadyLikedException(AlreadyLikedException e) {
+    public ApiResponse<?> handleAlreadyLikedException(AlreadyLikedException e, HttpServletRequest request) {
         log.error("handleAlreadyLikedException() in GlobalExceptionHandler: {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_LIKED));
     }
 
     // 유효성 검사 실패 예외 처리
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
-    public ApiResponse<?> handleValidationException(MethodArgumentNotValidException e) {
+    public ApiResponse<?> handleValidationException(MethodArgumentNotValidException e, HttpServletRequest request) {
         log.error("handleValidationException() in GlobalExceptionHandler: {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
     }
 
