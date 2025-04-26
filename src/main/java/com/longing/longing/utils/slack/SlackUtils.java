@@ -8,6 +8,7 @@ import com.slack.api.webhook.WebhookResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@Profile("prod")  // prod 환경에서만 이 빈이 등록된다
 public class SlackUtils {
 
     private final Slack slackClient = Slack.getInstance();
@@ -54,7 +56,7 @@ public class SlackUtils {
     public void sendSlackAlertErrorLog(Exception e, HttpServletRequest request) {
         try {
             Payload payload = Payload.builder()
-                    .text("서버 에러 발생! 백엔드 측의 빠른 확인 요망")
+                    .text("서버 에러 발생!")
                     .attachments(List.of(generateSlackAttachment(e, request)))
                     .build();
 
