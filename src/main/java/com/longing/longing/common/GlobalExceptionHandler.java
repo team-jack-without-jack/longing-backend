@@ -2,6 +2,7 @@ package com.longing.longing.common;
 
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.exceptions.AlreadyLikedException;
+import com.longing.longing.common.exceptions.AlreadyReportedPostException;
 import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -72,4 +73,9 @@ public class GlobalExceptionHandler {
         return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
     }
 
+    @ExceptionHandler({AlreadyReportedPostException.class})
+    public ApiResponse<?> handleAlreadyReportedPost(Exception e) {
+        log.error("handleMultipartException() in GlobalExceptionHandler: {}", e.getMessage());
+        return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_REPORTED));
+    }
 }

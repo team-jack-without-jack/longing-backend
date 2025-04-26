@@ -52,6 +52,8 @@ public class QPostEntity extends EntityPathBase<PostEntity> {
 
     public final ListPath<com.longing.longing.like.infrastructure.PostLikeEntity, com.longing.longing.like.infrastructure.QPostLikeEntity> postLikeEntities = this.<com.longing.longing.like.infrastructure.PostLikeEntity, com.longing.longing.like.infrastructure.QPostLikeEntity>createList("postLikeEntities", com.longing.longing.like.infrastructure.PostLikeEntity.class, com.longing.longing.like.infrastructure.QPostLikeEntity.class, PathInits.DIRECT2);
 
+    public final ListPath<com.longing.longing.report.infrastructure.PostReportEntity, com.longing.longing.report.infrastructure.QPostReportEntity> postReportEntities = this.<com.longing.longing.report.infrastructure.PostReportEntity, com.longing.longing.report.infrastructure.QPostReportEntity>createList("postReportEntities", com.longing.longing.report.infrastructure.PostReportEntity.class, com.longing.longing.report.infrastructure.QPostReportEntity.class, PathInits.DIRECT2);
+
     public final StringPath title = createString("title");
 
     public final com.longing.longing.user.infrastructure.QUserEntity user;

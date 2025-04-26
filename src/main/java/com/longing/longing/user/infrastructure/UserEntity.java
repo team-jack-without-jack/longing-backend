@@ -6,6 +6,7 @@ import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.location.infrastructure.LocationEntity;
 import com.longing.longing.post.infrastructure.PostEntity;
+import com.longing.longing.report.infrastructure.PostReportEntity;
 import com.longing.longing.user.Provider;
 import com.longing.longing.user.Role;
 import com.longing.longing.user.domain.User;
@@ -75,6 +76,9 @@ public class UserEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user")
     private List<PostImageEntity> postImageEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporter")
+    private List<PostReportEntity> postReportEntities = new ArrayList<>();
 
     // 기본 생성자 추가
     public UserEntity() {
