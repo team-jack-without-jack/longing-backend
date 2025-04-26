@@ -86,8 +86,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({AlreadyReportedPostException.class})
-    public ApiResponse<?> handleAlreadyReportedPost(Exception e) {
+    public ApiResponse<?> handleAlreadyReportedPost(Exception e, HttpServletRequest request) {
         log.error("handleMultipartException() in GlobalExceptionHandler: {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_REPORTED));
     }
 }
