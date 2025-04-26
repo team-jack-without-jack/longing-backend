@@ -7,6 +7,7 @@ import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.like.infrastructure.PostLikeEntity;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostUpdate;
+import com.longing.longing.report.infrastructure.PostReportEntity;
 import com.longing.longing.user.infrastructure.UserEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -54,6 +55,9 @@ public class PostEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImageEntity> postImageEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostReportEntity> postReportEntities = new ArrayList<>();
 
     @Column(columnDefinition = "integer default 0")
     private int likeCount = 0;
