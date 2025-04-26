@@ -5,8 +5,10 @@ import com.slack.api.model.Attachment;
 import com.slack.api.model.Field;
 import com.slack.api.webhook.Payload;
 import com.slack.api.webhook.WebhookResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -15,14 +17,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
+@Component
 public class SlackUtils {
 
     private final Slack slackClient = Slack.getInstance();
-
     @Value("${slack.webhook.url}")
     private String webhookUrl;
-
-    String payload = "{\"text\":\"Hello, World!\"}";
 
     // attachment 생성 메서드
     private Attachment generateSlackAttachment(Exception e, HttpServletRequest request) {
