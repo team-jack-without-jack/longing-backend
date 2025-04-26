@@ -4,6 +4,8 @@ import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.exceptions.AlreadyLikedException;
 import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.utils.slack.SlackUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -15,16 +17,21 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final SlackUtils slackUtils;
     // 존재하지 않는 요청에 대한 예외
     @ExceptionHandler(value = {NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
-    public ApiResponse<?> handleNoPageFoundException(Exception e) {
+    public ApiResponse<?> handleNoPageFoundException(Exception e, HttpServletRequest request) {
         log.error("GlobalExceptionHandler catch NoHandlerFoundException : {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.NOT_FOUND_END_POINT));
     }
 
@@ -67,8 +74,9 @@ public class GlobalExceptionHandler {
 
     // 멀티파트 관련 예외 처리 (RequestPart 누락 시 발생)
     @ExceptionHandler({MultipartException.class, MissingServletRequestPartException.class})
-    public ApiResponse<?> handleMultipartException(Exception e) {
+    public ApiResponse<?> handleMultipartException(Exception e, HttpServletRequest request) {
         log.error("handleMultipartException() in GlobalExceptionHandler: {}", e.getMessage());
+        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
     }
 
