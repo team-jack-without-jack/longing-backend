@@ -19,6 +19,10 @@ hooks:
       timeout: 60
       runas: root
 
+  BeforeInstall:
+    - location: scripts/install_java.sh
+      timeout: 300
+      runas: root
   # 파일 복사 후
   AfterInstall:
     - location: scripts/deploy.sh
