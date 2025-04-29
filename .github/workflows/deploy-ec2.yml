@@ -17,6 +17,13 @@ jobs:
 #    if: github.event.pull_request.merged == true &&
 #      contains(github.event.pull_request.labels.*.name, 'deployment')
     runs-on: ubuntu-latest
+    env:
+      # GitHub Secrets
+      SPRING_PROFILES_ACTIVE: prod           # 기존에 예시로 넣으셨던 프로파일
+      SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
 
     steps:
       # 소스 코드를 체크아웃
