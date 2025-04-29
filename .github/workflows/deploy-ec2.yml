@@ -45,7 +45,7 @@ jobs:
 
       - name: Upload build file to S3
         run: |
-          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://${{ S3_DEPLOY_BUCKET }}/longing-0.0.1-SNAPSHOT.jar
+          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://${{ secrets.S3_DEPLOY_BUCKET }}/longing-0.0.1-SNAPSHOT.jar
 #          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://deploy-build-file/longing-0.0.1-SNAPSHOT.jar
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
