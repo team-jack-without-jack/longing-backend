@@ -1,8 +1,12 @@
+# /scripts/install_java.sh 에 추가
 #!/bin/bash
 set -e
 
-# OpenJDK 11 설치 (실패 시 Java 8 설치)
-yum install -y java-11-openjdk-devel || yum install -y java-1.8.0-openjdk-devel
+# 1) Corretto 11 RPM 다운로드
+wget https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.rpm
 
-# 설치 확인 (선택)
+# 2) 설치
+yum install -y amazon-corretto-11-x64-linux-jdk.rpm
+
+# 3) 설치 확인
 java -version
