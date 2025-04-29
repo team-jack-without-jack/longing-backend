@@ -6,8 +6,10 @@ import com.longing.longing.common.exceptions.AlreadyReportedPostException;
 import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.utils.slack.SlackUtils;
+import io.micrometer.core.lang.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -24,11 +26,17 @@ import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private final SlackUtils slackUtils;
     // 존재하지 않는 요청에 대한 예외
+
+    @Autowired
+    public GlobalExceptionHandler(@Nullable SlackUtils slackUtils) {
+        this.slackUtils = slackUtils;
+    }
+
+
     @ExceptionHandler(value = {NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
     public ApiResponse<?> handleNoPageFoundException(Exception e, HttpServletRequest request) {
         log.error("GlobalExceptionHandler catch NoHandlerFoundException : {}", e.getMessage());

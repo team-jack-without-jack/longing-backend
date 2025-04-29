@@ -5,6 +5,7 @@ import com.longing.longing.config.auth.JwtAuthenticationFilter;
 import com.longing.longing.config.auth.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,6 +49,7 @@ public class SecurityConfig {
 
         // 권한 설정
         http.authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
                         .antMatchers("/", "/test", "/ping", "/ping2", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

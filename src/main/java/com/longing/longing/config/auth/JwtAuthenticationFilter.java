@@ -35,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/test") ||
                 requestURI.startsWith("/oauth-login") ||
                 requestURI.startsWith("/oauth/authenticate") ||
+                requestURI.startsWith("/actuator/health") ||
                 requestURI.startsWith("/favicon.ico")) {
             filterChain.doFilter(request, response);
             return;
