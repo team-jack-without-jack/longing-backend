@@ -5,13 +5,40 @@ files:
   - source: /
     destination: /home/ec2-user/action
 
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ec2-user
+    mode: 755
+
+
 hooks:
+  # 배포 전(구버전 중지)
+  ApplicationStop:
+    - location: scripts/stop_server.sh
+      timeout: 60
+
+  # 파일 복사 후
   AfterInstall:
-    - location: scripts/stop.sh
-      timeout: 60
+    - location: scripts/deploy.sh
+      timeout: 120
+
+  # 새 버전 시작
   ApplicationStart:
-    - location: scripts/start.sh
+    - location: scripts/start_server.sh
       timeout: 60
+
+  # 서비스 정상화 검증 (헬스체크 엔드포인트 호출)
+  ValidateService:
+    - location: scripts/validate_service.sh
+      timeout: 60
+
+#  AfterInstall:
+#    - location: scripts/stop.sh
+#      timeout: 60
+#  ApplicationStart:
+#    - location: scripts/start.sh
+#      timeout: 60
 #  AfterInstall:
 #    - location: scripts/deploy.sh
 #      timeout: 300

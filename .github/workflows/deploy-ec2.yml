@@ -63,6 +63,130 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
+# ==============================================================================================
+
+#jobs:
+#  build:  # build job
+#    runs-on: ubuntu-latest
+#    steps:
+#      # 소스 코드를 체크아웃
+#      - name: Checkout source code
+#        uses: actions/checkout@v2
+#
+#      # JDK 설정
+#      - name: Set up JDK
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: '11'
+#          distribution: 'zulu'
+#
+#      - name: Grant permission for gradlew
+#        run: chmod +x ./gradlew
+#
+#      - name: Build with Gradle
+#        run: ./gradlew clean build -x test
+#        shell: bash
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
+#
+#
+#
+#
+#      - name: Make Directory
+#        run: mkdir dist
+#
+#      - name: Move Jar
+#        run: mv ./build/libs/*.jar ./dist/application.jar
+#
+#      - name: Move CodeDeploy Script
+#        run: mv ./scripts/* ./dist/
+#
+#      - name: make zip
+#        run: zip -r ./$GITHUB_SHA.zip ./dist
+#        shell: bash
+#
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v2
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ap-northeast-2
+#
+#      - name: Upload to S3
+#        run: |
+#          aws s3 cp \
+#          --region ap-northeast-2 \
+#          --acl private \
+#          ./$GITHUB_SHA.zip \
+#          s3://deploy-action-s3/프로젝트명/$GITHUB_SHA.zip  \
+#
+#
+#      - name: Call CodeDeploy
+#        run: |
+#          aws deploy create-deployment \
+#          --application-name 어플리케이션이름 \
+#          --deployment-group-name 어플리케이션그룹이름 \
+#          --region ap-northeast-2 \
+#          --s3-location bucket=deploy-action-s3,bundleType=zip,key=프로젝트명/$GITHUB_SHA.zip \
+
+#jobs:
+#  deploy:
+##    if: github.event.pull_request.merged == true &&
+##      contains(github.event.pull_request.labels.*.name, 'deployment')
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      # 소스 코드를 체크아웃
+#      - name: Checkout source code
+#        uses: actions/checkout@v2
+#
+#      # JDK 설정
+#      - name: Set up JDK
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: '11'
+#          distribution: 'zulu'
+#
+#      - name: Grant permission for gradlew
+#        run: chmod +x ./gradlew
+#
+#      - name: Build the project
+#        run: ./gradlew build -x test
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
+#
+#      - name: Upload build file to S3
+#        run: |
+#          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://$S3_DEPLOY_BUCKET/longing-0.0.1-SNAPSHOT.jar
+##          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://deploy-build-file/longing-0.0.1-SNAPSHOT.jar
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: ${{ secrets.AWS_REGION }}
+#
+#      - name: Deploy to AWS CodeDeploy
+#        run: |
+#          aws deploy create-deployment \
+#            --application-name longing-api \
+#            --deployment-group-name deploy-deploy-group \
+#            --s3-location bucket=deploy-build-file,bundleType=zip,key=longing-0.0.1-SNAPSHOT.jar
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: ap-northeast-2
+
+
+# ============================================================================
 
 
 #      # EC2에서 application.yml 생성
