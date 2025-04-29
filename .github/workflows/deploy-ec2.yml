@@ -36,6 +36,16 @@ jobs:
       - name: Build the project
         run: ./gradlew build -x test
 
+      - name: Package for CodeDeploy
+        run: |
+          mkdir artifact
+          cp appspec.yml artifact/
+          cp -r scripts artifact/
+          cp build/libs/longing-0.0.1-SNAPSHOT.jar artifact/
+          cd artifact
+          zip -r ../deploy.zip .
+      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -43,21 +53,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Upload build file to S3
+#      - name: Upload build file to S3
+#        run: |
+#          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://${{ secrets.S3_DEPLOY_BUCKET }}/longing-0.0.1-SNAPSHOT.jar
+      - name: Upload CodeDeploy bundle to S3
         run: |
-          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://${{ secrets.S3_DEPLOY_BUCKET }}/longing-0.0.1-SNAPSHOT.jar
-#          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://deploy-build-file/longing-0.0.1-SNAPSHOT.jar
+          aws s3 cp deploy.zip s3://${{ secrets.S3_DEPLOY_BUCKET }}/deploy-${{ github.sha }}.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+
 
       - name: Deploy to AWS CodeDeploy
         run: |
           aws deploy create-deployment \
             --application-name longing-api \
             --deployment-group-name deploy-deploy-group \
-            --s3-location bucket=deploy-build-file,bundleType=zip,key=longing-0.0.1-SNAPSHOT.jar
+            --s3-location bucket=${{ secrets.S3_DEPLOY_BUCKET }},bundleType=zip,key=deploy-${{ github.sha }}.zip
+
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
