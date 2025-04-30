@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll();
 
+
         // 권한 설정
         http.authorizeHttpRequests((auth) -> auth
                         // actuator: /actuator/health, /actuator/info는 공개
