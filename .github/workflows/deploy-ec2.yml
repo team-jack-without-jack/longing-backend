@@ -60,9 +60,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-#      - name: Upload build file to S3
-#        run: |
-#          aws s3 cp ./build/libs/longing-0.0.1-SNAPSHOT.jar s3://${{ secrets.S3_DEPLOY_BUCKET }}/longing-0.0.1-SNAPSHOT.jar
       - name: Upload CodeDeploy bundle to S3
         run: |
           aws s3 cp deploy.zip s3://${{ secrets.S3_DEPLOY_BUCKET }}/deploy-${{ github.sha }}.zip

@@ -49,7 +49,10 @@ public class SecurityConfig {
 
         // 권한 설정
         http.authorizeHttpRequests((auth) -> auth
+                        // actuator: /actuator/health, /actuator/info는 공개
                         .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
+                        // actuator의 나머지는 인증 필요
+                        .requestMatchers(EndpointRequest.toAnyEndpoint()).authenticated()
                         .antMatchers("/", "/test", "/ping", "/ping2", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);

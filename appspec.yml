@@ -23,6 +23,10 @@ hooks:
     - location: scripts/install_java.sh
       timeout: 300
       runas: root
+    - location: scripts/fetch_config.sh
+      timeout: 60
+      runas: root
+
   # 파일 복사 후
   AfterInstall:
     - location: scripts/deploy.sh
