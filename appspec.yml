@@ -23,6 +23,12 @@ hooks:
     - location: scripts/install_java.sh
       timeout: 300
       runas: root
+    - location: scripts/install_nginx.sh
+      timeout: 120
+      runas: root
+    - location: scripts/configure_nginx.sh
+      timeout: 120
+      runas: root
     - location: scripts/fetch_config.sh
       timeout: 60
       runas: root
