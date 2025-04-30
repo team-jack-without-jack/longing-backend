@@ -50,7 +50,7 @@ hooks:
   # 서비스 정상화 검증 (헬스체크 엔드포인트 호출)
   ValidateService:
     - location: scripts/validate_service.sh
-      timeout: 300
+      timeout: 600
       runas: root
 
 #  AfterInstall:
