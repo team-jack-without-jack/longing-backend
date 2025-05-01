@@ -15,9 +15,8 @@ public class HealthController {
 
     @GetMapping("/ping")
     public ApiResponse<Boolean> ping() {
-        return ApiResponse.created(true);
+        return ApiResponse.created(false);
     }
-
 
     @GetMapping("/ping2")
     public ApiResponse<Boolean> ping2() {
