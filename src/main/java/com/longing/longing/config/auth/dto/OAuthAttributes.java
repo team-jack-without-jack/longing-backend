@@ -42,15 +42,46 @@ public class OAuthAttributes {
     public static OAuthAttributes of (String registrationId,
                                       String userNameAttributeName,
                                       Map<String, Object> attributes) {
-        if ("google".equals(registrationId)) {
-            return ofGoogle(userNameAttributeName, attributes);
-        } else if ("kakao".equals(registrationId)) {
-            return ofKakao(userNameAttributeName, attributes);
-        } else if ("facebook".equals(registrationId)) {
-            return ofFacebook(userNameAttributeName, attributes);
-        } else {
-            throw new IllegalArgumentException("Unsupported registration ID: " + registrationId);
+//        if ("google".equals(registrationId)) {
+//            return ofGoogle(userNameAttributeName, attributes);
+//        } else if ("kakao".equals(registrationId)) {
+//            return ofKakao(userNameAttributeName, attributes);
+//        } else if ("facebook".equals(registrationId)) {
+//            return ofFacebook(userNameAttributeName, attributes);
+//        } else {
+//            throw new IllegalArgumentException("Unsupported registration ID: " + registrationId);
+//        }
+
+        switch (registrationId) {
+            case "google":
+                return ofGoogle(userNameAttributeName, attributes);
+            case "kakao":
+                return ofKakao(userNameAttributeName, attributes);
+            case "facebook":
+                return ofFacebook(userNameAttributeName, attributes);
+            case "apple":
+                return ofApple(userNameAttributeName, attributes);
+            default:
+                throw new IllegalArgumentException("Unsupported registration ID: " + registrationId);
         }
+    }
+
+    private static OAuthAttributes ofApple(String userNameAttributeName,
+                                           Map<String, Object> attributes) {
+        log.info("<<apple>>");
+        // Apple OAuth의 경우, 기본 UserInfo 엔드포인트가 없어
+        // id_token의 클레임을 attributes로 받을 때, sub, email 등을 꺼냅니다.
+        return OAuthAttributes.builder()
+                .name(attributes.get("name") != null
+                        ? String.valueOf(attributes.get("name"))
+                        : "")  // Apple은 이름을 처음 로그인 시에만 제공
+                .email(String.valueOf(attributes.get("email")))
+                .picture("")  // Apple은 프로필 이미지를 제공하지 않음
+                .provider(Provider.APPLE)
+                .providerId(String.valueOf(attributes.get("sub")))
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
+                .build();
     }
 
     private static OAuthAttributes ofFacebook(String userNameAttributeName, Map<String, Object> attributes) {
