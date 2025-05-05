@@ -57,19 +57,14 @@ dependencies {
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 	testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.9'
-//	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-//	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-//	implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
 	compileOnly 'org.projectlombok:lombok'
-//	runtimeOnly 'com.mysql:mysql-connector-j'
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-//	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-//	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-//	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:2.7.4'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.testcontainers:mariadb:1.21.0'
+
 
 }
 
