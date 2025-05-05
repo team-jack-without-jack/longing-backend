@@ -22,12 +22,6 @@ public class AuthController {
         return "login";
     }
 
-    @GetMapping("/test")
-    public String test(Authentication authentication) {
-        log.info("session>> " + authentication.getName());
-        return "test";
-    }
-
 //    @GetMapping("/api/google/oauth/redirect")
 //    public String oauthRedirect(HttpServletRequest request,
 //                             HttpServletResponse response,
