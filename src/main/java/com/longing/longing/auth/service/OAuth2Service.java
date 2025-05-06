@@ -82,7 +82,7 @@ public class OAuth2Service {
                 log.info("appleSecret>> " + appleSecret);
                 return new OAuthProviderInfo(
                         oAuthProperties.getAppleClientId(),       // Services ID
-                        oAuthProperties.getAppleClientSecret(),   // JWT로 생성한 client_secret
+                        appleSecret,
                         oAuthProperties.getAppleRedirectUri(),
                         "https://appleid.apple.com/auth/token",    // token endpoint
                         "https://appleid.apple.com/auth/userinfo", // userinfo endpoint

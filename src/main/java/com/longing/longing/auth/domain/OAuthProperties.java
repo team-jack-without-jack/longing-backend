@@ -52,8 +52,8 @@ public class OAuthProperties {
     @Value("${spring.security.oauth2.client.registration.apple.client-id}")
     private String appleClientId;
 
-    @Value("${spring.security.oauth2.client.registration.apple.client-secret}")
-    private String appleClientSecret;
+//    @Value("${spring.security.oauth2.client.registration.apple.client-secret}")
+//    private String appleClientSecret;
 
     @Value("${spring.security.oauth2.client.registration.apple.redirect-uri}")
     private String appleRedirectUri;
