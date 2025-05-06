@@ -1,6 +1,7 @@
 package com.longing.longing.auth.controller;
 
 import com.longing.longing.auth.service.OAuth2Service;
+import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +19,7 @@ public class OAuthController {
     private final OAuth2Service oAuth2Service;
 
     @PostMapping("/authenticate")
-    public ResponseEntity<Map<String, String>> authenticate(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<Map<String, String>> authenticate(@RequestBody Map<String, String> requestBody) throws JOSEException {
         String provider = requestBody.get("provider"); // "google", "kakao" 등
         String code = requestBody.get("code");
 

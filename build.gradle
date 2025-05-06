@@ -64,7 +64,13 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.testcontainers:mariadb:1.21.0'
+	// 1) AWS SDK v2 BOM으로 버전 통일
+	implementation platform('software.amazon.awssdk:bom:2.20.0')
 
+	// 2) 필요 모듈 추가
+	implementation 'software.amazon.awssdk:secretsmanager'
+	implementation 'software.amazon.awssdk:auth'
+	implementation 'software.amazon.awssdk:regions'
 
 }
 

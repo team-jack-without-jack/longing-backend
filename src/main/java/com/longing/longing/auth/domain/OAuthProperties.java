@@ -47,4 +47,20 @@ public class OAuthProperties {
 
     @Value("${spring.security.oauth2.client.registration.facebook.redirect-uri}")
     private String facebookRedirectUri;
+
+
+    @Value("${spring.security.oauth2.client.registration.apple.client-id}")
+    private String appleClientId;
+
+    @Value("${spring.security.oauth2.client.registration.apple.client-secret}")
+    private String appleClientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.apple.redirect-uri}")
+    private String appleRedirectUri;
+
+    @Value("${spring.security.oauth2.client.registration.apple.key-id}")
+    private String appleKeyId;
+
+    @Value("${spring.security.oauth2.client.registration.apple.team-id}")
+    private String appleTeamId;
 }
