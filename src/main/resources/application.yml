@@ -1,0 +1,22 @@
+# application.yml
+
+# 공통 설정
+logging:
+  level:
+    root: DEBUG
+
+---
+spring:
+  profiles:
+    active: dev
+logging:
+  level:
+    root: DEBUG
+
+---
+spring:
+  profiles:
+    active: prod
+logging:
+  level:
+    root: INFO
