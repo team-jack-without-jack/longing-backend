@@ -1,9 +1,0 @@
-spring:
-  config:
-    import: aws-secretsmanager:/longing/prod?region=ap-northeast-2
-  profiles:
-    active: prod
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
