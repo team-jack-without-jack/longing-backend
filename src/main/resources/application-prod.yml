@@ -1,6 +1,6 @@
 spring:
   config:
-    import: aws-secretsmanager:/prod/longing/config?region=ap-northeast-2
+    import: aws-secretsmanager:prod/longing/config?region=ap-northeast-2
   profiles:
     active: prod
   cloud:
