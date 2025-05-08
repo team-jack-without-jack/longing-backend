@@ -5,5 +5,7 @@ spring:
     active: prod
   cloud:
     aws:
+      secretsmanager:
+        prefix: ""   # 기본 "/config" → 빈 문자열로 변경
       region:
         static: ap-northeast-2
