@@ -29,7 +29,11 @@ set -e
 
 SECRET_NAME="prod/longing/config"      # Secrets Manager에 저장된 키
 REGION="ap-northeast-2"         # 리전
-TARGET="/home/ec2-user/app/config/application-prod.yml"   # 생성할 경로
+TARGET="/home/ec2-user/app/config/application-prod.yml"
+
+# 상위 경로가 없으면 생성
+mkdir -p "$(dirname "$TARGET")"
+
 
 # 시크릿 문자열(plain text YAML) 직접 가져와 파일로 저장
 aws secretsmanager get-secret-value \
