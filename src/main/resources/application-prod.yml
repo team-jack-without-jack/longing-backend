@@ -1,6 +1,6 @@
 spring:
   config:
-    import: aws-secretsmanager:prod/longing/config
+    import: aws-secretsmanager:prod/longing/test
   profiles:
     active: prod
   cloud:
