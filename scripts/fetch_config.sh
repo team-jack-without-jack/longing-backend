@@ -44,6 +44,7 @@
 #chmod 640 "$TARGET"             # 권한 설정
 
 
+
 #!/bin/bash
 set -e
 
@@ -60,7 +61,12 @@ SECRET_JSON=$(aws secretsmanager get-secret-value \
   --query SecretString --output text)
 
 # JSON 데이터를 YAML 형식으로 변환하여 application-prod.yml 파일에 저장
-echo "$SECRET_JSON" | jq -r 'to_entries | map("\(.key): \(.value | tostring)") | .[]' > "$TARGET"
+echo "$SECRET_JSON" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for key, value in data.items():
+    print(f'{key}: {value}')
+" > "$TARGET"
 
 chmod 640 "$TARGET"  # 권한 설정
 
