@@ -5,6 +5,7 @@ import com.longing.longing.post.domain.Post;
 import com.longing.longing.bookmark.domain.PostBookmark;
 import com.longing.longing.post.infrastructure.PostEntity;
 import com.longing.longing.user.domain.User;
+import com.longing.longing.user.infrastructure.UserEntity;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -35,8 +36,10 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
     }
 
     @Override
-    public void save(PostBookmarkEntity postBookmarkEntity) {
-        bookmarkJpaRepository.save(postBookmarkEntity);
+    public void save(PostBookmark postBookmark) {
+        PostEntity postEntity   = PostEntity.fromModel(postBookmark.getPost());
+        UserEntity userEntity   = UserEntity.fromModel(postBookmark.getUser());
+        bookmarkJpaRepository.save(PostBookmarkEntity.fromModel(postEntity, userEntity));
     }
 
     @Override
@@ -112,6 +115,11 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
 
         return new PageImpl<>(posts, pageable, totalCount != null ? totalCount : 0);
     }
+
+//    @Override
+//    public Optional<PostBookmark> findByPostIdAndUserId(long postId, long userId) {
+//        return Optional.empty();
+//    }
 
 
     private OrderSpecifier<?> getOrderSpecifier(Pageable pageable) {

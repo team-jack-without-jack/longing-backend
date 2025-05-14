@@ -40,20 +40,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final PostJpaRepository postJpaRepository;
     private final S3ImageService s3ImageService;
     private final PostImageRepository postImageRepository;
-    private final PostImageJpaRepository postImageJpaRepository;
 
-
-    private boolean isPersistent(PostEntity postEntity) {
-        return entityManager.contains(postEntity);
-    }
 
     @Override
     @Transactional
@@ -63,36 +54,26 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
-//        List<MultipartFile> images = postCreate.getImages();
-
         // PostEntity 저장 (영속 상태로 만듦)
         Post post = Post.from(user, postCreate);
-        PostEntity postEntity = PostEntity.fromModel(post);
-        UserEntity userEntity = UserEntity.fromModel(user);
-        postEntity = postJpaRepository.save(postEntity); // 🔥 여기서 먼저 저장
+        post = postRepository.save(post);
 
         // 이미지 업로드 및 저장
         if (images != null && !images.isEmpty()) {
             for (MultipartFile image : images) {
-                log.info("Uploading image: " + image.getOriginalFilename());
-                uploadAndSaveImage(image, postEntity, userEntity);
+                uploadAndSaveImage(image, post, user);
             }
         }
 
-        return postEntity.toModel();
+        return post;
     }
 
-    private void uploadAndSaveImage(MultipartFile image, PostEntity postEntity, UserEntity userEntity) {
-        String s3Dir = "postImage/post_" + postEntity.getId() + "/";
-        // S3에 이미지 업로드
+    private void uploadAndSaveImage(MultipartFile image, Post post, User user) {
+        String s3Dir = "postImage/post_" + post.getId() + "/";
         String imageUrl = s3ImageService.upload(image, s3Dir);
-
-        // PostEntity가 영속 상태이므로 바로 저장 가능
-        PostImageEntity postImage = new PostImageEntity(imageUrl, postEntity, userEntity);
-        postEntity.addImage(postImage, userEntity); // Post에 이미지 추가
-        // 영속 상태에서 추가된 이미지는 따로 save()할 필요 없이 자동 반영됨
+        PostImage postImage = PostImage.from(imageUrl, post, user);
+        postImageRepository.save(postImage);
     }
-
 
     @Override
     public Page<Post> getPostList(CustomUserDetails userDetails, String keyword, int page, int size, String sortBy, String sortDirection) {
@@ -118,22 +99,9 @@ public class PostServiceImpl implements PostService {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-//        if (keyword == null || keyword.trim().isEmpty()) {
-//            return postRepository.findMyPostsWithLikeCountAndSearch(user.getId(), keyword, pageable);
-//        }
         return postRepository.findMyPostsWithLikeCountAndSearch(user.getId(), keyword, pageable);
 
     }
-
-//    @Override
-//    public List<Post> getPostList(String keyword) {
-//        if (keyword == null || keyword.trim().isEmpty()) {
-//            // 키워드가 없으면 모든 게시글 조회
-//            return postRepository.findAllWithLikeCount();
-//        }
-//        // 키워드가 있으면 검색된 게시글 조회
-//        return postRepository.findAllWithLikeCountByKeyword(keyword);
-//    }
 
     @Override
     public Post getPost(CustomUserDetails userDetails, Long postId) {
@@ -148,38 +116,24 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
     public Post updatePost(CustomUserDetails userDetails, Long postId, PostUpdate postUpdate, List<MultipartFile> images) {
-        // 1. 기존 포스트 엔티티 조회
-        PostEntity postEntity = postJpaRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
-
-        // 2. 유저 조회 및 권한 체크
         String email = userDetails.getEmail();
         Provider provider = userDetails.getProvider();
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+        Post post = postRepository.findById(postId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
 
-        if (!postEntity.getUser().getId().equals(user.getId())) {
+        if (!post.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("You cannot modify this post.");
         }
 
-        // 3. 포스트 정보 업데이트
-        UserEntity userEntity = UserEntity.fromModel(user);
-
-        // 4. 기존 이미지 삭제 (리스트를 비워서 JPA가 삭제하도록 유도)
-        postEntity.getPostImageEntities().clear();  // 이미지를 모두 제거 (orphanRemoval이 적용되어 있으면 DB에서 삭제됨)
-
-        // 5. 새 이미지 업로드 및 저장
         for (MultipartFile image : images) {
-            uploadAndSaveImage(image, postEntity, userEntity);  // uploadAndSaveImage() 메서드로 새 이미지를 처리
+            uploadAndSaveImage(image, post, user);
         }
 
-        // 6. PostEntity 업데이트 (이미지 포함)
-        postEntity.update(postUpdate);
-
-        // 7. 변경된 Post 반환
-        return postEntity.toModel();
+        post.update(postUpdate);
+        return postRepository.save(post);
     }
 
 

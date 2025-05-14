@@ -48,6 +48,8 @@ logback-spring.xml
 docker-compose.yml
 Dockerfile
 
+/dev-scripts/dev.sh
+
 /longing-logs/
 /nohup.out
 

@@ -3,6 +3,7 @@ package com.longing.longing.location.service;
 import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
 import com.longing.longing.category.infrastructure.CategoryJpaRepository;
+import com.longing.longing.category.service.port.CategoryRepository;
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.location.controller.port.LocationService;
@@ -34,9 +35,8 @@ import java.util.List;
 public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
-    private final LocationJpaRepository locationJpaRepository;
     private final UserRepository userRepository;
-    private final CategoryJpaRepository categoryJpaRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public Location createLocation(CustomUserDetails userDetails, LocationCreate locationCreate) {
@@ -45,8 +45,8 @@ public class LocationServiceImpl implements LocationService {
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
-        Category category = categoryJpaRepository.findById(locationCreate.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categories", locationCreate.getCategoryId())).toModel();
+        Category category = categoryRepository.findById(locationCreate.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categories", locationCreate.getCategoryId()));
 
         Location location = Location.from(user, category, locationCreate);
 
@@ -74,7 +74,7 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public Location updateLocation(CustomUserDetails userDetails, Long locationId, LocationUpdate locationUpdate) {
         // location data 있는지 확인
-        LocationEntity locationEntity = locationJpaRepository.findById(locationId)
+        Location location = locationRepository.findById(locationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Locations", locationId));
 
         // user data 있는지 확인
@@ -82,15 +82,18 @@ public class LocationServiceImpl implements LocationService {
         Provider provider = userDetails.getProvider();
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-        if (!locationEntity.getUser().getId().equals(user.getId())) {
+        if (!location.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("you can not modify this location");
         }
 
-        CategoryEntity categoryEntity = categoryJpaRepository.findById(locationUpdate.getCategoryId())
+
+        Category category = categoryRepository.findById(locationUpdate.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categories", locationUpdate.getCategoryId()));
 
-        LocationEntity updatedLocation = locationEntity.update(categoryEntity, locationUpdate);
-        return updatedLocation.toModel();
+        location.update(category, locationUpdate);
+        locationRepository.save(location);
+
+        return location;
     }
 
     @Override

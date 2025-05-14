@@ -13,7 +13,7 @@ public class PostBookmark {
 
     @Builder
     public PostBookmark(Long id, Post post, User user) {
-        this.id = id ;
+        this.id = id;
         this.post = post;
         this.user = user;
     }

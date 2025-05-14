@@ -4,6 +4,8 @@ import com.longing.longing.category.domain.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 public interface CategoryRepository {
     Category save(Category category);
 
@@ -11,5 +13,6 @@ public interface CategoryRepository {
 
     void deleteById(Long id);
 
-//    Page<Category> findAllwithSearch(String keyword, Pageable pageable);
+    Optional<Category> findById(Long categoryId);
+
 }

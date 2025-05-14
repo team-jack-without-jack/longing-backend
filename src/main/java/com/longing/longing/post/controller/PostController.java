@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -90,7 +91,12 @@ public class PostController {
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Post post = postService.updatePost(userDetails, postId, postUpdate, images);
+        // null 체크 후 빈 리스트 대체
+        List<MultipartFile> validatedImages = (images == null)
+                ? Collections.emptyList()
+                : images;
+
+        Post post = postService.updatePost(userDetails, postId, postUpdate, validatedImages);
         return ApiResponse.ok(post);
     }
 

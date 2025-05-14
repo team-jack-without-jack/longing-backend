@@ -36,12 +36,11 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentJpaRepository commentJpaRepository;
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
     private final PostJpaRepository postJpaRepository;
+    private final PostRepository postRepository;
 
-    @Override
     @Transactional
-    public Comment createComment(CustomUserDetails userDetails, CommentCreate commentCreate) {
+    public Comment _createComment(CustomUserDetails userDetails, CommentCreate commentCreate) {
         String email = userDetails.getEmail();
         Provider provider = userDetails.getProvider();
         User user = userRepository.findByEmailAndProvider(email, provider)
@@ -59,31 +58,36 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
+    public Comment createComment(CustomUserDetails userDetails, CommentCreate commentCreate) {
+        String email = userDetails.getEmail();
+        Provider provider = userDetails.getProvider();
+
+        User user = userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+        Post post = postRepository.findById(commentCreate.getPostId(), user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
+
+        Comment comment = Comment.from(user, post, commentCreate);
+        commentRepository.save(comment);
+        return comment;
+    }
+
+    @Override
+    @Transactional
     public void deleteComment(CustomUserDetails userDetails, long commentId) {
         String email = userDetails.getEmail();
         Provider provider = userDetails.getProvider();
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-        CommentEntity commentEntity = commentJpaRepository.findById(commentId)
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comments", commentId));
 
-        if (!commentEntity.getUser().getId().equals(user.getId())) {
+        if (!comment.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("not a user who created");
         }
 
-        PostEntity postEntity = commentEntity.getPost();
-        postEntity.removeComment(commentEntity);
         commentRepository.deleteById(commentId);
     }
-
-//    @Override
-//    @Transactional
-//    public List<Comment> getCommentsByPostId(Long postId) {
-//        Post post = postRepository.findById(postId)
-//                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
-//
-//        return post.getCommentList();
-//    }
 
     @Override
     @Transactional
@@ -92,25 +96,16 @@ public class CommentServiceImpl implements CommentService {
         Provider provider = userDetails.getProvider();
         User writer = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("User", email));
-        CommentEntity commentEntity = commentJpaRepository.findByIdAndUserId(commentId, writer.getId())
+        Comment comment = commentRepository.findByIdAndUserId(commentId, writer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
 
-        Comment comment = commentEntity.toModel();
-        Comment updatedComment = comment.update(commentUpdate);
-        commentEntity.update(commentUpdate);
-        return updatedComment;
+        commentRepository.save(comment);
+        return comment.update(commentUpdate);
     }
 
     @Override
     public List<Comment> getCommentList(long postId, long lastCommentId, int limit) {
-        // Pageable 객체 생성 (페이지 0, 지정된 limit)
         Pageable pageable = PageRequest.of(0, limit);
-        List<Comment> comments = commentRepository.getCommentList(postId, lastCommentId, pageable);
-        return comments;
-        /**
-         * TODO or not?
-         * Post domain commentListAdd
-         */
+        return commentRepository.getCommentList(postId, lastCommentId, pageable);
     }
-
 }
