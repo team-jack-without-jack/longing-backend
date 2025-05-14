@@ -12,9 +12,12 @@ import java.util.Optional;
 
 public interface BookmarkRepository {
     Optional<PostBookmark> findByPostAndUser(Post post, User user);
-    void save(PostBookmarkEntity postBookmarkEntity);
+//    void save(PostBookmarkEntity postBookmarkEntity);
+    void save(PostBookmark postBookmark);
 
     void deleteById(Long postId);
 
     Page<Post> getBookmarkPost(Long userId, Pageable pageable);
+
+//    Optional<PostBookmark> findByPostIdAndUserId(long postId, long userId);
 }

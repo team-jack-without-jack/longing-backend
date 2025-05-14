@@ -46,5 +46,10 @@ public class CommentRepositoryImpl implements CommentRepository {
         commentJpaRepository.deleteById(commentId);
     }
 
+    @Override
+    public Optional<Comment> findByIdAndUserId(long commentId, long id) {
+        return commentJpaRepository.findByIdAndUserId(commentId, id).map(CommentEntity::toModel);
+    }
+
 
 }

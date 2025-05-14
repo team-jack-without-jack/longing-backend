@@ -4,6 +4,7 @@ import com.longing.longing.user.Provider;
 import com.longing.longing.user.Role;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 public class User {
@@ -48,9 +49,19 @@ public class User {
         this.introduction = introduction;
     }
 
-    public User update(String name, String picture) {
-        this.name = name;
-        this.picture = picture;
+    public User update(UserUpdate userUpdate, String profileImageAddress) {
+        if (userUpdate.getName() != null) {
+            this.name = userUpdate.getName();
+        }
+        if (userUpdate.getNationality() != null) {
+            this.nationality = userUpdate.getNationality();
+        }
+        if (userUpdate.getIntroduction() != null) {
+            this.introduction = userUpdate.getIntroduction();
+        }
+        if (profileImageAddress != null) {
+            this.picture = profileImageAddress;
+        }
         return this;
     }
 

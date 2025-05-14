@@ -12,7 +12,6 @@ public class PostTest {
     public void PostCreate으로_게시물을_만들_수_있다() {
         // given
         PostCreate postCreate = PostCreate.builder()
-//                .userId(1L)
                 .title("test title")
                 .content("hello world")
                 .build();

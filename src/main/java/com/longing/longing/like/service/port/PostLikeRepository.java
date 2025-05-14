@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface PostLikeRepository {
 
     Optional<PostLike> findByPostAndUser(Post post, User user);
-    PostLike save(PostLikeEntity postLikeEntity);
+    void save(PostLike postLike);
 
     Optional<PostLike> findById(long likeId);
     void deleteById(long likeId);
