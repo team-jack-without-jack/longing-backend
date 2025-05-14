@@ -39,10 +39,6 @@ public class CategoryServiceImpl implements CategoryService {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-//        if (keyword == null || keyword.trim().isEmpty()) {
-//            return categoryRepository.findAll(pageable);
-//        }
-//        return categoryRepository.findAllwithLikeCountAndSearch(keyword, pageable);
         return categoryRepository.findAll(pageable);
     }
 
