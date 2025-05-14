@@ -10,7 +10,6 @@ public class LikePostDelete {
 
     @Builder
     public LikePostDelete(Long postId, Long userId) {
-//        this.id = id;
         this.postId = postId;
         this.userId = userId;
     }
