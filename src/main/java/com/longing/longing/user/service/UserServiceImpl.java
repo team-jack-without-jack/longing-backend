@@ -22,12 +22,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserJpaRepository userJpaRepository;
     private final S3ImageService s3ImageService;
 
-    private String uploadImage(MultipartFile image, UserEntity userEntity) {
+    private String uploadProfileImage(MultipartFile image, User user) {
         // S3 업로드 경로 설정: profileImages/{userId}/{originalFilename}
-        String directoryPath = "profileImages/user_" + userEntity.getId() + "/";
+        String directoryPath = "profileImages/user_" + user.getId() + "/";
         return s3ImageService.upload(image, directoryPath);
     }
 
@@ -42,7 +41,7 @@ public class UserServiceImpl implements UserService {
     public User updateUser(CustomUserDetails userDetails, UserUpdate userUpdate, MultipartFile profileImage) {
         String email = userDetails.getEmail();
         Provider provider = userDetails.getProvider();
-        UserEntity userEntity = userJpaRepository.findByEmailAndProvider(
+        User user = userRepository.findByEmailAndProvider(
                 email,
                 provider
                 ).orElseThrow(() -> new ResourceNotFoundException("Users", email));
@@ -52,15 +51,14 @@ public class UserServiceImpl implements UserService {
         log.info(userUpdate.getIntroduction());
         String imageUrl = null;
         if (!profileImage.isEmpty()) {
-            imageUrl = uploadImage(profileImage, userEntity);
+            imageUrl = uploadProfileImage(profileImage, user);
         }
         log.info(imageUrl);
-        return userEntity.update(
-                userUpdate.getName(),
-                userUpdate.getNationality(),
-                userUpdate.getIntroduction(),
-                imageUrl
-        ).toModel();
+
+        user.update(userUpdate, imageUrl);
+
+        userRepository.save(user);
+        return user;
     }
 
     @Override

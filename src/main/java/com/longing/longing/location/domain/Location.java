@@ -44,12 +44,20 @@ public class Location {
                 .category(category)
                 .build();
     }
-//    public static Location from() {
-//        return Location.builder()
-//                .
-//                .title(postCreate.getTitle())
-//                .content(postCreate.getContent())
-//                .user(user)
-//                .build();
-//    }
+
+    public Location update(Category category, LocationUpdate locationUpdate) {
+        if (locationUpdate.getName() != null) {
+            this.name = locationUpdate.getName();
+        }
+        if (locationUpdate.getMapUrl() != null) {
+            this.mapUrl= locationUpdate.getMapUrl();
+        }
+        if (locationUpdate.getPhoneNumber() != null) {
+            this.phoneNumber = locationUpdate.getPhoneNumber();
+        }
+        if (locationUpdate.getCategoryId() != null) {
+            this.category = category;
+        }
+        return this;
+    }
 }
