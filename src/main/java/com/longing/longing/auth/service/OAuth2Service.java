@@ -31,6 +31,7 @@ public class OAuth2Service {
     private final JwtTokenProvider jwtTokenProvider;
     private final RestTemplate restTemplate;
     private final OAuthProperties oAuthProperties;
+    private final AppleClientSecretGenerator appleSecretGen;
 
     public String authenticate(String provider, String code) {
         OAuthProviderInfo providerInfo = getProviderInfo(provider);
@@ -74,7 +75,15 @@ public class OAuth2Service {
                         "https://graph.facebook.com/v12.0/oauth/access_token",
                         "https://graph.facebook.com/v12.0/me",
                         "id",
-                        "kakao");
+                        "facebook");
+            case "apple":
+                return new OAuthProviderInfo(oAuthProperties.getAppleClientId(),
+                        appleSecretGen.generate(),
+                        oAuthProperties.getAppleRedirectUri(),
+                        "https://appleid.apple.com/auth/token",
+                        "https://appleid.apple.com/auth/userinfo",
+                        "sub",
+                        "apple");
             default:
                 throw new IllegalArgumentException("지원하지 않는 OAuth 공급자: " + provider);
         }
