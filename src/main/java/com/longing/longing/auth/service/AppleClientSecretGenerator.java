@@ -28,7 +28,7 @@ public class AppleClientSecretGenerator {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.apple.key-id}")
     private String keyId;
-    @Value("${spring.security.oauth2.client.registration.private-key-secret-id}")
+    @Value("${spring.security.oauth2.client.registration.apple.private-key-secret-id}")
     private String privateKeySecretId;
 
     private final SecretsManagerClient secretsClient;
