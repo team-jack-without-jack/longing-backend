@@ -1,5 +1,7 @@
 package com.longing.longing.auth.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.longing.longing.auth.domain.OAuthProperties;
 import com.longing.longing.auth.domain.OAuthProviderInfo;
 import com.longing.longing.config.auth.JwtTokenProvider;
@@ -20,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
 
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -33,21 +36,55 @@ public class OAuth2Service {
     private final OAuthProperties oAuthProperties;
     private final AppleClientSecretGenerator appleSecretGen;
 
+//    public String authenticate(String provider, String code) {
+//        OAuthProviderInfo providerInfo = getProviderInfo(provider);
+//        log.info("providerInfo>> " + providerInfo);
+//
+//        // ✅ Authorization Code를 이용해 Access Token 요청
+//        String accessToken = requestAccessToken(providerInfo, code);
+//
+//        // ✅ Access Token을 이용해 유저 정보 요청
+//        OAuthAttributes attributes = fetchUserInfo(providerInfo, accessToken);
+//
+//        // ✅ 유저 정보 저장 또는 업데이트
+//        UserEntity userEntity = UserEntity.fromModel(saveOrUpdate(attributes));
+//
+//        // ✅ JWT 발급
+//        return jwtTokenProvider.generateToken(userEntity.getEmail(), provider);
+//    }
+
     public String authenticate(String provider, String code) {
         OAuthProviderInfo providerInfo = getProviderInfo(provider);
-        log.info("providerInfo>> " + providerInfo);
 
-        // ✅ Authorization Code를 이용해 Access Token 요청
-        String accessToken = requestAccessToken(providerInfo, code);
+        OAuthAttributes attributes;
+        if ("apple".equalsIgnoreCase(provider)) {
+            // Apple: token response contains id_token
+            Map<String, Object> tokenResponse = requestTokenResponse(providerInfo, code);
+            String idToken = (String) tokenResponse.get("id_token");
+            attributes = fetchAppleUserInfo(providerInfo, idToken);
+        } else {
+            String accessToken = requestAccessToken(providerInfo, code);
+            attributes = fetchUserInfo(providerInfo, accessToken);
+        }
 
-        // ✅ Access Token을 이용해 유저 정보 요청
-        OAuthAttributes attributes = fetchUserInfo(providerInfo, accessToken);
-
-        // ✅ 유저 정보 저장 또는 업데이트
         UserEntity userEntity = UserEntity.fromModel(saveOrUpdate(attributes));
-
-        // ✅ JWT 발급
         return jwtTokenProvider.generateToken(userEntity.getEmail(), provider);
+    }
+
+    private Map<String, Object> requestTokenResponse(OAuthProviderInfo provider, String code) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("client_id", provider.getClientId());
+        params.add("client_secret", appleSecretGen.generate());
+        params.add("code", code);
+        params.add("redirect_uri", provider.getRedirectUri());
+        params.add("grant_type", "authorization_code");
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(provider.getTokenUri(), request, Map.class);
+        return response.getBody();
     }
 
     private OAuthProviderInfo getProviderInfo(String provider) {
@@ -131,6 +168,19 @@ public class OAuth2Service {
         log.info("response>> " + response);
 
         return (String) response.getBody().get("access_token");
+    }
+
+    private OAuthAttributes fetchAppleUserInfo(OAuthProviderInfo provider, String idToken) {
+        DecodedJWT jwt = JWT.decode(idToken);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", jwt.getSubject());
+        claims.put("email", jwt.getClaim("email").asString());
+        claims.put("email_verified", jwt.getClaim("email_verified").asBoolean());
+        return OAuthAttributes.of(
+                provider.getProviderName(),
+                provider.getUserNameAttribute(),
+                claims
+        );
     }
 
     private OAuthAttributes fetchUserInfo(OAuthProviderInfo provider, String accessToken) {
