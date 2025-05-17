@@ -114,13 +114,22 @@ public class OAuth2Service {
                         "id",
                         "facebook");
             case "apple":
-                return new OAuthProviderInfo(oAuthProperties.getAppleClientId(),
-                        appleSecretGen.generate(),
+                return new OAuthProviderInfo(
+                        oAuthProperties.getAppleClientId(),
+                        null,  // clientSecret not used here
                         oAuthProperties.getAppleRedirectUri(),
                         "https://appleid.apple.com/auth/token",
-                        "https://appleid.apple.com/auth/userinfo",
+                        null,  // no userinfo endpoint
                         "sub",
-                        "apple");
+                        "apple"
+                );
+//                return new OAuthProviderInfo(oAuthProperties.getAppleClientId(),
+//                        appleSecretGen.generate(),
+//                        oAuthProperties.getAppleRedirectUri(),
+//                        "https://appleid.apple.com/auth/token",
+//                        "https://appleid.apple.com/auth/userinfo",
+//                        "sub",
+//                        "apple");
             default:
                 throw new IllegalArgumentException("지원하지 않는 OAuth 공급자: " + provider);
         }
