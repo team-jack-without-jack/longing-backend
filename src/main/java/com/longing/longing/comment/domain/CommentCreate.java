@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @Getter
 public class CommentCreate {
@@ -13,7 +13,7 @@ public class CommentCreate {
     private final Long postId;
 
     @NotBlank(message = "comment should not be blank")
-    @Max(value = 1000, message = "comment length limit")
+    @Size(max = 1000, message = "comment length limit")
     private final String content;
 
 
