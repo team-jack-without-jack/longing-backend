@@ -65,7 +65,7 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection,
-            @RequestParam(name = "myPost") Boolean myPost,
+            @RequestParam(name = "myPost", defaultValue = "false") Boolean myPost,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         log.info("myPost>> " + myPost);

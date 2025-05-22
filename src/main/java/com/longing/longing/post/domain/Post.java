@@ -81,4 +81,12 @@ public class Post {
     public void unlike() {
         this.likeCount = Math.max(0, this.likeCount - 1);
     }
+
+    public void addCommentCount() {
+        this.commentCount++;
+    }
+
+    public void removeCommentCount() {
+        this.commentCount = Math.max(0, this.commentCount - 1);
+    }
 }

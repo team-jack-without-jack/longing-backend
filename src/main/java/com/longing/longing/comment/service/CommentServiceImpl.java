@@ -68,6 +68,9 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
 
         Comment comment = Comment.from(user, post, commentCreate);
+
+        post.addCommentCount();
+        postRepository.save(post);
         commentRepository.save(comment);
         return comment;
     }
@@ -81,11 +84,15 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comments", commentId));
-
         if (!comment.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("not a user who created");
         }
 
+        Post post = postRepository.findById(comment.getPost().getId(), user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Posts", comment.getPost().getId()));
+
+        post.removeCommentCount();
+        postRepository.save(post);
         commentRepository.deleteById(commentId);
     }
 
