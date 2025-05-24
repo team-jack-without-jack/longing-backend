@@ -26,7 +26,9 @@ public class UserServiceImpl implements UserService {
 
     private String uploadProfileImage(MultipartFile image, User user) {
         // S3 업로드 경로 설정: profileImages/{userId}/{originalFilename}
+        log.info("1");
         String directoryPath = "profileImages/user_" + user.getId() + "/";
+        log.info("2");
         return s3ImageService.upload(image, directoryPath);
     }
 
@@ -45,18 +47,11 @@ public class UserServiceImpl implements UserService {
                 email,
                 provider
                 ).orElseThrow(() -> new ResourceNotFoundException("Users", email));
-
-        log.info(userUpdate.getName());
-        log.info(userUpdate.getNationality());
-        log.info(userUpdate.getIntroduction());
         String imageUrl = null;
-        if (!profileImage.isEmpty()) {
+        if (profileImage != null && !profileImage.isEmpty()) {
             imageUrl = uploadProfileImage(profileImage, user);
         }
-        log.info(imageUrl);
-
         user.update(userUpdate, imageUrl);
-
         userRepository.save(user);
         return user;
     }
