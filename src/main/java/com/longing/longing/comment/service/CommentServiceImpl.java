@@ -34,7 +34,6 @@ import java.util.Objects;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
-    private final CommentJpaRepository commentJpaRepository;
     private final UserRepository userRepository;
     private final PostJpaRepository postJpaRepository;
     private final PostRepository postRepository;
@@ -84,6 +83,7 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comments", commentId));
+
         if (!comment.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("not a user who created");
         }
