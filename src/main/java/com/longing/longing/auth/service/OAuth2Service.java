@@ -2,6 +2,9 @@ package com.longing.longing.auth.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.longing.longing.auth.domain.OAuthProperties;
 import com.longing.longing.auth.domain.OAuthProviderInfo;
 import com.longing.longing.config.auth.JwtTokenProvider;
@@ -53,7 +56,7 @@ public class OAuth2Service {
 //        return jwtTokenProvider.generateToken(userEntity.getEmail(), provider);
 //    }
 
-    public String authenticate(String provider, String code) {
+    public String authenticate(String provider, String code, String userJson) throws JsonProcessingException {
         OAuthProviderInfo providerInfo = getProviderInfo(provider);
 
         OAuthAttributes attributes;
@@ -61,7 +64,7 @@ public class OAuth2Service {
             // Apple: token response contains id_token
             Map<String, Object> tokenResponse = requestTokenResponse(providerInfo, code);
             String idToken = (String) tokenResponse.get("id_token");
-            attributes = fetchAppleUserInfo(providerInfo, idToken);
+            attributes = fetchAppleUserInfo(providerInfo, idToken, userJson);
         } else {
             String accessToken = requestAccessToken(providerInfo, code);
             attributes = fetchUserInfo(providerInfo, accessToken);
@@ -179,12 +182,26 @@ public class OAuth2Service {
         return (String) response.getBody().get("access_token");
     }
 
-    private OAuthAttributes fetchAppleUserInfo(OAuthProviderInfo provider, String idToken) {
+    private OAuthAttributes fetchAppleUserInfo(OAuthProviderInfo provider, String idToken, String userJson) throws JsonProcessingException {
         DecodedJWT jwt = JWT.decode(idToken);
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", jwt.getSubject());
         claims.put("email", jwt.getClaim("email").asString());
         claims.put("email_verified", jwt.getClaim("email_verified").asBoolean());
+
+        // 최초 동의 시에만 전달되는 userJson에서 이름 정보 추출
+        if (userJson != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode userNode = mapper.readTree(userJson);
+            String firstName = userNode.path("name").path("firstName").asText(null);
+            String lastName  = userNode.path("name").path("lastName").asText(null);
+            // 여기에 로그 추가
+            log.info("🍎 Apple user parsed name — firstName: {}, lastName: {}", firstName, lastName);
+
+            claims.put("firstName", firstName);
+            claims.put("lastName", lastName);
+        }
+
         return OAuthAttributes.of(
                 provider.getProviderName(),
                 provider.getUserNameAttribute(),
