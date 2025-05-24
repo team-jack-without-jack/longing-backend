@@ -196,7 +196,7 @@ public class OAuth2Service {
             }
         }
 
-        return sb.toString();
+        return "user_" + sb.toString();
     }
 
     private OAuthAttributes fetchAppleUserInfo(OAuthProviderInfo provider, String idToken, String appleTempUserName) {
