@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 @Getter
@@ -42,15 +43,6 @@ public class OAuthAttributes {
     public static OAuthAttributes of (String registrationId,
                                       String userNameAttributeName,
                                       Map<String, Object> attributes) {
-//        if ("google".equals(registrationId)) {
-//            return ofGoogle(userNameAttributeName, attributes);
-//        } else if ("kakao".equals(registrationId)) {
-//            return ofKakao(userNameAttributeName, attributes);
-//        } else if ("facebook".equals(registrationId)) {
-//            return ofFacebook(userNameAttributeName, attributes);
-//        } else {
-//            throw new IllegalArgumentException("Unsupported registration ID: " + registrationId);
-//        }
 
         switch (registrationId) {
             case "google":
@@ -66,6 +58,8 @@ public class OAuthAttributes {
         }
     }
 
+
+
     private static OAuthAttributes ofApple(String userNameAttributeName,
                                            Map<String, Object> attributes) {
         log.info("<<apple>>");
@@ -74,7 +68,7 @@ public class OAuthAttributes {
         return OAuthAttributes.builder()
                 .name(attributes.get("name") != null
                         ? String.valueOf(attributes.get("name"))
-                        : "")  // Apple은 이름을 처음 로그인 시에만 제공
+                        : String.valueOf(attributes.get("temp_name")))  // Apple은 이름을 처음 로그인 시에만 제공
                 .email(String.valueOf(attributes.get("email")))
                 .picture("")  // Apple은 프로필 이미지를 제공하지 않음
                 .provider(Provider.APPLE)

@@ -27,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -56,15 +57,17 @@ public class OAuth2Service {
 //        return jwtTokenProvider.generateToken(userEntity.getEmail(), provider);
 //    }
 
-    public String authenticate(String provider, String code, String userJson) throws JsonProcessingException {
+
+    public String authenticate(String provider, String code) {
         OAuthProviderInfo providerInfo = getProviderInfo(provider);
 
         OAuthAttributes attributes;
         if ("apple".equalsIgnoreCase(provider)) {
             // Apple: token response contains id_token
+            String appleTempUserName = createAppleTempName(10);
             Map<String, Object> tokenResponse = requestTokenResponse(providerInfo, code);
             String idToken = (String) tokenResponse.get("id_token");
-            attributes = fetchAppleUserInfo(providerInfo, idToken, userJson);
+            attributes = fetchAppleUserInfo(providerInfo, idToken, appleTempUserName);
         } else {
             String accessToken = requestAccessToken(providerInfo, code);
             attributes = fetchUserInfo(providerInfo, accessToken);
@@ -182,25 +185,40 @@ public class OAuth2Service {
         return (String) response.getBody().get("access_token");
     }
 
-    private OAuthAttributes fetchAppleUserInfo(OAuthProviderInfo provider, String idToken, String userJson) throws JsonProcessingException {
+    private String createAppleTempName(int range) {
+        StringBuilder sb = new StringBuilder();
+        Random rd = new Random();
+        for(int i=0;i<range;i++){
+            if(rd.nextBoolean()){
+                sb.append(rd.nextInt(10));
+            }else {
+                sb.append((char)(rd.nextInt(26)+65));
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private OAuthAttributes fetchAppleUserInfo(OAuthProviderInfo provider, String idToken, String appleTempUserName) {
         DecodedJWT jwt = JWT.decode(idToken);
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", jwt.getSubject());
         claims.put("email", jwt.getClaim("email").asString());
         claims.put("email_verified", jwt.getClaim("email_verified").asBoolean());
+        claims.put("temp_name", createAppleTempName(10));
 
         // 최초 동의 시에만 전달되는 userJson에서 이름 정보 추출
-        if (userJson != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode userNode = mapper.readTree(userJson);
-            String firstName = userNode.path("name").path("firstName").asText(null);
-            String lastName  = userNode.path("name").path("lastName").asText(null);
-            // 여기에 로그 추가
-            log.info("🍎 Apple user parsed name — firstName: {}, lastName: {}", firstName, lastName);
-
-            claims.put("firstName", firstName);
-            claims.put("lastName", lastName);
-        }
+//        if (userJson != null) {
+//            ObjectMapper mapper = new ObjectMapper();
+//            JsonNode userNode = mapper.readTree(userJson);
+//            String firstName = userNode.path("name").path("firstName").asText(null);
+//            String lastName  = userNode.path("name").path("lastName").asText(null);
+//            // 여기에 로그 추가
+//            log.info("🍎 Apple user parsed name — firstName: {}, lastName: {}", firstName, lastName);
+//
+//            claims.put("firstName", firstName);
+//            claims.put("lastName", lastName);
+//        }
 
         return OAuthAttributes.of(
                 provider.getProviderName(),
@@ -215,6 +233,7 @@ public class OAuth2Service {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<Map> response = restTemplate.exchange(provider.getUserInfoUri(), HttpMethod.GET, entity, Map.class);
+        // apple로그인이 아닌 경우라 파라미터에 빈 스트링을 넣습니다.
         return OAuthAttributes.of(provider.getProviderName(), provider.getUserNameAttribute(), response.getBody());
     }
 

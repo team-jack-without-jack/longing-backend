@@ -19,54 +19,49 @@ import java.util.Map;
 public class OAuthController {
     private final OAuth2Service oAuth2Service;
 
-//    @PostMapping("/authenticate")
-//    public ResponseEntity<Map<String, String>> authenticate(@RequestBody Map<String, String> requestBody) throws JsonProcessingException {
-//        String provider = requestBody.get("provider"); // "google", "kakao" 등
-//        String code = requestBody.get("code");
-//        String userJson = requestBody.get("user");     // Apple 최초 동의 시 전달되는 이름 정보(JSON)
-//        log.info("provider>> " + provider);
-//        log.info("code>> " + code);
-//        log.info("userJson>> " + userJson);
+    @PostMapping("/authenticate")
+    public ResponseEntity<Map<String, String>> authenticate(@RequestBody Map<String, String> requestBody) {
+        String provider = requestBody.get("provider"); // "google", "kakao" 등
+        String code = requestBody.get("code");
+
+        String token = oAuth2Service.authenticate(provider, code);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        return ResponseEntity.ok(response);
+    }
+
+//    @PostMapping(
+//            value = "/authenticate",
+//            consumes = {
+//                    MediaType.APPLICATION_JSON_VALUE,
+//                    MediaType.APPLICATION_FORM_URLENCODED_VALUE
+//            }
+//    )
+//    public ResponseEntity<Map<String, String>> authenticate(
+//            @RequestBody(required = false) Map<String, String> jsonBody,
+//            @RequestParam(value = "provider", required = false) String providerParam,
+//            @RequestParam(value = "code",     required = false) String codeParam,
+//            @RequestParam(value = "user",     required = false) String userParam
+//    ) throws JsonProcessingException {
+//        // JSON 바디 우선, 없으면 form-param 사용
+//        String provider = (jsonBody != null && jsonBody.get("provider") != null)
+//                ? jsonBody.get("provider")
+//                : providerParam;
+//        String code = (jsonBody != null && jsonBody.get("code") != null)
+//                ? jsonBody.get("code")
+//                : codeParam;
+//        String userJson = (jsonBody != null && jsonBody.get("user") != null)
+//                ? jsonBody.get("user")
+//                : userParam;
+//
+//        log.info("provider>> {}", provider);
+//        log.info("code    >> {}", code);
+//        log.info("userJson>> {}", userJson);
 //
 //        String token = oAuth2Service.authenticate(provider, code, userJson);
-//        log.info("token>> " + token);
+//        log.info("token   >> {}", token);
 //
-//        Map<String, String> response = new HashMap<>();
-//        response.put("token", token);
-//        return ResponseEntity.ok(response);
+//        return ResponseEntity.ok(Collections.singletonMap("token", token));
 //    }
-
-    @PostMapping(
-            value = "/authenticate",
-            consumes = {
-                    MediaType.APPLICATION_JSON_VALUE,
-                    MediaType.APPLICATION_FORM_URLENCODED_VALUE
-            }
-    )
-    public ResponseEntity<Map<String, String>> authenticate(
-            @RequestBody(required = false) Map<String, String> jsonBody,
-            @RequestParam(value = "provider", required = false) String providerParam,
-            @RequestParam(value = "code",     required = false) String codeParam,
-            @RequestParam(value = "user",     required = false) String userParam
-    ) throws JsonProcessingException {
-        // JSON 바디 우선, 없으면 form-param 사용
-        String provider = (jsonBody != null && jsonBody.get("provider") != null)
-                ? jsonBody.get("provider")
-                : providerParam;
-        String code = (jsonBody != null && jsonBody.get("code") != null)
-                ? jsonBody.get("code")
-                : codeParam;
-        String userJson = (jsonBody != null && jsonBody.get("user") != null)
-                ? jsonBody.get("user")
-                : userParam;
-
-        log.info("provider>> {}", provider);
-        log.info("code    >> {}", code);
-        log.info("userJson>> {}", userJson);
-
-        String token = oAuth2Service.authenticate(provider, code, userJson);
-        log.info("token   >> {}", token);
-
-        return ResponseEntity.ok(Collections.singletonMap("token", token));
-    }
 }
