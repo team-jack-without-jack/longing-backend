@@ -46,14 +46,10 @@ public class UserServiceImpl implements UserService {
                 provider
                 ).orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
-        log.info(userUpdate.getName());
-        log.info(userUpdate.getNationality());
-        log.info(userUpdate.getIntroduction());
         String imageUrl = null;
         if (!profileImage.isEmpty()) {
             imageUrl = uploadProfileImage(profileImage, user);
         }
-        log.info(imageUrl);
 
         user.update(userUpdate, imageUrl);
 

@@ -44,6 +44,7 @@ application-dev.yml
 application-local.yml
 
 logback-spring.xml
+logback-test.xml
 
 docker-compose.yml
 Dockerfile
