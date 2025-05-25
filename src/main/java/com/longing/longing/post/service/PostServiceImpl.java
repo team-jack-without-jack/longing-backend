@@ -19,6 +19,7 @@ import com.longing.longing.user.Provider;
 import com.longing.longing.user.domain.User;
 import com.longing.longing.user.infrastructure.UserEntity;
 import com.longing.longing.user.service.port.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Slf4j
+@Builder
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
