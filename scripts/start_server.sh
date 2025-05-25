@@ -14,6 +14,8 @@ export PATH=$JAVA_HOME/bin:$PATH
 # (2) 작업 디렉터리로 이동
 cd /home/ec2-user/app
 
+mkdir -p /home/ec2-user/logs
+
 # (3) 백그라운드로 실행 & 로그
 #nohup $JAVA_HOME/bin/java -jar longing-0.0.1-SNAPSHOT.jar \
 #  --spring.profiles.active=prod \
