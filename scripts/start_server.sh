@@ -21,11 +21,18 @@ mkdir -p /home/ec2-user/logs
 #  --spring.profiles.active=prod \
 #  > app.out 2>&1 &
 
+#nohup $JAVA_HOME/bin/java \
+#  -Dlogging.config=file:$CONFIG_DIR/logback-spring.xml \
+#  -jar $APP_DIR/$JAR_NAME \
+#  --spring.profiles.active=prod \
+#  --spring.config.additional-location=classpath:/,file:$CONFIG_DIR/ \
+#  > $APP_DIR/app.out 2>&1 &
+
 nohup $JAVA_HOME/bin/java \
   -Dlogging.config=file:$CONFIG_DIR/logback-spring.xml \
   -jar $APP_DIR/$JAR_NAME \
   --spring.profiles.active=prod \
-  --spring.config.additional-location=classpath:/,file:$CONFIG_DIR/ \
+  --spring.config.additional-location=file:$CONFIG_DIR/ \
   > $APP_DIR/app.out 2>&1 &
 
 # (4) 바로 실행 확인
