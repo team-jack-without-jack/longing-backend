@@ -3,6 +3,8 @@ package com.longing.longing.location.infrastructure;
 import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
 import com.longing.longing.common.BaseTimeEntity;
+import com.longing.longing.common.infrastructure.LocationImageEntity;
+import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.location.domain.Location;
 import com.longing.longing.location.domain.LocationUpdate;
 import com.longing.longing.post.domain.PostUpdate;
@@ -16,6 +18,8 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Getter
@@ -49,6 +53,9 @@ public class LocationEntity extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
+
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LocationImageEntity> locationImageEntities = new ArrayList<>();
 
     @Builder
     public LocationEntity(Long id,

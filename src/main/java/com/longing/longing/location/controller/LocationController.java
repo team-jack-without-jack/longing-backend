@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -73,9 +74,10 @@ public class LocationController {
     @PostMapping()
     public ApiResponse<Location> createLocation(
             @RequestBody LocationCreate locationCreate,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
             ) {
-        Location location = locationService.createLocation(userDetails, locationCreate);
+        Location location = locationService.createLocation(userDetails, locationCreate, images);
         return ApiResponse.created(location);
     }
 }
