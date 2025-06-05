@@ -3,6 +3,8 @@ package com.longing.longing.location.infrastructure;
 import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
 import com.longing.longing.common.BaseTimeEntity;
+import com.longing.longing.common.infrastructure.LocationImageEntity;
+import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.location.domain.Location;
 import com.longing.longing.location.domain.LocationUpdate;
 import com.longing.longing.post.domain.PostUpdate;
@@ -16,7 +18,10 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -50,6 +55,9 @@ public class LocationEntity extends BaseTimeEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
+    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LocationImageEntity> locationImageEntities = new ArrayList<>();
+
     @Builder
     public LocationEntity(Long id,
                           String name,
@@ -57,7 +65,8 @@ public class LocationEntity extends BaseTimeEntity {
                           String phoneNumber,
                           String address,
                           UserEntity user,
-                          CategoryEntity category
+                          CategoryEntity category,
+                          List<LocationImageEntity> locationImageEntities
                           ) {
         this.id = id;
         this.name = name;
@@ -66,6 +75,7 @@ public class LocationEntity extends BaseTimeEntity {
         this.phoneNumber = phoneNumber;
         this.user = user;
         this.category = category;
+        this.locationImageEntities = locationImageEntities;
     }
 
     public static LocationEntity fromModel(Location location) {
@@ -89,6 +99,9 @@ public class LocationEntity extends BaseTimeEntity {
                 .phoneNumber(phoneNumber)
                 .address(address)
                 .user(user.toModel())
+                .locationImageList(locationImageEntities.stream()
+                        .map(LocationImageEntity::toModel)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
