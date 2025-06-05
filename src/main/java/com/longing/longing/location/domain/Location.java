@@ -1,11 +1,14 @@
 package com.longing.longing.location.domain;
 
 import com.longing.longing.category.domain.Category;
+import com.longing.longing.common.domain.LocationImage;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
 import com.longing.longing.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 public class Location {
@@ -22,9 +25,10 @@ public class Location {
     private User user;
 
     private Category category;
+    private List<LocationImage> locationImageList;
 
     @Builder
-    public Location(Long id, String name, String mapUrl, String phoneNumber, String address, User user, Category category) {
+    public Location(Long id, String name, String mapUrl, String phoneNumber, String address, User user, Category category, List<LocationImage> locationImageList) {
         this.id = id;
         this.name = name;
         this.mapUrl = mapUrl;
@@ -32,6 +36,7 @@ public class Location {
         this.address = address;
         this.user = user;
         this.category = category;
+        this.locationImageList = locationImageList;
     }
 
     public static Location from(User user, Category category, LocationCreate locationCreate) {

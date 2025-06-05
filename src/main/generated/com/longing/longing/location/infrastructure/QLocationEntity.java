@@ -39,6 +39,8 @@ public class QLocationEntity extends EntityPathBase<LocationEntity> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final ListPath<com.longing.longing.common.infrastructure.LocationImageEntity, com.longing.longing.common.infrastructure.QLocationImageEntity> locationImageEntities = this.<com.longing.longing.common.infrastructure.LocationImageEntity, com.longing.longing.common.infrastructure.QLocationImageEntity>createList("locationImageEntities", com.longing.longing.common.infrastructure.LocationImageEntity.class, com.longing.longing.common.infrastructure.QLocationImageEntity.class, PathInits.DIRECT2);
+
     public final StringPath mapUrl = createString("mapUrl");
 
     //inherited

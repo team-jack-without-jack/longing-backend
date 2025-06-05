@@ -7,11 +7,12 @@ import com.longing.longing.location.domain.LocationUpdate;
 import com.longing.longing.post.domain.Post;
 import com.longing.longing.post.domain.PostCreate;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface LocationService {
-    Location createLocation(CustomUserDetails userDetails, LocationCreate locationCreate);
+    Location createLocation(CustomUserDetails userDetails, LocationCreate locationCreate, List<MultipartFile> images);
     Page<Location> getLocationList(String keyword, int page, int size, String sortBy, String sortDirection);
     Location getLocation(Long id);
 
