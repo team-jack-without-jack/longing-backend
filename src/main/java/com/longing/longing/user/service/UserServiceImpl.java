@@ -25,8 +25,8 @@ public class UserServiceImpl implements UserService {
     private final S3ImageService s3ImageService;
 
     private String uploadProfileImage(MultipartFile image, User user) {
-        // S3 업로드 경로 설정: profileImages/{userId}/{originalFilename}
-        String directoryPath = "profileImages/user_" + user.getId() + "/";
+        // S3 업로드 경로 설정: profile_images/user_{userId}/{originalFilename}
+        String directoryPath = "profile_images/user_" + user.getId() + "/";
         return s3ImageService.upload(image, directoryPath);
     }
 
