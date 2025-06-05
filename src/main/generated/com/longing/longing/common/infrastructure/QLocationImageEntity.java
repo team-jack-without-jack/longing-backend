@@ -37,6 +37,8 @@ public class QLocationImageEntity extends EntityPathBase<LocationImageEntity> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final BooleanPath isThumbnail = createBoolean("isThumbnail");
+
     public final com.longing.longing.location.infrastructure.QLocationEntity location;
 
     //inherited

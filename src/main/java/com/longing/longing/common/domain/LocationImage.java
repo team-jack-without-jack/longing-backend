@@ -13,13 +13,15 @@ public class LocationImage {
     private String address;
     private Location location;
     private User user;
+    private Boolean isThumbnail;
 
     @Builder
-    public LocationImage(Long id, String address, Location location, User user) {
+    public LocationImage(Long id, String address, Location location, User user, Boolean isThumbnail) {
         this.id = id;
         this.address = address;
         this.location = location;
         this.user = user;
+        this.isThumbnail = isThumbnail;
     }
 
     public static LocationImage from(String address, Location location, User user) {

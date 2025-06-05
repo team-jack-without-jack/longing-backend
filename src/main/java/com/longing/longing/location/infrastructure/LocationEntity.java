@@ -21,6 +21,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -64,7 +65,8 @@ public class LocationEntity extends BaseTimeEntity {
                           String phoneNumber,
                           String address,
                           UserEntity user,
-                          CategoryEntity category
+                          CategoryEntity category,
+                          List<LocationImageEntity> locationImageEntities
                           ) {
         this.id = id;
         this.name = name;
@@ -73,6 +75,7 @@ public class LocationEntity extends BaseTimeEntity {
         this.phoneNumber = phoneNumber;
         this.user = user;
         this.category = category;
+        this.locationImageEntities = locationImageEntities;
     }
 
     public static LocationEntity fromModel(Location location) {
@@ -96,6 +99,9 @@ public class LocationEntity extends BaseTimeEntity {
                 .phoneNumber(phoneNumber)
                 .address(address)
                 .user(user.toModel())
+                .locationImageList(locationImageEntities.stream()
+                        .map(LocationImageEntity::toModel)
+                        .collect(Collectors.toList()))
                 .build();
     }
 

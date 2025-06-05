@@ -82,13 +82,12 @@ public class LocationServiceImpl implements LocationService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return locationRepository.findAll(pageable);
         }
-        return locationRepository.findAllwithLikeCountAndSearch(keyword, pageable);
-
+        return locationRepository.findAllWithSearch(keyword, pageable);
     }
 
     @Override
     public Location getLocation(Long id) {
-        return locationRepository.findById(id)
+        return locationRepository.findByIdWithImages(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Locations", id));
     }
 

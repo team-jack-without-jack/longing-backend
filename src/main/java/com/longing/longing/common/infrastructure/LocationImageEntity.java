@@ -30,6 +30,9 @@ public class LocationImageEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String address;
 
+    @Column(nullable = false)
+    private Boolean isThumbnail;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private LocationEntity location;
@@ -43,10 +46,12 @@ public class LocationImageEntity extends BaseTimeEntity {
             Long id,
             String address,
             LocationEntity location,
-            UserEntity user
+            UserEntity user,
+            Boolean isThumbnail
     ) {
         this.id = id;
         this.address = address;
+        this.isThumbnail = isThumbnail;
         this.location = location;
         this.user = user;
     }
@@ -57,6 +62,14 @@ public class LocationImageEntity extends BaseTimeEntity {
                 .address(locationImage.getAddress())
                 .location(LocationEntity.fromModel(locationImage.getLocation()))
                 .user(UserEntity.fromModel(locationImage.getUser()))
+                .build();
+    }
+
+    public LocationImage toModel() {
+        return LocationImage.builder()
+                .id(id)
+                .address(address)
+                .isThumbnail(isThumbnail)
                 .build();
     }
 }
