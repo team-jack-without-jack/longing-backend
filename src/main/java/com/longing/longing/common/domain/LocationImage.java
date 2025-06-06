@@ -24,11 +24,12 @@ public class LocationImage {
         this.isThumbnail = isThumbnail;
     }
 
-    public static LocationImage from(String address, Location location, User user) {
+    public static LocationImage from(String address, Location location, User user, Boolean isThumbnail) {
         return LocationImage.builder()
                 .address(address)
                 .location(location)
                 .user(user)
+                .isThumbnail(isThumbnail)
                 .build();
     }
 }

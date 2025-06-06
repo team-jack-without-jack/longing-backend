@@ -12,7 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface LocationService {
-    Location createLocation(CustomUserDetails userDetails, LocationCreate locationCreate, List<MultipartFile> images);
+    Location createLocation(
+            CustomUserDetails userDetails,
+            LocationCreate locationCreate,
+            MultipartFile thumbnailImage,
+            List<MultipartFile> detailImages
+    );
     Page<Location> getLocationList(String keyword, int page, int size, String sortBy, String sortDirection);
     Location getLocation(Long id);
 

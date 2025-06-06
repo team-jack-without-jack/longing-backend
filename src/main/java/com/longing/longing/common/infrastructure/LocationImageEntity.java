@@ -62,6 +62,7 @@ public class LocationImageEntity extends BaseTimeEntity {
                 .address(locationImage.getAddress())
                 .location(LocationEntity.fromModel(locationImage.getLocation()))
                 .user(UserEntity.fromModel(locationImage.getUser()))
+                .isThumbnail(locationImage.getIsThumbnail())
                 .build();
     }
 
