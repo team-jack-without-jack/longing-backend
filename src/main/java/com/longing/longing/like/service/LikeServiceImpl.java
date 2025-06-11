@@ -47,8 +47,7 @@ public class LikeServiceImpl implements LikeService {
             throw new AlreadyLikedException("You already liked this post");
         }
 
-        post.like();
-        postRepository.save(post);
+        postRepository.incrementLikeCount(post.getId());
 
         PostLike postLike = PostLike.builder()
                 .post(post)
@@ -68,8 +67,11 @@ public class LikeServiceImpl implements LikeService {
         PostLike postLike = postLikeRepository.findByPostAndUser(post, user)
                 .orElseThrow(() -> new EntityNotFoundException("User " + user.getEmail() + "did not like this post"));
 
-        post.unlike();
-        postRepository.save(post);
+//        post.unlike();
+//        postRepository.save(post);
+
+        postRepository.decrementLikeCount(post.getId());
+
 
         // 좋아요 삭제
         postLikeRepository.deleteById(postLike.getId());
