@@ -60,9 +60,6 @@ public class PostServiceImpl implements PostService {
         Post post = Post.from(user, postCreate);
         post = postRepository.save(post);
 
-        log.info("title:: " + post.getTitle());
-        log.info("content:: " + post.getContent());
-
         // 이미지 업로드 및 저장
         if (images != null && !images.isEmpty()) {
             log.info("image is exists!");
@@ -76,9 +73,7 @@ public class PostServiceImpl implements PostService {
 
     private void uploadAndSaveImage(MultipartFile image, Post post, User user) {
         String s3Dir = "post_images/post_" + post.getId() + "/";
-        log.info("s3Dir:: " + s3Dir);
         String imageUrl = s3ImageService.upload(image, s3Dir);
-        log.info("imageUrl:: " + imageUrl);
         PostImage postImage = PostImage.from(imageUrl, post, user);
         postImageRepository.save(postImage);
     }
