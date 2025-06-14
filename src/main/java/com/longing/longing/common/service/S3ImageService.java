@@ -38,19 +38,49 @@ public class S3ImageService {
     private String bucketName;
 
     // overload
-    public String upload(MultipartFile image) {
-        if(image.isEmpty() || Objects.isNull(image.getOriginalFilename())){
-            throw new S3Exception(ErrorCode.EMPTY_FILE_EXCEPTION);
-        }
-        return this.uploadImage(image);
-    }
+//    public String upload(MultipartFile image) {
+//        if(image.isEmpty() || Objects.isNull(image.getOriginalFilename())){
+//            throw new S3Exception(ErrorCode.EMPTY_FILE_EXCEPTION);
+//        }
+//        return this.uploadImage(image);
+//    }
 
     // overload
-    public String upload(MultipartFile file, String directoryPath) {
-        String fileName = directoryPath + file.getOriginalFilename(); // 디렉토리 포함 경로 설정
+    public String uploadLocationImage(MultipartFile file, String directoryPath, String locationImageName) {
+        String fileName = directoryPath + locationImageName; // 디렉토리 포함 경로 설정
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
 
+        try (InputStream inputStream = file.getInputStream()) {
+            amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 실패", e);
+        }
+
+        return amazonS3.getUrl(bucketName, fileName).toString(); // 업로드된 파일 URL 반환
+    }
+
+    public String uploadProfileImage(MultipartFile file, String directoryPath) {
+        String fileName = directoryPath + file.getOriginalFilename(); // 디렉토리 포함 경로 설정
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        try (InputStream inputStream = file.getInputStream()) {
+            amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 실패", e);
+        }
+
+        return amazonS3.getUrl(bucketName, fileName).toString(); // 업로드된 파일 URL 반환
+    }
+
+    public String uploadPostImage(MultipartFile file, String directoryPath) {
+        String fileOriginalFilenameName = file.getOriginalFilename();
+        String ext = fileOriginalFilenameName.substring(fileOriginalFilenameName.lastIndexOf("."));
+        String uuidFileName = UUID.randomUUID().toString().concat(ext);
+
+        String fileName = directoryPath + uuidFileName; // 디렉토리 포함 경로 설정
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
         try (InputStream inputStream = file.getInputStream()) {
             amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
         } catch (IOException e) {

@@ -8,15 +8,21 @@ import com.longing.longing.location.domain.LocationCreate;
 import com.longing.longing.location.domain.LocationUpdate;
 import com.longing.longing.post.domain.Post;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/location")
@@ -71,13 +77,14 @@ public class LocationController {
         return ApiResponse.ok(null);
     }
 
-    @PostMapping()
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ApiResponse<Location> createLocation(
-            @RequestBody LocationCreate locationCreate,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images
+            @RequestPart @Valid LocationCreate locationCreate,
+            @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
+            @RequestPart(value = "detailImages", required = false) List<MultipartFile> detailImages,
+            @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
-        Location location = locationService.createLocation(userDetails, locationCreate, images);
+        Location location = locationService.createLocation(userDetails, locationCreate, thumbnailImage, detailImages);
         return ApiResponse.created(location);
     }
 }

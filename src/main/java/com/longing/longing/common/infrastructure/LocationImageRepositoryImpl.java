@@ -16,7 +16,7 @@ public class LocationImageRepositoryImpl implements LocationImageRepository {
 
     @Override
     public LocationImage save(LocationImage locationImage) {
-        return null;
+        return locationImageJpaRepoository.save(LocationImageEntity.fromModel(locationImage)).toModel();
     }
 
     @Override

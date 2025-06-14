@@ -3,6 +3,7 @@ package com.longing.longing.location.infrastructure;
 import com.longing.longing.category.domain.Category;
 import com.longing.longing.category.infrastructure.CategoryEntity;
 import com.longing.longing.common.BaseTimeEntity;
+import com.longing.longing.common.domain.LocationImage;
 import com.longing.longing.common.infrastructure.LocationImageEntity;
 import com.longing.longing.common.infrastructure.PostImageEntity;
 import com.longing.longing.location.domain.Location;
@@ -91,6 +92,14 @@ public class LocationEntity extends BaseTimeEntity {
     }
 
     public Location toModel() {
+        // 2) locationImageList 변환부를 null-safe하게 바꾸기
+        List<LocationImage> imgList = new ArrayList<>();
+        if (locationImageEntities != null) {
+            imgList = locationImageEntities.stream()
+                    .map(LocationImageEntity::toModel)
+                    .collect(Collectors.toList());
+        }
+
         return Location.builder()
                 .id(id)
                 .name(name)
@@ -99,9 +108,7 @@ public class LocationEntity extends BaseTimeEntity {
                 .phoneNumber(phoneNumber)
                 .address(address)
                 .user(user.toModel())
-                .locationImageList(locationImageEntities.stream()
-                        .map(LocationImageEntity::toModel)
-                        .collect(Collectors.toList()))
+                .locationImageList(imgList)
                 .build();
     }
 

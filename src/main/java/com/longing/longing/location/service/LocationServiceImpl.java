@@ -32,6 +32,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Slf4j
@@ -44,16 +45,36 @@ public class LocationServiceImpl implements LocationService {
     private final S3ImageService s3ImageService;
     private final CategoryRepository categoryRepository;
     private final LocationImageRepository locationImageRepository;
+    private final Integer thumbnailIndex = 0;
 
-    private void uploadAndSaveImage(MultipartFile image, Location location, User user) {
+    private String createLocationImageName(MultipartFile image, Boolean isThumbnail, int imageIndex) {
+        String fileOriginalFilenameName = image.getOriginalFilename();
+        String ext = fileOriginalFilenameName.substring(fileOriginalFilenameName.lastIndexOf("."));
+
+        String locationImageName;
+        if (isThumbnail) {
+            locationImageName = "thumbnail" + ext;
+        } else {
+            locationImageName = "detail_" + imageIndex + ext;
+        }
+        return locationImageName;
+    }
+
+    private void uploadAndSaveImage(MultipartFile image, Location location, User user, Boolean isThumbnail, int imageIndex) {
         String s3Dir = "location_images/location_" + location.getId() + "/";
-        String imageUrl = s3ImageService.upload(image, s3Dir);
-        LocationImage locationImage = LocationImage.from(imageUrl, location, user);
+        String locationImageName = createLocationImageName(image, isThumbnail, imageIndex);
+        String imageUrl = s3ImageService.uploadLocationImage(image, s3Dir, locationImageName);
+        LocationImage locationImage = LocationImage.from(imageUrl, location, user, isThumbnail);
         locationImageRepository.save(locationImage);
     }
 
     @Override
-    public Location createLocation(CustomUserDetails userDetails, LocationCreate locationCreate, List<MultipartFile> images) {
+    @Transactional
+    public Location createLocation(
+            CustomUserDetails userDetails,
+            LocationCreate locationCreate,
+            MultipartFile thumbnailImage,
+            List<MultipartFile> detailImages) {
         String email = userDetails.getEmail();
         Provider provider = userDetails.getProvider();
         User user = userRepository.findByEmailAndProvider(email, provider)
@@ -65,10 +86,18 @@ public class LocationServiceImpl implements LocationService {
         Location location = Location.from(user, category, locationCreate);
 
         location = locationRepository.save(location);
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile image : images) {
-                uploadAndSaveImage(image, location, user);
+
+        // 상세 이미지 저장
+        if (detailImages != null && !detailImages.isEmpty()) {
+            for (MultipartFile image : detailImages) {
+                int imageIndex = detailImages.indexOf(image);
+                uploadAndSaveImage(image, location, user, false, imageIndex);
             }
+        }
+
+        // 썸네일 이미지 저장
+        if (thumbnailImage != null && !thumbnailImage.isEmpty()) {
+            uploadAndSaveImage(thumbnailImage, location, user, true, thumbnailIndex);
         }
 
         return location;

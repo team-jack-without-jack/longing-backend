@@ -70,7 +70,6 @@ public class PostController {
     ) {
         log.info("myPost>> " + myPost);
         if (myPost) {
-            log.info("??????");
             Page<Post> myPostList = postService.getMyPostList(userDetails, keyword, page, size, sortBy, sortDirection);
             return ApiResponse.ok(myPostList);
         }
