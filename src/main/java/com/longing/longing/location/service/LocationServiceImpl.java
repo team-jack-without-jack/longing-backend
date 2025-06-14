@@ -45,12 +45,26 @@ public class LocationServiceImpl implements LocationService {
     private final S3ImageService s3ImageService;
     private final CategoryRepository categoryRepository;
     private final LocationImageRepository locationImageRepository;
+    private final Integer thumbnailIndex = 0;
 
-    private void uploadAndSaveImage(MultipartFile image, Location location, User user, Boolean isThumbnail) {
+    private String createLocationImageName(MultipartFile image, Boolean isThumbnail, int imageIndex) {
+        String fileOriginalFilenameName = image.getOriginalFilename();
+        String ext = fileOriginalFilenameName.substring(fileOriginalFilenameName.lastIndexOf("."));
+
+        String locationImageName;
+        if (isThumbnail) {
+            locationImageName = "thumbnail" + ext;
+        } else {
+            locationImageName = "detail_" + imageIndex + ext;
+        }
+        return locationImageName;
+    }
+
+    private void uploadAndSaveImage(MultipartFile image, Location location, User user, Boolean isThumbnail, int imageIndex) {
         String s3Dir = "location_images/location_" + location.getId() + "/";
-        String imageUrl = s3ImageService.upload(image, s3Dir);
-        LocationImage locationImage;
-        locationImage = LocationImage.from(imageUrl, location, user, isThumbnail);
+        String locationImageName = createLocationImageName(image, isThumbnail, imageIndex);
+        String imageUrl = s3ImageService.uploadLocationImage(image, s3Dir, locationImageName);
+        LocationImage locationImage = LocationImage.from(imageUrl, location, user, isThumbnail);
         locationImageRepository.save(locationImage);
     }
 
@@ -76,13 +90,14 @@ public class LocationServiceImpl implements LocationService {
         // 상세 이미지 저장
         if (detailImages != null && !detailImages.isEmpty()) {
             for (MultipartFile image : detailImages) {
-                uploadAndSaveImage(image, location, user, false);
+                int imageIndex = detailImages.indexOf(image);
+                uploadAndSaveImage(image, location, user, false, imageIndex);
             }
         }
 
         // 썸네일 이미지 저장
         if (thumbnailImage != null && !thumbnailImage.isEmpty()) {
-            uploadAndSaveImage(thumbnailImage, location, user, true);
+            uploadAndSaveImage(thumbnailImage, location, user, true, thumbnailIndex);
         }
 
         return location;

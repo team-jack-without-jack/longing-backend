@@ -28,7 +28,6 @@ public class GooglePlaceController {
     @GetMapping("google/places")
     public String searchPlaces(@RequestParam String query) {
         String ret = googlePlaceService.searchPlaces(query);
-        log.info("reg>> " + ret);
         return ret;
     }
 }
