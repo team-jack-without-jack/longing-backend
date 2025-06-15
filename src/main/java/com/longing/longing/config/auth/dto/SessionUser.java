@@ -1,6 +1,6 @@
 package com.longing.longing.config.auth.dto;
 
-import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import lombok.Getter;
 
 @Getter

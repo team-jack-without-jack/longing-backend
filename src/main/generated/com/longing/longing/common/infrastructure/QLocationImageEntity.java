@@ -39,12 +39,12 @@ public class QLocationImageEntity extends EntityPathBase<LocationImageEntity> {
 
     public final BooleanPath isThumbnail = createBoolean("isThumbnail");
 
-    public final com.longing.longing.location.infrastructure.QLocationEntity location;
+    public final com.longing.longing.api.location.infrastructure.QLocationEntity location;
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
 
-    public final com.longing.longing.user.infrastructure.QUserEntity user;
+    public final com.longing.longing.api.user.infrastructure.QUserEntity user;
 
     public QLocationImageEntity(String variable) {
         this(LocationImageEntity.class, forVariable(variable), INITS);
@@ -64,8 +64,8 @@ public class QLocationImageEntity extends EntityPathBase<LocationImageEntity> {
 
     public QLocationImageEntity(Class<? extends LocationImageEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.location = inits.isInitialized("location") ? new com.longing.longing.location.infrastructure.QLocationEntity(forProperty("location"), inits.get("location")) : null;
-        this.user = inits.isInitialized("user") ? new com.longing.longing.user.infrastructure.QUserEntity(forProperty("user")) : null;
+        this.location = inits.isInitialized("location") ? new com.longing.longing.api.location.infrastructure.QLocationEntity(forProperty("location"), inits.get("location")) : null;
+        this.user = inits.isInitialized("user") ? new com.longing.longing.api.user.infrastructure.QUserEntity(forProperty("user")) : null;
     }
 
 }

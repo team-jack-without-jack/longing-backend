@@ -1,8 +1,11 @@
 package com.longing.longing.post.domain;
 
-import com.longing.longing.user.Provider;
-import com.longing.longing.user.Role;
-import com.longing.longing.user.domain.User;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.domain.PostCreate;
+import com.longing.longing.api.post.domain.PostUpdate;
+import com.longing.longing.api.user.Provider;
+import com.longing.longing.api.user.Role;
+import com.longing.longing.api.user.domain.User;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

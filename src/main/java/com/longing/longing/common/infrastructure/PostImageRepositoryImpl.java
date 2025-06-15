@@ -2,7 +2,7 @@ package com.longing.longing.common.infrastructure;
 
 import com.longing.longing.common.domain.PostImage;
 import com.longing.longing.common.service.port.PostImageRepository;
-import com.longing.longing.post.infrastructure.PostEntity;
+import com.longing.longing.api.post.infrastructure.PostEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;

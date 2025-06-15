@@ -1,13 +1,11 @@
 package com.longing.longing.bookmark.service.port;
 
-import com.longing.longing.bookmark.infrastructure.PostBookmarkEntity;
-import com.longing.longing.post.domain.Post;
+import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.bookmark.domain.PostBookmark;
-import com.longing.longing.user.domain.User;
+import com.longing.longing.api.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface BookmarkRepository {

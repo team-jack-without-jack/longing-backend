@@ -1,8 +1,7 @@
 package com.longing.longing.common.domain;
 
-import com.longing.longing.post.domain.Post;
-import com.longing.longing.post.domain.PostCreate;
-import com.longing.longing.user.domain.User;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 

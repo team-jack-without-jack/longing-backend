@@ -1,12 +1,9 @@
 package com.longing.longing.bookmark.domain;
 
 import com.longing.longing.bookmark.infrastructure.PostBookmarkEntity;
-import com.longing.longing.post.domain.QPost;
-import com.longing.longing.user.domain.QUser;
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.PathMetadata;
+import com.longing.longing.api.post.domain.QPost;
+import com.longing.longing.api.user.domain.QUser;
 import com.querydsl.core.types.dsl.EntityPathBase;
-import com.querydsl.core.types.dsl.NumberPath;
 
 import javax.annotation.processing.Generated;
 

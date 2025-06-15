@@ -1,6 +1,6 @@
 package com.longing.longing.config.auth.dto;
 
-import com.longing.longing.user.Provider;
+import com.longing.longing.api.user.Provider;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

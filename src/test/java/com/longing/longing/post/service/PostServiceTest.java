@@ -1,14 +1,14 @@
 package com.longing.longing.post.service;
 
+import com.longing.longing.api.post.service.PostServiceImpl;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeUserRepository;
-import com.longing.longing.post.domain.Post;
-import com.longing.longing.post.domain.PostUpdate;
-import com.longing.longing.user.Provider;
-import com.longing.longing.user.Role;
-import com.longing.longing.user.domain.User;
-import kotlin.collections.EmptyList;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.domain.PostUpdate;
+import com.longing.longing.api.user.Provider;
+import com.longing.longing.api.user.Role;
+import com.longing.longing.api.user.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
