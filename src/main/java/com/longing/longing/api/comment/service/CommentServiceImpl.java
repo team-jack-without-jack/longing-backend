@@ -65,8 +65,10 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = Comment.from(user, post, commentCreate);
 
-        post.addCommentCount();
-        postRepository.save(post);
+//        post.addCommentCount();
+//        postRepository.save(post);
+
+        postRepository.incrementCommentCount(post.getId());
         commentRepository.save(comment);
         return comment;
     }
@@ -88,8 +90,9 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(comment.getPost().getId(), user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", comment.getPost().getId()));
 
-        post.removeCommentCount();
-        postRepository.save(post);
+//        post.removeCommentCount();
+//        postRepository.save(post);
+        postRepository.decrementCommentCount(post.getId());
         commentRepository.deleteById(commentId);
     }
 
