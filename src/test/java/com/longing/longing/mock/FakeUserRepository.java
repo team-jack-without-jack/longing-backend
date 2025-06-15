@@ -39,7 +39,7 @@ public class FakeUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findById(long id) {
-        return Optional.empty();
+        return data.stream().filter(item -> item.getId().equals(id)).findAny();
     }
 
     @Override

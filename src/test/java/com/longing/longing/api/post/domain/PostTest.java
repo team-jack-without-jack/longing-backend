@@ -1,4 +1,4 @@
-package com.longing.longing.post.domain;
+package com.longing.longing.api.post.domain;
 
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.domain.PostCreate;

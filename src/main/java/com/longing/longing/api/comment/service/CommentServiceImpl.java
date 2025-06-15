@@ -36,12 +36,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
 
     @Transactional
-    public Comment _createComment(CustomUserDetails userDetails, CommentCreate commentCreate) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-
+    public Comment _createComment(User user, CommentCreate commentCreate) {
         PostEntity postEntity = postJpaRepository.findById(commentCreate.getPostId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
 
@@ -54,12 +49,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment createComment(CustomUserDetails userDetails, CommentCreate commentCreate) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+    public Comment createComment(User user, CommentCreate commentCreate) {
         Post post = postRepository.findById(commentCreate.getPostId(), user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
 
@@ -73,11 +63,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteComment(CustomUserDetails userDetails, long commentId) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+    public void deleteComment(User user, long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comments", commentId));
 
@@ -95,9 +81,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment updateComment(CustomUserDetails userDetails, long commentId, CommentUpdate commentUpdate) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
+    public Comment updateComment(User user, long commentId, CommentUpdate commentUpdate) {
+        String email = user.getEmail();
+        Provider provider = user.getProvider();
         User writer = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(() -> new ResourceNotFoundException("User", email));
         Comment comment = commentRepository.findByIdAndUserId(commentId, writer.getId())

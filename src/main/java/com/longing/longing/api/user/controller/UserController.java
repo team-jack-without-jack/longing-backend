@@ -22,12 +22,12 @@ public class UserController {
 
     @PatchMapping()
     public ApiResponse<User> updateUser(
-        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @AuthenticationPrincipal User user,
         UserUpdate userUpdate,
         @RequestParam(value = "profileImage", required = false) MultipartFile profileImage
     ) {
-        User user = userService.updateUser(userDetails, userUpdate, profileImage);
-        return ApiResponse.ok(user);
+        User updateUser = userService.updateUser(user, userUpdate, profileImage);
+        return ApiResponse.ok(updateUser);
     }
 
     @GetMapping("/myProfile")

@@ -11,6 +11,7 @@ import com.longing.longing.common.exceptions.AlreadyLikedException;
 import com.longing.longing.api.like.domain.LikePostCreate;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import javax.persistence.EntityNotFoundException;
 
 @Slf4j
 @Service
+@Builder
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
     private final PostLikeRepository postLikeRepository;

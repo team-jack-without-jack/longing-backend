@@ -21,17 +21,12 @@ import org.springframework.web.bind.annotation.*;
 public class LikeController {
 
     private final LikeService likeService;
-    private final UserRepository userRepository;
 
     @PostMapping("/post/{id}/like")
     public ApiResponse<Boolean> likePost(
             @PathVariable("id") long postId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Long userId = user.getId();
         LikePostCreate likePostCreate = new LikePostCreate(postId, userId);
         likeService.likePost(likePostCreate);
@@ -41,12 +36,8 @@ public class LikeController {
     @DeleteMapping("/post/{id}/unlike")
     public ApiResponse<?> unlikePost(
             @PathVariable("id") Long postId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         Long userId = user.getId();
         LikePostDelete likePostDelete = new LikePostDelete(postId, userId);
         likeService.unlikePost(likePostDelete);

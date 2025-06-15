@@ -1,6 +1,7 @@
 package com.longing.longing.api.location.controller;
 
 import com.longing.longing.api.location.controller.port.LocationService;
+import com.longing.longing.api.user.domain.User;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.location.domain.Location;
@@ -58,9 +59,9 @@ public class LocationController {
     public ApiResponse<Location> updateLocation(
             @PathVariable("id") Long locationId,
             @RequestBody LocationUpdate locationUpdate,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
             ) {
-        Location location = locationService.updateLocation(userDetails, locationId, locationUpdate);
+        Location location = locationService.updateLocation(user, locationId, locationUpdate);
         return ApiResponse.ok(location);
     }
 
@@ -77,9 +78,9 @@ public class LocationController {
             @RequestPart @Valid LocationCreate locationCreate,
             @RequestPart(value = "thumbnailImage", required = false) MultipartFile thumbnailImage,
             @RequestPart(value = "detailImages", required = false) List<MultipartFile> detailImages,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
             ) {
-        Location location = locationService.createLocation(userDetails, locationCreate, thumbnailImage, detailImages);
+        Location location = locationService.createLocation(user, locationCreate, thumbnailImage, detailImages);
         return ApiResponse.created(location);
     }
 }

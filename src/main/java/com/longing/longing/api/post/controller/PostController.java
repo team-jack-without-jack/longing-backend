@@ -6,6 +6,7 @@ import com.longing.longing.api.post.controller.port.PostService;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.domain.PostCreate;
 import com.longing.longing.api.post.domain.PostUpdate;
+import com.longing.longing.api.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,7 +33,7 @@ public class PostController {
      * @param title
      * @param content
      * @param images
-     * @param userDetails
+     * @param user
      * @return
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -40,9 +41,8 @@ public class PostController {
             @RequestPart("title") @NotBlank @Max(100) String title, // title 필드 받기
             @RequestPart("content") @NotBlank @Max(3000) String content, // content 필드 받기
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-            ) {
-
+            @AuthenticationPrincipal User user
+    ) {
         log.info("=============");
         log.info("title> " + title);
         log.info("content> " + content);
@@ -50,7 +50,7 @@ public class PostController {
                 .title(title)
                 .content(content)
                 .build();
-        Post createdPost = postService.createPost(userDetails, postCreate, images);
+        Post createdPost = postService.createPost(user, postCreate, images);
         return ApiResponse.created(createdPost);
     }
 
@@ -66,14 +66,15 @@ public class PostController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection,
             @RequestParam(name = "myPost", defaultValue = "false") Boolean myPost,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
         log.info("myPost>> " + myPost);
+        log.info("sortDirection>> " + sortDirection);
         if (myPost) {
-            Page<Post> myPostList = postService.getMyPostList(userDetails, keyword, page, size, sortBy, sortDirection);
+            Page<Post> myPostList = postService.getMyPostList(user, keyword, page, size, sortBy, sortDirection);
             return ApiResponse.ok(myPostList);
         }
-        Page<Post> postList = postService.getPostList(userDetails, keyword, page, size, sortBy, sortDirection);
+        Page<Post> postList = postService.getPostList(user, keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(postList);
     }
 
@@ -84,18 +85,16 @@ public class PostController {
      */
     @PatchMapping("/{id}")
     public ApiResponse<Post> updatePost(
-//            @RequestParam long postId,
             @PathVariable("id") long postId,
             PostUpdate postUpdate,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
-        // null 체크 후 빈 리스트 대체
         List<MultipartFile> validatedImages = (images == null)
                 ? Collections.emptyList()
                 : images;
 
-        Post post = postService.updatePost(userDetails, postId, postUpdate, validatedImages);
+        Post post = postService.updatePost(user, postId, postUpdate, validatedImages);
         return ApiResponse.ok(post);
     }
 
@@ -114,9 +113,9 @@ public class PostController {
     @GetMapping("/{id}")
     public ApiResponse<Post> getPost(
             @PathVariable("id") Long postId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
-        Post post = postService.getPost(userDetails, postId);
+        Post post = postService.getPost(user, postId);
         return ApiResponse.ok(post);
     }
 
@@ -127,9 +126,9 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
-        Page<Post> postList = postService.getMyPostList(userDetails, keyword, page, size, sortBy, sortDirection);
+        Page<Post> postList = postService.getMyPostList(user, keyword, page, size, sortBy, sortDirection);
         return ApiResponse.ok(postList);
     }
 

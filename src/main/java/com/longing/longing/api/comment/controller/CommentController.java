@@ -5,6 +5,7 @@ import com.longing.longing.api.comment.domain.Comment;
 import com.longing.longing.api.comment.domain.CommentCreate;
 import com.longing.longing.api.comment.domain.CommentResponse;
 import com.longing.longing.api.comment.domain.CommentUpdate;
+import com.longing.longing.api.user.domain.User;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,9 @@ public class CommentController {
     @PostMapping("/comment")
     public ApiResponse<Comment> createComment(
             @RequestBody @Valid CommentCreate commentCreate,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
             ) {
-        Comment comment = commentService.createComment(userDetails, commentCreate);
+        Comment comment = commentService.createComment(user, commentCreate);
         return ApiResponse.created(comment);
     }
 
@@ -48,18 +49,18 @@ public class CommentController {
     public ApiResponse<Comment> updateComment(
             @PathVariable("id") Long commentId,
             @RequestBody CommentUpdate commentUpdate,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
             ) {
-        Comment comment = commentService.updateComment(userDetails, commentId, commentUpdate);
+        Comment comment = commentService.updateComment(user, commentId, commentUpdate);
         return ApiResponse.ok(comment);
     }
 
     @DeleteMapping("/comment/{id}")
     public ApiResponse<Void> deleteComment(
             @PathVariable("id") Long commentId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User user
     ) {
-        commentService.deleteComment(userDetails, commentId);
+        commentService.deleteComment(user, commentId);
         return ApiResponse.ok(null);
     }
 }

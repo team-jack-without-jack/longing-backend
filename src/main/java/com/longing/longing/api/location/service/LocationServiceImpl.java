@@ -5,7 +5,7 @@ import com.longing.longing.api.category.service.port.CategoryRepository;
 import com.longing.longing.api.location.controller.port.LocationService;
 import com.longing.longing.common.domain.LocationImage;
 import com.longing.longing.common.domain.ResourceNotFoundException;
-import com.longing.longing.common.service.S3ImageService;
+import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.common.service.port.LocationImageRepository;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.location.domain.Location;
@@ -35,7 +35,7 @@ public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
-    private final S3ImageService s3ImageService;
+    private final S3ImageServiceImpl s3ImageService;
     private final CategoryRepository categoryRepository;
     private final LocationImageRepository locationImageRepository;
     private final Integer thumbnailIndex = 0;
@@ -64,15 +64,10 @@ public class LocationServiceImpl implements LocationService {
     @Override
     @Transactional
     public Location createLocation(
-            CustomUserDetails userDetails,
+            User user,
             LocationCreate locationCreate,
             MultipartFile thumbnailImage,
             List<MultipartFile> detailImages) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-
         Category category = categoryRepository.findById(locationCreate.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categories", locationCreate.getCategoryId()));
 
@@ -114,16 +109,12 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public Location updateLocation(CustomUserDetails userDetails, Long locationId, LocationUpdate locationUpdate) {
+    public Location updateLocation(User user, Long locationId, LocationUpdate locationUpdate) {
         // location data 있는지 확인
         Location location = locationRepository.findById(locationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Locations", locationId));
 
         // user data 있는지 확인
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
         if (!location.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("you can not modify this location");
         }
