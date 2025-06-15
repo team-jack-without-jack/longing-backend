@@ -2,6 +2,8 @@ package com.longing.longing.category.infrastructure;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.longing.longing.api.category.infrastructure.CategoryEntity;
+import com.longing.longing.api.location.infrastructure.LocationEntity;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.PathMetadata;
@@ -35,7 +37,7 @@ public class QCategoryEntity extends EntityPathBase<CategoryEntity> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final ListPath<com.longing.longing.location.infrastructure.LocationEntity, com.longing.longing.location.infrastructure.QLocationEntity> locationEntities = this.<com.longing.longing.location.infrastructure.LocationEntity, com.longing.longing.location.infrastructure.QLocationEntity>createList("locationEntities", com.longing.longing.location.infrastructure.LocationEntity.class, com.longing.longing.location.infrastructure.QLocationEntity.class, PathInits.DIRECT2);
+    public final ListPath<LocationEntity, com.longing.longing.location.infrastructure.QLocationEntity> locationEntities = this.<LocationEntity, com.longing.longing.location.infrastructure.QLocationEntity>createList("locationEntities", LocationEntity.class, com.longing.longing.location.infrastructure.QLocationEntity.class, PathInits.DIRECT2);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;

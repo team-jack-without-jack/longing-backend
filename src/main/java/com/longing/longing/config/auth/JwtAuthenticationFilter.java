@@ -1,7 +1,7 @@
 package com.longing.longing.config.auth;
 
 import com.longing.longing.config.auth.dto.CustomUserDetails;
-import com.longing.longing.user.Provider;
+import com.longing.longing.api.user.Provider;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

@@ -1,0 +1,16 @@
+package com.longing.longing.api.like.domain;
+
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+public class LikePostDelete {
+    private final Long postId;
+    private final Long userId;
+
+    @Builder
+    public LikePostDelete(Long postId, Long userId) {
+        this.postId = postId;
+        this.userId = userId;
+    }
+}

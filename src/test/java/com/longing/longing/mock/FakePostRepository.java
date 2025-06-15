@@ -1,12 +1,11 @@
 package com.longing.longing.mock;
 
-import com.longing.longing.post.domain.Post;
-import com.longing.longing.post.service.port.PostRepository;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.service.port.PostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 

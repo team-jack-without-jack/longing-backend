@@ -2,6 +2,8 @@ package com.longing.longing.report.infrastructure;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.longing.longing.api.report.ReportReason;
+import com.longing.longing.api.report.infrastructure.PostReportEntity;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.PathMetadata;
@@ -28,7 +30,7 @@ public class QPostReportEntity extends EntityPathBase<PostReportEntity> {
 
     public final com.longing.longing.user.infrastructure.QUserEntity reporter;
 
-    public final EnumPath<com.longing.longing.report.ReportReason> reportReason = createEnum("reportReason", com.longing.longing.report.ReportReason.class);
+    public final EnumPath<ReportReason> reportReason = createEnum("reportReason", ReportReason.class);
 
     public QPostReportEntity(String variable) {
         this(PostReportEntity.class, forVariable(variable), INITS);

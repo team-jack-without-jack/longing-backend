@@ -2,6 +2,7 @@ package com.longing.longing.like.infrastructure;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.longing.longing.api.like.infrastructure.PostLikeEntity;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.PathMetadata;

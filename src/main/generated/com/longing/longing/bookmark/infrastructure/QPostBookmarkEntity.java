@@ -2,6 +2,7 @@ package com.longing.longing.bookmark.infrastructure;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.longing.longing.api.bookmark.infrastructure.PostBookmarkEntity;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.PathMetadata;

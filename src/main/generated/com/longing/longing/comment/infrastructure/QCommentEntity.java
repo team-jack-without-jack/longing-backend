@@ -2,6 +2,7 @@ package com.longing.longing.comment.infrastructure;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.longing.longing.api.comment.infrastructure.CommentEntity;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.PathMetadata;

@@ -2,6 +2,11 @@ package com.longing.longing.post.infrastructure;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.longing.longing.api.bookmark.infrastructure.PostBookmarkEntity;
+import com.longing.longing.api.comment.infrastructure.CommentEntity;
+import com.longing.longing.api.like.infrastructure.PostLikeEntity;
+import com.longing.longing.api.post.infrastructure.PostEntity;
+import com.longing.longing.api.report.infrastructure.PostReportEntity;
 import com.querydsl.core.types.dsl.*;
 
 import com.querydsl.core.types.PathMetadata;
@@ -26,7 +31,7 @@ public class QPostEntity extends EntityPathBase<PostEntity> {
 
     public final NumberPath<Integer> commentCount = createNumber("commentCount", Integer.class);
 
-    public final ListPath<com.longing.longing.comment.infrastructure.CommentEntity, com.longing.longing.comment.infrastructure.QCommentEntity> commentEntities = this.<com.longing.longing.comment.infrastructure.CommentEntity, com.longing.longing.comment.infrastructure.QCommentEntity>createList("commentEntities", com.longing.longing.comment.infrastructure.CommentEntity.class, com.longing.longing.comment.infrastructure.QCommentEntity.class, PathInits.DIRECT2);
+    public final ListPath<CommentEntity, com.longing.longing.comment.infrastructure.QCommentEntity> commentEntities = this.<CommentEntity, com.longing.longing.comment.infrastructure.QCommentEntity>createList("commentEntities", CommentEntity.class, com.longing.longing.comment.infrastructure.QCommentEntity.class, PathInits.DIRECT2);
 
     public final StringPath content = createString("content");
 
@@ -46,13 +51,13 @@ public class QPostEntity extends EntityPathBase<PostEntity> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
 
-    public final ListPath<com.longing.longing.bookmark.infrastructure.PostBookmarkEntity, com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity> postBookmarkEntities = this.<com.longing.longing.bookmark.infrastructure.PostBookmarkEntity, com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity>createList("postBookmarkEntities", com.longing.longing.bookmark.infrastructure.PostBookmarkEntity.class, com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity.class, PathInits.DIRECT2);
+    public final ListPath<PostBookmarkEntity, com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity> postBookmarkEntities = this.<PostBookmarkEntity, com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity>createList("postBookmarkEntities", PostBookmarkEntity.class, com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity.class, PathInits.DIRECT2);
 
     public final ListPath<com.longing.longing.common.infrastructure.PostImageEntity, com.longing.longing.common.infrastructure.QPostImageEntity> postImageEntities = this.<com.longing.longing.common.infrastructure.PostImageEntity, com.longing.longing.common.infrastructure.QPostImageEntity>createList("postImageEntities", com.longing.longing.common.infrastructure.PostImageEntity.class, com.longing.longing.common.infrastructure.QPostImageEntity.class, PathInits.DIRECT2);
 
-    public final ListPath<com.longing.longing.like.infrastructure.PostLikeEntity, com.longing.longing.like.infrastructure.QPostLikeEntity> postLikeEntities = this.<com.longing.longing.like.infrastructure.PostLikeEntity, com.longing.longing.like.infrastructure.QPostLikeEntity>createList("postLikeEntities", com.longing.longing.like.infrastructure.PostLikeEntity.class, com.longing.longing.like.infrastructure.QPostLikeEntity.class, PathInits.DIRECT2);
+    public final ListPath<PostLikeEntity, com.longing.longing.like.infrastructure.QPostLikeEntity> postLikeEntities = this.<PostLikeEntity, com.longing.longing.like.infrastructure.QPostLikeEntity>createList("postLikeEntities", PostLikeEntity.class, com.longing.longing.like.infrastructure.QPostLikeEntity.class, PathInits.DIRECT2);
 
-    public final ListPath<com.longing.longing.report.infrastructure.PostReportEntity, com.longing.longing.report.infrastructure.QPostReportEntity> postReportEntities = this.<com.longing.longing.report.infrastructure.PostReportEntity, com.longing.longing.report.infrastructure.QPostReportEntity>createList("postReportEntities", com.longing.longing.report.infrastructure.PostReportEntity.class, com.longing.longing.report.infrastructure.QPostReportEntity.class, PathInits.DIRECT2);
+    public final ListPath<PostReportEntity, com.longing.longing.report.infrastructure.QPostReportEntity> postReportEntities = this.<PostReportEntity, com.longing.longing.report.infrastructure.QPostReportEntity>createList("postReportEntities", PostReportEntity.class, com.longing.longing.report.infrastructure.QPostReportEntity.class, PathInits.DIRECT2);
 
     public final StringPath title = createString("title");
 
