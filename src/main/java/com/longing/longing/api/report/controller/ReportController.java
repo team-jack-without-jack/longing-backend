@@ -1,5 +1,6 @@
 package com.longing.longing.api.report.controller;
 
+import com.longing.longing.api.user.domain.User;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.report.controller.port.ReportService;
@@ -27,8 +28,8 @@ public class ReportController {
     public ApiResponse<PostReportResponse> postReport(
             @PathVariable("id") long postId,
             @RequestBody ReportCreate reportCreate,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        PostReport postReportCreate = reportService.createPostReport(postId, reportCreate, customUserDetails);
+            @AuthenticationPrincipal User user) {
+        PostReport postReportCreate = reportService.createPostReport(postId, reportCreate, user);
         return ApiResponse.created(PostReportResponse.from(postReportCreate));
     }
 }

@@ -32,13 +32,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public PostReport createPostReport(Long postId, ReportCreate reportCreate, CustomUserDetails userDetails) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
+    public PostReport createPostReport(Long postId, ReportCreate reportCreate, User reporter) {
         ReportReason reportReason = reportCreate.getReportReason();
-
-        User reporter = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         Post post = postRepository.findById(postId, reporter.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));

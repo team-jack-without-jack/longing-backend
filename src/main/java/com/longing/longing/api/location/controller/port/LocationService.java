@@ -1,5 +1,6 @@
 package com.longing.longing.api.location.controller.port;
 
+import com.longing.longing.api.user.domain.User;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.location.domain.Location;
 import com.longing.longing.api.location.domain.LocationCreate;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public interface LocationService {
     Location createLocation(
-            CustomUserDetails userDetails,
+            User user,
             LocationCreate locationCreate,
             MultipartFile thumbnailImage,
             List<MultipartFile> detailImages
@@ -19,7 +20,7 @@ public interface LocationService {
     Page<Location> getLocationList(String keyword, int page, int size, String sortBy, String sortDirection);
     Location getLocation(Long id);
 
-    Location updateLocation(CustomUserDetails userDetails, Long locationId, LocationUpdate locationUpdate);
+    Location updateLocation(User user, Long locationId, LocationUpdate locationUpdate);
 
     void deleteLocation(Long locationId);
 }

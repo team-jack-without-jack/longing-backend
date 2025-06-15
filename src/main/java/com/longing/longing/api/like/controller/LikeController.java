@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class LikeController {
 
     private final LikeService likeService;
-    private final UserRepository userRepository;
 
     @PostMapping("/post/{id}/like")
     public ApiResponse<Boolean> likePost(

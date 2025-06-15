@@ -36,13 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUser(CustomUserDetails userDetails, UserUpdate userUpdate, MultipartFile profileImage) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(
-                email,
-                provider
-                ).orElseThrow(() -> new ResourceNotFoundException("Users", email));
+    public User updateUser(User user, UserUpdate userUpdate, MultipartFile profileImage) {
         String imageUrl = null;
         if (profileImage != null && !profileImage.isEmpty()) {
             imageUrl = uploadProfileImage(profileImage, user);

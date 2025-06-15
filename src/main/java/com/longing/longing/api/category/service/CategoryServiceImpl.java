@@ -24,11 +24,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final UserRepository userRepository;
 
     @Override
-    public Category createCategory(CustomUserDetails userDetails, CategoryCreate categoryCreate) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+    public Category createCategory(User user, CategoryCreate categoryCreate) {
         Category category = Category.from(categoryCreate);
         return categoryRepository.save(category);
     }
