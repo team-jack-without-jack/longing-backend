@@ -97,7 +97,6 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return postRepository.findMyPostsWithLikeCountAndSearch(user.getId(), keyword, pageable);
-
     }
 
     @Override

@@ -60,7 +60,9 @@ public class FakePostRepository implements PostRepository {
 
     @Override
     public void incrementLikeCount(Long postId) {
+        Optional<Post> postOptional = data.stream().filter(item -> item.getId().equals(postId)).findAny();
 
+        postOptional.ifPresent(post -> post.);
     }
 
     @Override

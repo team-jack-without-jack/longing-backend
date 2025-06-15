@@ -1,6 +1,7 @@
-package com.longing.longing.post.service;
+package com.longing.longing.api.post.service;
 
 import com.longing.longing.api.post.service.PostServiceImpl;
+import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeUserRepository;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class PostServiceTest {
@@ -92,5 +94,20 @@ public class PostServiceTest {
         // then
         assertThat(result.getTitle()).isEqualTo(postUpdate.getTitle());
         assertThat(result.getContent()).isEqualTo(postUpdate.getContent());
+    }
+
+    @Test
+    void 없는_id_를_찾으면_에러를_발생시킨다() {
+        //given
+        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+        Long postId = 5L;
+
+        // when
+
+        // then
+        assertThatThrownBy(() -> {
+            postService.getPost(userDetails, postId);
+        }).isInstanceOf(ResourceNotFoundException.class);
+
     }
 }
