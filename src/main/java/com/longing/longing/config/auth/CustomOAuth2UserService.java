@@ -1,11 +1,10 @@
 package com.longing.longing.config.auth;
 
 import com.longing.longing.config.auth.dto.OAuthAttributes;
-import com.longing.longing.config.auth.dto.SessionUser;
-import com.longing.longing.user.domain.User;
-import com.longing.longing.user.infrastructure.UserEntity;
-import com.longing.longing.user.infrastructure.UserJpaRepository;
-import com.longing.longing.user.service.port.UserRepository;
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.user.infrastructure.UserEntity;
+import com.longing.longing.api.user.infrastructure.UserJpaRepository;
+import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,7 +15,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;

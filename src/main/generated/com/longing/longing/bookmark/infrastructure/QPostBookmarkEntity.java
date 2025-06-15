@@ -38,9 +38,9 @@ public class QPostBookmarkEntity extends EntityPathBase<PostBookmarkEntity> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
 
-    public final com.longing.longing.post.infrastructure.QPostEntity post;
+    public final com.longing.longing.api.post.infrastructure.QPostEntity post;
 
-    public final com.longing.longing.user.infrastructure.QUserEntity user;
+    public final com.longing.longing.api.user.infrastructure.QUserEntity user;
 
     public QPostBookmarkEntity(String variable) {
         this(PostBookmarkEntity.class, forVariable(variable), INITS);
@@ -60,8 +60,8 @@ public class QPostBookmarkEntity extends EntityPathBase<PostBookmarkEntity> {
 
     public QPostBookmarkEntity(Class<? extends PostBookmarkEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.post = inits.isInitialized("post") ? new com.longing.longing.post.infrastructure.QPostEntity(forProperty("post"), inits.get("post")) : null;
-        this.user = inits.isInitialized("user") ? new com.longing.longing.user.infrastructure.QUserEntity(forProperty("user")) : null;
+        this.post = inits.isInitialized("post") ? new com.longing.longing.api.post.infrastructure.QPostEntity(forProperty("post"), inits.get("post")) : null;
+        this.user = inits.isInitialized("user") ? new com.longing.longing.api.user.infrastructure.QUserEntity(forProperty("user")) : null;
     }
 
 }
