@@ -5,15 +5,23 @@ import com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.service.port.PostRepository;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,17 +69,35 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findAll(Long userId, Pageable pageable) {
-//        Page<Object[]> results = postJpaRepository.findAll(userId, pageable);
-//
-//        List<Post> postEntities = results.getContent().stream().map(result -> {
-//            PostEntity postEntity = (PostEntity) result[0]; // 첫 번째 항목은 PostEntity
-//            Boolean bookmarked = (Boolean) result[1]; // 두 번째 항목은 bookmarked 값
-//            Boolean liked = (Boolean) result[2]; // 세 번째 항목은 liked 값
-//
-//            return postEntity.toModel(bookmarked, liked); // PostEntity를 Post로 변환
-//        }).collect(Collectors.toList());
-//
-//        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
+        PathBuilder<PostEntity> postPath = new PathBuilder<>(PostEntity.class, "post");
+        // 정렬 조건 만들기
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        for (Sort.Order order : pageable.getSort()) {
+            String property = order.getProperty();
+            Order direction = order.isAscending() ? Order.ASC : Order.DESC;
+
+            // 필드 타입에 맞게 처리 (필요시 추가 가능)
+            switch (property) {
+                case "id":
+                    orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getNumber(property, Long.class)));
+                case "title":
+                case "content":
+                    orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getString(property)));
+                    break;
+                case "likeCount":
+                case "commentCount":
+                    orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getNumber(property, Integer.class)));
+                    break;
+                case "createdDate":
+                case "modifiedDate":
+                    orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getDateTime(property, LocalDateTime.class)));
+                    break;
+                default:
+                    throw new IllegalArgumentException("cannot sorted by: " + property);
+            }
+        }
+
+        // 쿼리 실행
         List<Tuple> results = queryFactory
                 .select(
                         post,
@@ -87,7 +113,8 @@ public class PostRepositoryImpl implements PostRepository {
                                 .exists()
                 )
                 .from(post)
-                .where(post.getDeleted().eq(false))
+                .where(post.deleted.eq(false))
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -104,7 +131,7 @@ public class PostRepositoryImpl implements PostRepository {
         long total = queryFactory
                 .select(post.count())
                 .from(post)
-                .where(post.getDeleted().eq(false))
+                .where(post.deleted.eq(false))
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total);
@@ -118,17 +145,53 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findAllwithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
-        Page<Object[]> results = postJpaRepository.findAllWithLikeCountAndSearch(userId, keyword, pageable);
+        QPostEntity post = QPostEntity.postEntity;
+        QPostLikeEntity like = QPostLikeEntity.postLikeEntity;
+        QPostBookmarkEntity bookmark = QPostBookmarkEntity.postBookmarkEntity;
 
-        List<Post> postEntities = results.getContent().stream().map(result -> {
-            PostEntity postEntity = (PostEntity) result[0]; // 첫 번째 항목은 PostEntity
-            Boolean bookmarked = (Boolean) result[1]; // 두 번째 항목은 bookmarked 값
-            Boolean liked = (Boolean) result[2]; // 세 번째 항목은 liked 값
+        BooleanExpression condition = post.title.containsIgnoreCase(keyword)
+                .or(post.content.containsIgnoreCase(keyword));
 
-            return postEntity.toModel(bookmarked, liked); // PostEntity를 Post로 변환
-        }).collect(Collectors.toList());
+        JPQLQuery<Tuple> query = queryFactory
+                .select(post, like.isNotNull(), bookmark.isNotNull())
+                .from(post)
+                .leftJoin(like).on(like.post.id.eq(post.id).and(like.user.id.eq(userId)))
+                .leftJoin(bookmark).on(bookmark.post.id.eq(post.id).and(bookmark.user.id.eq(userId)))
+                .where(condition);
 
-        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
+        for (Sort.Order order : pageable.getSort()) {
+            String property = order.getProperty();
+            PathBuilder<PostEntity> entityPath = new PathBuilder<>(PostEntity.class, "postEntity");
+
+            // 기본적으로 StringPath로 처리 (문자열 정렬용)
+            OrderSpecifier<?> orderSpecifier = order.isAscending()
+                    ? entityPath.getString(property).asc()
+                    : entityPath.getString(property).desc();
+
+            query.orderBy(orderSpecifier);
+        }
+
+        List<Tuple> results = query
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        List<Post> content = results.stream()
+                .map(tuple -> {
+                    PostEntity postEntity = tuple.get(post);
+                    Boolean liked = tuple.get(like.isNotNull());
+                    Boolean bookmarked = tuple.get(bookmark.isNotNull());
+                    return postEntity.toModel(bookmarked, liked);
+                })
+                .collect(Collectors.toList());
+
+        long total = queryFactory
+                .select(post.count())
+                .from(post)
+                .where(condition)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
     }
 
 //    @Override

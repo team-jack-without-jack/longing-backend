@@ -69,6 +69,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         log.info("myPost>> " + myPost);
+        log.info("sortDirection>> " + sortDirection);
         if (myPost) {
             Page<Post> myPostList = postService.getMyPostList(userDetails, keyword, page, size, sortBy, sortDirection);
             return ApiResponse.ok(myPostList);
