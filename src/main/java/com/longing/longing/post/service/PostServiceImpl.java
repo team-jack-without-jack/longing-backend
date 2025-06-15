@@ -76,9 +76,7 @@ public class PostServiceImpl implements PostService {
 
     private void uploadAndSaveImage(MultipartFile image, Post post, User user) {
         String s3Dir = "post_images/post_" + post.getId() + "/";
-        log.info("s3Dir:: " + s3Dir);
-        String imageUrl = s3ImageService.upload(image, s3Dir);
-        log.info("imageUrl:: " + imageUrl);
+        String imageUrl = s3ImageService.uploadPostImage(image, s3Dir);
         PostImage postImage = PostImage.from(imageUrl, post, user);
         postImageRepository.save(postImage);
     }
