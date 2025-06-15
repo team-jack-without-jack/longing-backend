@@ -33,7 +33,7 @@ public class LikeServiceTest {
                 .build();
         this.postService = PostServiceImpl.builder()
                 .postRepository(fakePostRepository)
-                .userRepository(fakeUserRepository)
+//                .userRepository(fakeUserRepository)
                 .build();
         User user1 = User.builder()
                 .id(1L)
@@ -73,7 +73,17 @@ public class LikeServiceTest {
     @Test
     void 좋아요를_누르면_Post의_likeCount가_증가한다() {
         // given
-        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+        User user1 = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .nationality("KOREA")
+                .introduction("hello world")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .picture("test_picture")
+                .build();
         LikePostCreate likePostCreate = LikePostCreate.builder()
                 .postId(1L)
                 .userId(1L)
@@ -83,14 +93,26 @@ public class LikeServiceTest {
         likeService.likePost(likePostCreate);
 
         // then
-        Integer likeCount = postService.getPost(userDetails, 1L).getLikeCount();
+        Integer likeCount = postService.getPost(user1, 1L).getLikeCount();
         assertThat(likeCount).isEqualTo(1);
     }
 
     @Test
     void 좋아요를_취소하면_Post의_likeCount가_감소한다() {
         // given
-        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+//        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+
+        User user1 = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .nationality("KOREA")
+                .introduction("hello world")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .picture("test_picture")
+                .build();
         LikePostDelete likePostDelete = LikePostDelete.builder()
                 .postId(1L)
                 .userId(1L)
@@ -107,7 +129,7 @@ public class LikeServiceTest {
         likeService.unlikePost(likePostDelete);
 
         // then
-        Integer likeCount = postService.getPost(userDetails, 1L).getLikeCount();
+        Integer likeCount = postService.getPost(user1, 1L).getLikeCount();
         assertThat(likeCount).isEqualTo(0);
     }
 }

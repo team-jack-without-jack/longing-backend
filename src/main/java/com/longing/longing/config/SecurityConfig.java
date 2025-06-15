@@ -1,8 +1,11 @@
 package com.longing.longing.config;
 
+import com.longing.longing.config.auth.AuthenticationPrincipalArgumentResolver;
 import com.longing.longing.config.auth.CustomOAuth2UserService;
 import com.longing.longing.config.auth.JwtAuthenticationFilter;
 import com.longing.longing.config.auth.JwtTokenProvider;
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
@@ -15,31 +18,37 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig implements WebMvcConfigurer {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new AuthenticationPrincipalArgumentResolver(userRepository));
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // JWT 인증 필터 추가
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
-//        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(new OAuth2AuthorizationRequestRedirectFilter(), JwtAuthenticationFilter.class);
-
 
         // OAuth2 로그인 설정
         http.oauth2Login(oauth2 -> oauth2
-                .loginPage("/oauth-login") // 로그인 페이지 경로 설정
-                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // ✅ CustomOAuth2UserService 적용
+                .loginPage("/oauth-login")
+                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
         );
 
         // 로그아웃 설정
@@ -47,19 +56,14 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll();
 
-
         // 권한 설정
         http.authorizeHttpRequests((auth) -> auth
-                        // actuator: /actuator/health, /actuator/info는 공개
                         .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
-                        // actuator의 나머지는 인증 필요
                         .requestMatchers(EndpointRequest.toAnyEndpoint()).authenticated()
                         .antMatchers("/", "/test", "/ping", "/ping2", "oauth2/**", "/login/**", "/oauth-login/**", "/oauth/authenticate").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                        .anyRequest().authenticated());
 
-
-        // CSRF 비활성화 (개발 환경에서만 사용)
+        // CSRF 비활성화 및 CORS 설정
         http.cors().configurationSource(corsConfigurationSource())
                 .and().csrf().disable();
 
@@ -71,14 +75,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         Arrays.stream(allowedOrigins.split(","))
                 .forEach(configuration::addAllowedOrigin);
-//        configuration.addAllowedOrigin("*"); // ✅ iOS에서 오는 요청 허용 (배포 시 변경 필요)
-//        configuration.addAllowedOrigin("http://localhost:8000");
-//        configuration.addAllowedOrigin("http://localhost:8001");
-//        configuration.addAllowedOrigin("http://localhost:8002");
-//        configuration.addAllowedOrigin("http://localhost:8080");
-        configuration.addAllowedMethod("*"); // ✅ 모든 HTTP 메서드 허용
-        configuration.addAllowedHeader("*"); // ✅ 모든 헤더 허용
-        configuration.setAllowCredentials(true); // ✅ 인증 정보 포함 허용
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

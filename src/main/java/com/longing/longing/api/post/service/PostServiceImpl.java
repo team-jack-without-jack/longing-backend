@@ -9,11 +9,8 @@ import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageService;
 import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.common.service.port.PostImageRepository;
-import com.longing.longing.config.auth.dto.CustomUserDetails;
-import com.longing.longing.api.post.domain.PostUpdate;
-import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.domain.User;
-import com.longing.longing.api.user.service.port.UserRepository;
+import com.longing.longing.api.post.domain.PostUpdate;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,27 +32,18 @@ import java.util.List;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
     private final S3ImageService s3ImageService;
     private final PostImageRepository postImageRepository;
 
-
     @Override
     @Transactional
-    public Post createPost(CustomUserDetails userDetails, PostCreate postCreate, List<MultipartFile> images) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-
-        // PostEntity 저장 (영속 상태로 만듦)
+    public Post createPost(User user, PostCreate postCreate, List<MultipartFile> images) {
         Post post = Post.from(user, postCreate);
         post = postRepository.save(post);
 
         log.info("title:: " + post.getTitle());
         log.info("content:: " + post.getContent());
 
-        // 이미지 업로드 및 저장
         if (images != null && !images.isEmpty()) {
             log.info("image is exists!");
             for (MultipartFile image : images) {
@@ -74,10 +62,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<Post> getPostList(CustomUserDetails userDetails, String keyword, int page, int size, String sortBy, String sortDirection) {
-        User user = userRepository.findByEmailAndProvider(userDetails.getEmail(), userDetails.getProvider())
-                .orElseThrow(() -> new ResourceNotFoundException("Users", userDetails.getEmail()));
-
+    public Page<Post> getPostList(User user, String keyword, int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
@@ -88,12 +73,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<Post> getMyPostList(CustomUserDetails userDetails, String keyword, int page, int size, String sortBy, String sortDirection) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-
+    public Page<Post> getMyPostList(User user, String keyword, int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
@@ -101,23 +81,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post getPost(CustomUserDetails userDetails, Long postId) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
-
-
+    public Post getPost(User user, Long postId) {
         return postRepository.findById(postId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
     @Override
-    public Post updatePost(CustomUserDetails userDetails, Long postId, PostUpdate postUpdate, List<MultipartFile> images) {
-        String email = userDetails.getEmail();
-        Provider provider = userDetails.getProvider();
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("Users", email));
+    public Post updatePost(User user, Long postId, PostUpdate postUpdate, List<MultipartFile> images) {
         Post post = postRepository.findById(postId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
 
@@ -137,5 +107,4 @@ public class PostServiceImpl implements PostService {
     public void deletePost(Long postId) {
         postRepository.deleteById(postId);
     }
-
 }

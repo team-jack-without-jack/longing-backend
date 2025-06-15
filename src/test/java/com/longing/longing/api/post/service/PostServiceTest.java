@@ -37,7 +37,6 @@ public class PostServiceTest {
 //        FakeS3ImageService fakeS3ImageService = new FakeS3ImageService();
         this.postService = PostServiceImpl.builder()
                 .postRepository(fakePostRepository)
-                .userRepository(fakeUserRepository)
 //                .s3ImageService(fakeS3ImageService)
                 .postImageRepository(fakePostImageRepository)
                 .build();
@@ -90,9 +89,20 @@ public class PostServiceTest {
     @Test
     void getPost는_존재하는_게시물을_내려준다() {
         // given
-        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+//        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+        User user1 = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .nationality("KOREA")
+                .introduction("hello world")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .picture("test_picture")
+                .build();
         // when
-        Post result = postService.getPost(userDetails, 1L);
+        Post result = postService.getPost(user1, 1L);
 
         // then
         assertThat(result.getTitle()).isEqualTo("test_title");
@@ -102,7 +112,18 @@ public class PostServiceTest {
     @Test
     void updatePost는_존재하는_게시글을_수정한다() {
         // given
-        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+//        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+        User user1 = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .nationality("KOREA")
+                .introduction("hello world")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .picture("test_picture")
+                .build();
         Long postId = 1L;
         PostUpdate postUpdate = PostUpdate.builder()
                 .title("update_title")
@@ -111,7 +132,7 @@ public class PostServiceTest {
         List<MultipartFile> images = Collections.emptyList();
 
         // when
-        Post result = postService.updatePost(userDetails, 1L, postUpdate, images);
+        Post result = postService.updatePost(user1, 1L, postUpdate, images);
 
         // then
         assertThat(result.getTitle()).isEqualTo(postUpdate.getTitle());
@@ -121,14 +142,25 @@ public class PostServiceTest {
     @Test
     void 없는_id_를_찾으면_에러를_발생시킨다() {
         //given
-        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+        User user1 = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .nationality("KOREA")
+                .introduction("hello world")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .picture("test_picture")
+                .build();
+
         Long postId = 5L;
 
         // when
 
         // then
         assertThatThrownBy(() -> {
-            postService.getPost(userDetails, postId);
+            postService.getPost(user1, postId);
         }).isInstanceOf(ResourceNotFoundException.class);
     }
 }
