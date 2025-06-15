@@ -92,6 +92,16 @@ public class FakePostRepository implements PostRepository {
     }
 
     @Override
+    public void incrementCommentCount(Long postId) {
+
+    }
+
+    @Override
+    public void decrementCommentCount(Long postId) {
+
+    }
+
+    @Override
     public void flush() {
 
     }

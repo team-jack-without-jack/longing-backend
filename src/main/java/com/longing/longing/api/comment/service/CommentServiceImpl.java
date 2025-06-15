@@ -55,9 +55,6 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = Comment.from(user, post, commentCreate);
 
-//        post.addCommentCount();
-//        postRepository.save(post);
-
         postRepository.incrementCommentCount(post.getId());
         commentRepository.save(comment);
         return comment;
@@ -76,19 +73,13 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(comment.getPost().getId(), user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", comment.getPost().getId()));
 
-//        post.removeCommentCount();
-//        postRepository.save(post);
         postRepository.decrementCommentCount(post.getId());
         commentRepository.deleteById(commentId);
     }
 
     @Override
     @Transactional
-    public Comment updateComment(User user, long commentId, CommentUpdate commentUpdate) {
-        String email = user.getEmail();
-        Provider provider = user.getProvider();
-        User writer = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new ResourceNotFoundException("User", email));
+    public Comment updateComment(User writer, long commentId, CommentUpdate commentUpdate) {
         Comment comment = commentRepository.findByIdAndUserId(commentId, writer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
 
