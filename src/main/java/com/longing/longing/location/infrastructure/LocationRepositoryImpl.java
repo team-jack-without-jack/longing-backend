@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class LocationRepositoryImpl implements LocationRepository {
 
     private final LocationJpaRepository locationJpaRepository;
+    private final JPAQueryFactory queryFactory;
 
     @Override
     public Optional<Location> findById(Long id) {

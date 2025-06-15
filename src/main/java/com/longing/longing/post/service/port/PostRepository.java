@@ -19,5 +19,8 @@ public interface PostRepository {
 
     Page<Post> findAllwithLikeCountAndSearch(Long userId, String keyword, Pageable pageable);
     Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable);
+
+    void incrementLikeCount(Long postId);
+    void decrementLikeCount(Long postId);
     void flush();
 }

@@ -60,8 +60,12 @@ public class PostServiceImpl implements PostService {
         Post post = Post.from(user, postCreate);
         post = postRepository.save(post);
 
+        log.info("title:: " + post.getTitle());
+        log.info("content:: " + post.getContent());
+
         // 이미지 업로드 및 저장
         if (images != null && !images.isEmpty()) {
+            log.info("image is exists!");
             for (MultipartFile image : images) {
                 uploadAndSaveImage(image, post, user);
             }
@@ -137,7 +141,6 @@ public class PostServiceImpl implements PostService {
         post.update(postUpdate);
         return postRepository.save(post);
     }
-
 
     @Override
     public void deletePost(Long postId) {

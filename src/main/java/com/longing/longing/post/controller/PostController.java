@@ -46,6 +46,9 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
 
+        log.info("=============");
+        log.info("title> " + title);
+        log.info("content> " + content);
         PostCreate postCreate = PostCreate.builder()
                 .title(title)
                 .content(content)

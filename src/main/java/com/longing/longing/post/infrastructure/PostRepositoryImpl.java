@@ -12,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
@@ -243,6 +246,15 @@ public class PostRepositoryImpl implements PostRepository {
 
     }
 
+    @Override
+    public void incrementLikeCount(Long postId) {
+        postJpaRepository.incrementLikeCount(postId);
+    }
+
+    @Override
+    public void decrementLikeCount(Long postId) {
+        postJpaRepository.decrementLikeCount(postId);
+    }
 
 
     @Override
