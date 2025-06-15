@@ -1,9 +1,7 @@
 package com.longing.longing.api.like.service;
 
-import com.longing.longing.api.like.controller.port.LikeService;
 import com.longing.longing.api.like.domain.LikePostCreate;
 import com.longing.longing.api.like.domain.LikePostDelete;
-import com.longing.longing.api.like.domain.PostLike;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.service.PostServiceImpl;
 import com.longing.longing.api.user.Provider;
@@ -22,8 +20,6 @@ public class LikeServiceTest {
 
     private LikeServiceImpl likeService;
     private PostServiceImpl postService;
-
-    private FakePostRepository fakePostRepository;
 
     @BeforeEach
     void init() {
@@ -69,16 +65,9 @@ public class LikeServiceTest {
                 .user(user1)
                 .build();
 
-//        PostLike postLike = PostLike.builder()
-//                .id(1L)
-//                .post(post)
-//                .user(user1)
-//                .build();
-
         fakeUserRepository.save(user1);
         fakeUserRepository.save(user2);
         fakePostRepository.save(post);
-//        fakePostLikeRepository.save(postLike);
     }
 
     @Test
@@ -91,13 +80,34 @@ public class LikeServiceTest {
                 .build();
 
         // when
-//        likeService.likePost(likePostCreate);
-        fakePostRepository.incrementLikeCount(1L);
+        likeService.likePost(likePostCreate);
 
         // then
         Integer likeCount = postService.getPost(userDetails, 1L).getLikeCount();
-        System.out.printf("likeCount>> " + likeCount);
         assertThat(likeCount).isEqualTo(1);
     }
 
+    @Test
+    void 좋아요를_취소하면_Post의_likeCount가_감소한다() {
+        // given
+        CustomUserDetails userDetails = new CustomUserDetails("test@test.com", Provider.GOOGLE);
+        LikePostDelete likePostDelete = LikePostDelete.builder()
+                .postId(1L)
+                .userId(1L)
+                .build();
+
+        LikePostCreate likePostCreate = LikePostCreate.builder()
+                .postId(1L)
+                .userId(1L)
+                .build();
+
+        likeService.likePost(likePostCreate);
+
+        // when
+        likeService.unlikePost(likePostDelete);
+
+        // then
+        Integer likeCount = postService.getPost(userDetails, 1L).getLikeCount();
+        assertThat(likeCount).isEqualTo(0);
+    }
 }

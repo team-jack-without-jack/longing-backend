@@ -5,7 +5,7 @@ import com.longing.longing.api.category.service.port.CategoryRepository;
 import com.longing.longing.api.location.controller.port.LocationService;
 import com.longing.longing.common.domain.LocationImage;
 import com.longing.longing.common.domain.ResourceNotFoundException;
-import com.longing.longing.common.service.S3ImageService;
+import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.common.service.port.LocationImageRepository;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.location.domain.Location;
@@ -35,7 +35,7 @@ public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
-    private final S3ImageService s3ImageService;
+    private final S3ImageServiceImpl s3ImageService;
     private final CategoryRepository categoryRepository;
     private final LocationImageRepository locationImageRepository;
     private final Integer thumbnailIndex = 0;

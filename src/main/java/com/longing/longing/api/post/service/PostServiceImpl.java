@@ -7,6 +7,7 @@ import com.longing.longing.api.post.service.port.PostRepository;
 import com.longing.longing.common.domain.PostImage;
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageService;
+import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.common.service.port.PostImageRepository;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.post.domain.PostUpdate;

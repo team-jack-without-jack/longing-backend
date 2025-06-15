@@ -2,6 +2,7 @@ package com.longing.longing.api.post.service;
 
 import com.longing.longing.api.post.service.PostServiceImpl;
 import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.service.FakeS3ImageService;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeUserRepository;
@@ -28,9 +29,11 @@ public class PostServiceTest {
     void init() {
         FakePostRepository fakePostRepository = new FakePostRepository();
         FakeUserRepository fakeUserRepository = new FakeUserRepository();
+//        FakeS3ImageService fakeS3ImageService = new FakeS3ImageService();
         this.postService = PostServiceImpl.builder()
                 .postRepository(fakePostRepository)
                 .userRepository(fakeUserRepository)
+//                .s3ImageService(fakeS3ImageService)
                 .build();
         User user1 = User.builder()
                 .id(1L)

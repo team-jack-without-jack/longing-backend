@@ -2,7 +2,7 @@ package com.longing.longing.api.user.service;
 
 import com.longing.longing.api.user.domain.UserUpdate;
 import com.longing.longing.common.domain.ResourceNotFoundException;
-import com.longing.longing.common.service.S3ImageService;
+import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.controller.port.UserService;
@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final S3ImageService s3ImageService;
+    private final S3ImageServiceImpl s3ImageService;
 
     private String uploadProfileImage(MultipartFile image, User user) {
         // S3 업로드 경로 설정: profile_images/user_{userId}/{originalFilename}
