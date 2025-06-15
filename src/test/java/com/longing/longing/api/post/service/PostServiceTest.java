@@ -1,9 +1,11 @@
 package com.longing.longing.api.post.service;
 
 import com.longing.longing.api.post.service.PostServiceImpl;
+import com.longing.longing.common.domain.PostImage;
 import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.service.FakeS3ImageService;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
+import com.longing.longing.mock.FakePostImageRepository;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeUserRepository;
 import com.longing.longing.api.post.domain.Post;
@@ -13,8 +15,10 @@ import com.longing.longing.api.user.Role;
 import com.longing.longing.api.user.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,11 +33,13 @@ public class PostServiceTest {
     void init() {
         FakePostRepository fakePostRepository = new FakePostRepository();
         FakeUserRepository fakeUserRepository = new FakeUserRepository();
+        FakePostImageRepository fakePostImageRepository = new FakePostImageRepository();
 //        FakeS3ImageService fakeS3ImageService = new FakeS3ImageService();
         this.postService = PostServiceImpl.builder()
                 .postRepository(fakePostRepository)
                 .userRepository(fakeUserRepository)
 //                .s3ImageService(fakeS3ImageService)
+                .postImageRepository(fakePostImageRepository)
                 .build();
         User user1 = User.builder()
                 .id(1L)
@@ -57,15 +63,28 @@ public class PostServiceTest {
                 .providerId("2")
                 .picture("test_picture2")
                 .build();
-
-        fakeUserRepository.save(user1);
-        fakeUserRepository.save(user2);
-        fakePostRepository.save(Post.builder()
+        Post post = Post.builder()
                 .id(1L)
                 .title("test_title")
                 .content("test_content")
                 .user(user1)
-                .build());
+                .build();
+
+        fakeUserRepository.save(user1);
+        fakeUserRepository.save(user2);
+        fakePostRepository.save(post);
+
+        MockMultipartFile multipartFile1 = new MockMultipartFile("file", "test.txt", "text/plain", "test file".getBytes(StandardCharsets.UTF_8) );
+        MockMultipartFile multipartFile2 = new MockMultipartFile("file", "test2.txt", "text/plain", "test file2".getBytes(StandardCharsets.UTF_8) );
+
+        PostImage postImage = PostImage.builder()
+                .id(1L)
+                .address("image_address")
+                .post(post)
+                .user(user1)
+                .build();
+
+        fakePostImageRepository.save(postImage);
     }
 
     @Test
@@ -111,6 +130,5 @@ public class PostServiceTest {
         assertThatThrownBy(() -> {
             postService.getPost(userDetails, postId);
         }).isInstanceOf(ResourceNotFoundException.class);
-
     }
 }
