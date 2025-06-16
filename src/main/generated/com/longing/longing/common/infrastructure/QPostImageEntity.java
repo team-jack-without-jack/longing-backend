@@ -40,9 +40,9 @@ public class QPostImageEntity extends EntityPathBase<PostImageEntity> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
 
-    public final com.longing.longing.post.infrastructure.QPostEntity post;
+    public final com.longing.longing.api.post.infrastructure.QPostEntity post;
 
-    public final com.longing.longing.user.infrastructure.QUserEntity user;
+    public final com.longing.longing.api.user.infrastructure.QUserEntity user;
 
     public QPostImageEntity(String variable) {
         this(PostImageEntity.class, forVariable(variable), INITS);
@@ -62,8 +62,8 @@ public class QPostImageEntity extends EntityPathBase<PostImageEntity> {
 
     public QPostImageEntity(Class<? extends PostImageEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.post = inits.isInitialized("post") ? new com.longing.longing.post.infrastructure.QPostEntity(forProperty("post"), inits.get("post")) : null;
-        this.user = inits.isInitialized("user") ? new com.longing.longing.user.infrastructure.QUserEntity(forProperty("user")) : null;
+        this.post = inits.isInitialized("post") ? new com.longing.longing.api.post.infrastructure.QPostEntity(forProperty("post"), inits.get("post")) : null;
+        this.user = inits.isInitialized("user") ? new com.longing.longing.api.user.infrastructure.QUserEntity(forProperty("user")) : null;
     }
 
 }

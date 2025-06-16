@@ -3,7 +3,7 @@ package com.longing.longing.bookmark.controller;
 import com.longing.longing.bookmark.controller.port.BookmarkService;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
-import com.longing.longing.post.domain.Post;
+import com.longing.longing.api.post.domain.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -1,8 +1,7 @@
 package com.longing.longing.bookmark.controller.port;
 
-import com.longing.longing.bookmark.domain.PostBookmark;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
-import com.longing.longing.post.domain.Post;
+import com.longing.longing.api.post.domain.Post;
 import org.springframework.data.domain.Page;
 
 public interface BookmarkService {

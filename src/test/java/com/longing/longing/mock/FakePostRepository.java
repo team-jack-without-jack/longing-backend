@@ -1,12 +1,12 @@
 package com.longing.longing.mock;
 
-import com.longing.longing.post.domain.Post;
-import com.longing.longing.post.service.port.PostRepository;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.service.port.PostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +57,49 @@ public class FakePostRepository implements PostRepository {
     @Override
     public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
         return null;
+    }
+
+    @Override
+    public void incrementLikeCount(Long postId) {
+        Optional<Post> postOptional = data.stream().filter(item -> item.getId().equals(postId)).findAny();
+        postOptional.ifPresent(post -> {
+            Post updatedPost = Post.builder()
+                    .id(post.getId())
+                    .title(post.getTitle())
+                    .content(post.getContent())
+                    .user(post.getUser())
+                    .likeCount(post.getLikeCount() + 1)
+                    .build();
+            data.removeIf(item -> item.getId().equals(postId));
+            data.add(updatedPost);
+        });
+    }
+
+    @Override
+    public void decrementLikeCount(Long postId) {
+        Optional<Post> postOptional = data.stream().filter(item -> item.getId().equals(postId)).findAny();
+        postOptional.ifPresent(post -> {
+            int newLikeCount = Math.max(0, post.getLikeCount() - 1);
+            Post updatedPost = Post.builder()
+                    .id(post.getId())
+                    .title(post.getTitle())
+                    .content(post.getContent())
+                    .user(post.getUser())
+                    .likeCount(newLikeCount)
+                    .build();
+            data.removeIf(item -> item.getId().equals(postId));
+            data.add(updatedPost);
+        });
+    }
+
+    @Override
+    public void incrementCommentCount(Long postId) {
+
+    }
+
+    @Override
+    public void decrementCommentCount(Long postId) {
+
     }
 
     @Override

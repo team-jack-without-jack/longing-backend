@@ -1,14 +1,13 @@
 package com.longing.longing.config.auth.dto;
 
-import com.longing.longing.user.Provider;
-import com.longing.longing.user.Role;
-import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.api.user.Provider;
+import com.longing.longing.api.user.Role;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.Random;
 
 @Slf4j
 @Getter

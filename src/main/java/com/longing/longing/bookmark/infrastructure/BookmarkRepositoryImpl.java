@@ -1,11 +1,11 @@
 package com.longing.longing.bookmark.infrastructure;
 
 import com.longing.longing.bookmark.service.port.BookmarkRepository;
-import com.longing.longing.post.domain.Post;
+import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.bookmark.domain.PostBookmark;
-import com.longing.longing.post.infrastructure.PostEntity;
-import com.longing.longing.user.domain.User;
-import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.api.post.infrastructure.PostEntity;
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import java.util.Optional;
 
 import static com.longing.longing.bookmark.domain.QPostBookmark.postBookmark;
-import static com.longing.longing.like.domain.QPostLike.postLike;
-import static com.longing.longing.post.domain.QPost.post;
+import static com.longing.longing.api.like.domain.QPostLike.postLike;
+import static com.longing.longing.api.post.domain.QPost.post;
 
 @Repository
 @RequiredArgsConstructor

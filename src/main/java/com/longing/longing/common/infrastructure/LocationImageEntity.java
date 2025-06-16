@@ -2,10 +2,8 @@ package com.longing.longing.common.infrastructure;
 
 import com.longing.longing.common.BaseTimeEntity;
 import com.longing.longing.common.domain.LocationImage;
-import com.longing.longing.common.domain.PostImage;
-import com.longing.longing.location.infrastructure.LocationEntity;
-import com.longing.longing.post.infrastructure.PostEntity;
-import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.api.location.infrastructure.LocationEntity;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

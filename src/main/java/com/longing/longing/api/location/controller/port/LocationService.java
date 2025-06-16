@@ -1,0 +1,26 @@
+package com.longing.longing.api.location.controller.port;
+
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.config.auth.dto.CustomUserDetails;
+import com.longing.longing.api.location.domain.Location;
+import com.longing.longing.api.location.domain.LocationCreate;
+import com.longing.longing.api.location.domain.LocationUpdate;
+import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+public interface LocationService {
+    Location createLocation(
+            User user,
+            LocationCreate locationCreate,
+            MultipartFile thumbnailImage,
+            List<MultipartFile> detailImages
+    );
+    Page<Location> getLocationList(String keyword, int page, int size, String sortBy, String sortDirection);
+    Location getLocation(Long id);
+
+    Location updateLocation(User user, Long locationId, LocationUpdate locationUpdate);
+
+    void deleteLocation(Long locationId);
+}

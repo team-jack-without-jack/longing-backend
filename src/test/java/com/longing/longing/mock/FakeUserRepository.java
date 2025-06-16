@@ -1,9 +1,8 @@
 package com.longing.longing.mock;
 
-import com.longing.longing.post.domain.Post;
-import com.longing.longing.user.Provider;
-import com.longing.longing.user.domain.User;
-import com.longing.longing.user.service.port.UserRepository;
+import com.longing.longing.api.user.Provider;
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.user.service.port.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ public class FakeUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findById(long id) {
-        return Optional.empty();
+        return data.stream().filter(item -> item.getId().equals(id)).findAny();
     }
 
     @Override

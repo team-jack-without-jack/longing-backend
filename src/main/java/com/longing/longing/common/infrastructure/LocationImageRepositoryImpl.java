@@ -2,7 +2,7 @@ package com.longing.longing.common.infrastructure;
 
 import com.longing.longing.common.domain.LocationImage;
 import com.longing.longing.common.service.port.LocationImageRepository;
-import com.longing.longing.location.infrastructure.LocationEntity;
+import com.longing.longing.api.location.infrastructure.LocationEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;

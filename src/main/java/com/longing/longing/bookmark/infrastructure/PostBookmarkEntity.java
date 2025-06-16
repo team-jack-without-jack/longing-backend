@@ -2,8 +2,8 @@ package com.longing.longing.bookmark.infrastructure;
 
 import com.longing.longing.common.BaseTimeEntity;
 import com.longing.longing.bookmark.domain.PostBookmark;
-import com.longing.longing.post.infrastructure.PostEntity;
-import com.longing.longing.user.infrastructure.UserEntity;
+import com.longing.longing.api.post.infrastructure.PostEntity;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 

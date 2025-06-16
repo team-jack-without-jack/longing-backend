@@ -4,11 +4,10 @@ import com.longing.longing.bookmark.controller.port.BookmarkService;
 import com.longing.longing.bookmark.domain.PostBookmark;
 import com.longing.longing.bookmark.service.port.BookmarkRepository;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
-import com.longing.longing.post.domain.Post;
-import com.longing.longing.post.infrastructure.PostJpaRepository;
-import com.longing.longing.post.service.port.PostRepository;
-import com.longing.longing.user.domain.User;
-import com.longing.longing.user.service.port.UserRepository;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.service.port.PostRepository;
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
