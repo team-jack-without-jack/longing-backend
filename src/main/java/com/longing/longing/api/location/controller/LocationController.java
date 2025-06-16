@@ -52,7 +52,7 @@ public class LocationController {
      *
      * @param locationId
      * @param locationUpdate
-     * @param userDetails
+     * @param user
      * @return
      */
     @PatchMapping("/{id}")
