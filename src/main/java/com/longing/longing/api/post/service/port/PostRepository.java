@@ -20,10 +20,9 @@ public interface PostRepository {
 
     void incrementLikeCount(Long postId);
     void decrementLikeCount(Long postId);
-<<<<<<< HEAD:src/main/java/com/longing/longing/api/post/service/port/PostRepository.java
+  
     void incrementCommentCount(Long postId);
     void decrementCommentCount(Long postId);
-=======
->>>>>>> main:src/main/java/com/longing/longing/post/service/port/PostRepository.java
+
     void flush();
 }
