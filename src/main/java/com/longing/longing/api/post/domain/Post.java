@@ -6,6 +6,7 @@ import com.longing.longing.api.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -27,6 +28,8 @@ public class Post {
 
     private boolean bookmarked;
     private boolean liked;
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
 
     @Builder
     public Post(
@@ -39,7 +42,9 @@ public class Post {
             int likeCount,
             int commentCount,
             boolean bookmarked,
-            boolean liked
+            boolean liked,
+            LocalDateTime createdDate,
+            LocalDateTime modifiedDate
     ) {
         this.id = id;
         this.title = title;
@@ -51,6 +56,8 @@ public class Post {
         this.commentCount = commentCount;
         this.bookmarked = bookmarked;
         this.liked = liked;
+        this.createdDate = createdDate;
+        this.modifiedDate = modifiedDate;
     }
 
     public static Post from(User user, PostCreate postCreate) {
