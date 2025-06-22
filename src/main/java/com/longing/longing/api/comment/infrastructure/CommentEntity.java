@@ -64,6 +64,8 @@ public class CommentEntity extends BaseTimeEntity {
                 .content(content)
                 .post(post.toModel())
                 .user(user.toModel())
+                .createdDate(getCreatedDate())
+                .modifiedDate(getModifiedDate())
                 .build();
     }
 

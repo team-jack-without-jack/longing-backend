@@ -106,6 +106,8 @@ public class PostEntity extends BaseTimeEntity {
                         .collect(Collectors.toList()))
                 .likeCount(likeCount)
                 .commentCount(commentCount)
+                .createdDate(getCreatedDate())
+                .modifiedDate(getModifiedDate())
                 .build();
     }
 
@@ -122,6 +124,8 @@ public class PostEntity extends BaseTimeEntity {
                 .commentCount(commentCount)
                 .bookmarked(bookmarked)
                 .liked(liked)
+                .createdDate(getCreatedDate())
+                .modifiedDate(getModifiedDate())
                 .build();
     }
 

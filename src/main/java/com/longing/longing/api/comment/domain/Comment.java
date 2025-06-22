@@ -5,6 +5,8 @@ import com.longing.longing.api.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class Comment {
 
@@ -16,12 +18,22 @@ public class Comment {
 
     private User user;
 
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
+
     @Builder
-    public Comment(Long id, String content, Post post, User user) {
+    public Comment(Long id,
+                   String content,
+                   Post post,
+                   User user,
+                   LocalDateTime createdDate,
+                   LocalDateTime modifiedDate) {
         this.id = id;
         this.content = content;
         this.post = post;
         this.user = user;
+        this.createdDate = createdDate;
+        this.modifiedDate = modifiedDate;
     }
 
     public static Comment from(User user, Post post, CommentCreate commentCreate) {
