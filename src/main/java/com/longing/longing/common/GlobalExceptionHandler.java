@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {CustomException.class})
     public ApiResponse<?> handleCustomException(CustomException e, HttpServletRequest request) {
         log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
+//        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(e);
     }
 
@@ -65,7 +65,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {ResourceNotFoundException.class})
     public ApiResponse<?> handleResourceNotFoundException(ResourceNotFoundException e, HttpServletRequest request) {
         log.error("handleResourceNotFoundException() in GlobalExceptionHandler: {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
     }
 
@@ -73,7 +72,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {AlreadyLikedException.class})
     public ApiResponse<?> handleAlreadyLikedException(AlreadyLikedException e, HttpServletRequest request) {
         log.error("handleAlreadyLikedException() in GlobalExceptionHandler: {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_LIKED));
     }
 
@@ -81,7 +79,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
     public ApiResponse<?> handleValidationException(MethodArgumentNotValidException e, HttpServletRequest request) {
         log.error("handleValidationException() in GlobalExceptionHandler: {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
     }
 
@@ -89,14 +86,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MultipartException.class, MissingServletRequestPartException.class})
     public ApiResponse<?> handleMultipartException(Exception e, HttpServletRequest request) {
         log.error("handleMultipartException() in GlobalExceptionHandler: {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT));
     }
 
     @ExceptionHandler({AlreadyReportedPostException.class})
     public ApiResponse<?> handleAlreadyReportedPost(Exception e, HttpServletRequest request) {
         log.error("handleMultipartException() in GlobalExceptionHandler: {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.ALREADY_REPORTED));
+    }
+
+    @ExceptionHandler(Throwable.class)
+    public ApiResponse<?> handleAll(Throwable t, HttpServletRequest request) {
+        log.error("Uncaught exception: ", t);
+        if (slackUtils != null) {
+            slackUtils.sendSlackAlertErrorLog(new Exception(t), request);
+        }
+        return ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 }
