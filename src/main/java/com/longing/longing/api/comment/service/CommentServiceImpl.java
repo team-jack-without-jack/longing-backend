@@ -15,6 +15,7 @@ import com.longing.longing.api.post.service.port.PostRepository;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Slf4j
+@Builder
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
