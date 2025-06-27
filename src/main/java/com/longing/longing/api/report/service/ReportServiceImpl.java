@@ -13,14 +13,14 @@ import com.longing.longing.api.report.domain.PostReport;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Builder
 @Service
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
-
-    private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final PostRepository postRepository;
 

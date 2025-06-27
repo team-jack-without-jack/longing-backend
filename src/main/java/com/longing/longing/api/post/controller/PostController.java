@@ -71,6 +71,7 @@ public class PostController {
             @RequestParam(name = "myPost", defaultValue = "false") Boolean myPost,
             @AuthenticationPrincipal User user
     ) {
+
         if (myPost) {
             Page<Post> myPostList = postService.getMyPostList(user, keyword, page, size, sortBy, sortDirection);
             return ApiResponse.ok(myPostList.map(PostResponse::fromDomain));
