@@ -40,7 +40,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
     public ApiResponse<?> handleNoPageFoundException(Exception e, HttpServletRequest request) {
         log.error("GlobalExceptionHandler catch NoHandlerFoundException : {}", e.getMessage());
-        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(new CustomException(ErrorCode.NOT_FOUND_END_POINT));
     }
 
@@ -50,7 +49,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {CustomException.class})
     public ApiResponse<?> handleCustomException(CustomException e, HttpServletRequest request) {
         log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage());
-//        slackUtils.sendSlackAlertErrorLog(e, request);
         return ApiResponse.fail(e);
     }
 
