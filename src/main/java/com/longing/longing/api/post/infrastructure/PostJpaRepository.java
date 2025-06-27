@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.Optional;
 
 public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
@@ -73,4 +72,12 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
     @Modifying
     @Query("UPDATE PostEntity p SET p.likeCount = p.likeCount - 1 WHERE p.id = :postId")
     void decrementLikeCount(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("UPDATE PostEntity p SET p.commentCount = p.commentCount + 1 WHERE p.id = :postId")
+    void incrementCommentCount(Long postId);
+
+    @Modifying
+    @Query("UPDATE PostEntity p SET p.commentCount = p.commentCount - 1 WHERE p.id = :postId")
+    void decrementCommentCount(Long postId);
 }

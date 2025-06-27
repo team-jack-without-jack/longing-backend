@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -89,6 +90,16 @@ public class FakePostRepository implements PostRepository {
             data.removeIf(item -> item.getId().equals(postId));
             data.add(updatedPost);
         });
+    }
+
+    @Override
+    public void incrementCommentCount(Long postId) {
+
+    }
+
+    @Override
+    public void decrementCommentCount(Long postId) {
+
     }
 
     @Override

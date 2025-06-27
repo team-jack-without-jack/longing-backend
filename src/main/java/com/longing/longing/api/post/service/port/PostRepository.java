@@ -20,5 +20,9 @@ public interface PostRepository {
 
     void incrementLikeCount(Long postId);
     void decrementLikeCount(Long postId);
+  
+    void incrementCommentCount(Long postId);
+    void decrementCommentCount(Long postId);
+
     void flush();
 }

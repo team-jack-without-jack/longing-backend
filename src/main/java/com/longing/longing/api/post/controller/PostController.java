@@ -1,5 +1,7 @@
 package com.longing.longing.api.post.controller;
 
+import com.longing.longing.api.comment.controller.response.CommentResponse;
+import com.longing.longing.api.post.controller.response.PostResponse;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.post.controller.port.PostService;
@@ -19,6 +21,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -59,7 +62,7 @@ public class PostController {
      * @return
      */
     @GetMapping()
-    public ApiResponse<Page<Post>> GetPostList(
+    public ApiResponse<Page<PostResponse>> GetPostList(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -68,14 +71,14 @@ public class PostController {
             @RequestParam(name = "myPost", defaultValue = "false") Boolean myPost,
             @AuthenticationPrincipal User user
     ) {
-        log.info("myPost>> " + myPost);
-        log.info("sortDirection>> " + sortDirection);
+
         if (myPost) {
             Page<Post> myPostList = postService.getMyPostList(user, keyword, page, size, sortBy, sortDirection);
-            return ApiResponse.ok(myPostList);
+            return ApiResponse.ok(myPostList.map(PostResponse::fromDomain));
         }
         Page<Post> postList = postService.getPostList(user, keyword, page, size, sortBy, sortDirection);
-        return ApiResponse.ok(postList);
+        Page<PostResponse> responsePage = postList.map(PostResponse::fromDomain);
+        return ApiResponse.ok(responsePage);
     }
 
 
