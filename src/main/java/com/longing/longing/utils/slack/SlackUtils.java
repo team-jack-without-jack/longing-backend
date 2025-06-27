@@ -23,7 +23,6 @@ import java.util.List;
 @Component
 @Profile("prod")  // prod 환경에서만 이 빈이 등록된다
 public class SlackUtils {
-
     private final Slack slackClient = Slack.getInstance();
     @Value("${slack.webhook.url}")
     private String webhookUrl;
@@ -56,28 +55,17 @@ public class SlackUtils {
 
 
     public void sendSlackAlertErrorLog(Exception e, HttpServletRequest request) {
-        // 에러 코드 조회 (Dispatcher가 설정해 주는 속성)
-        Object statusObj = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-        int statusCode = (statusObj != null)
-                ? Integer.parseInt(statusObj.toString())
-                : 0;
+        try {
+            Payload payload = Payload.builder()
+                    .text("서버 에러 발생!")
+                    .attachments(List.of(generateSlackAttachment(e, request)))
+                    .build();
 
-        // 500번대 에러일 때만 알람 전송
-        if (statusCode >= HttpServletResponse.SC_INTERNAL_SERVER_ERROR
-                && statusCode < 600) {
-            try {
-                Payload payload = Payload.builder()
-                        .text("서버 에러 발생! (HTTP " + statusCode + ")")
-                        .attachments(List.of(generateSlackAttachment(e, request)))
-                        .build();
-
-                slackClient.send(webhookUrl, payload);
-            } catch (IOException slackError) {
-                log.debug("Slack 통신 중 예외 발생", slackError);
-            }
-        } else {
-            // 400번대 등은 무시
-            log.debug("HTTP {} 에러는 슬랙 알람 대상 아님", statusCode);
+            slackClient.send(webhookUrl, payload);
+        } catch (IOException slackError) {
+            // slack 통신 시 발생한 예외에서 Exception을 던져준다면 재귀적인 예외가 발생합니다.
+            // 따라서 로깅으로 처리하였고, 모카콩 서버 에러는 아니므로 `error` 레벨보다 낮은 레벨로 설정했습니다.
+            log.debug("Slack 통신과의 예외 발생");
         }
     }
 }
