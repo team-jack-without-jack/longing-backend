@@ -53,7 +53,9 @@ public class FakeReportRepository implements ReportRepository {
         return postReports.stream()
                 .filter(c -> c.getReporter() != null
                         && c.getReporter().getId().equals(reporter.getId())
-                        && c.getPost().getId().equals(post.getId()))
+                        && c.getPost().getId().equals(post.getId())
+                        && c.getReportReason().equals(reportReason)
+                )
                 .findAny();
     }
 }
