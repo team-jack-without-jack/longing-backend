@@ -21,6 +21,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class CommentServiceTest {
 
     private CommentServiceImpl commentService;
+    private User user;
 
     @BeforeEach
     void init() {
@@ -34,7 +35,7 @@ public class CommentServiceTest {
                 .userRepository(fakeUserRepository)
                 .build();
 
-        User user1 = User.builder()
+        user = User.builder()
                 .id(1L)
                 .email("test@test.com")
                 .name("test_name")
@@ -50,17 +51,17 @@ public class CommentServiceTest {
                 .id(1L)
                 .title("test_title")
                 .content("test_content")
-                .user(user1)
+                .user(user)
                 .build();
 
         Comment comment = Comment.builder()
                 .id(1L)
-                .user(user1)
+                .user(user)
                 .post(post)
                 .content("post comment")
                 .build();
 
-        fakeUserRepository.save(user1);
+        fakeUserRepository.save(user);
         fakePostRepository.save(post);
         fakeCommentRepository.save(comment);
     }
@@ -73,20 +74,8 @@ public class CommentServiceTest {
                 .content("create comment")
                 .build();
 
-        User user1 = User.builder()
-                .id(1L)
-                .email("test@test.com")
-                .name("test_name")
-                .nationality("KOREA")
-                .introduction("hello world")
-                .role(Role.GUEST)
-                .provider(Provider.GOOGLE)
-                .providerId("1")
-                .picture("test_picture")
-                .build();
-
         // when
-        Comment createdComment = commentService.createComment(user1, commentCreate);
+        Comment createdComment = commentService.createComment(user, commentCreate);
         List<Comment> commentList = commentService.getCommentList(1L, 1L, 10);
 
         // then
@@ -108,20 +97,8 @@ public class CommentServiceTest {
     @Test
     void deleteComment() {
         // given
-        User user1 = User.builder()
-                .id(1L)
-                .email("test@test.com")
-                .name("test_name")
-                .nationality("KOREA")
-                .introduction("hello world")
-                .role(Role.GUEST)
-                .provider(Provider.GOOGLE)
-                .providerId("1")
-                .picture("test_picture")
-                .build();
-
         // when
-        commentService.deleteComment(user1, 1L);
+        commentService.deleteComment(user, 1L);
         List<Comment> commentList = commentService.getCommentList(1L, 1L, 10);
 
         // then
@@ -131,20 +108,12 @@ public class CommentServiceTest {
     @Test
     void updateComment() {
         // given
-        User user1 = User.builder()
-                .id(1L)
-                .name("testName")
-                .provider(Provider.GOOGLE)
-                .providerId("1")
-                .email("test@test.com")
-                .build();
-
         CommentUpdate commentUpdate = CommentUpdate.builder()
                 .content("update comment")
                 .build();
 
         // when
-        Comment result = commentService.updateComment(user1, 1L, commentUpdate);
+        Comment result = commentService.updateComment(user, 1L, commentUpdate);
 
         // then
         assertThat(result.getContent()).isEqualTo("update comment");
