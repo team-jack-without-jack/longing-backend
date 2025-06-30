@@ -16,7 +16,6 @@ import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
 
 @Builder
