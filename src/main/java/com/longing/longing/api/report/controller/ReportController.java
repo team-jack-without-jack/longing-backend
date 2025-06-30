@@ -21,7 +21,7 @@ public class ReportController {
     /**
      * Post 신고 기능
      * @param postId
-     * @param customUserDetails
+     * @param user
      * @return
      */
     @PostMapping("/posts/{id}")

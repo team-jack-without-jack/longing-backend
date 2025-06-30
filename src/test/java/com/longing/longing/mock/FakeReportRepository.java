@@ -58,4 +58,9 @@ public class FakeReportRepository implements ReportRepository {
                 )
                 .findAny();
     }
+
+    @Override
+    public long countByPostAndReportReasonForUpdate(Post post, ReportReason reportReason) {
+        return 0;
+    }
 }
