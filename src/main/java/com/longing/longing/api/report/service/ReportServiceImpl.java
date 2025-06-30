@@ -16,6 +16,7 @@ import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import javax.transaction.Transactional;
 
 @Builder
 @Service
@@ -30,8 +31,8 @@ public class ReportServiceImpl implements ReportService {
                     throw new AlreadyReportedPostException("you already reported this post!");
                 });
     }
-
     @Override
+    @Transactional
     public PostReport createPostReport(Long postId, ReportCreate reportCreate, User reporter) {
         ReportReason reportReason = reportCreate.getReportReason();
 
@@ -49,6 +50,16 @@ public class ReportServiceImpl implements ReportService {
                 .reportReason(reportReason)
                 .build();
 
-        return reportRepository.create(post, reporter, postReport);
+        PostReport createdReport = reportRepository.create(post, reporter, postReport);
+
+        /**
+         * 해당 게시글의 신고가 동일 사유로 3번인 경우 postDelete
+         */
+        long totalByReason = reportRepository.countByPostAndReportReasonForUpdate(post, reportReason);
+        if (totalByReason >= 3) {
+            postRepository.deleteById(post.getId());
+        }
+
+        return createdReport;
     }
 }

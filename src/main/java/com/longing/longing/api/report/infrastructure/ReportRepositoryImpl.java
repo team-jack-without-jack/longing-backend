@@ -8,10 +8,12 @@ import com.longing.longing.api.report.domain.PostReport;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.infrastructure.UserEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ReportRepositoryImpl implements ReportRepository {
@@ -33,5 +35,19 @@ public class ReportRepositoryImpl implements ReportRepository {
         PostEntity postEntity = PostEntity.fromModel(post);
         return reportJpaRepository.findByReporterAndPostAndReportReason(userEntity, postEntity, reportReason)
                 .map(PostReportEntity::toModel);
+    }
+
+    @Override
+    public long countByPostAndReportReasonForUpdate(Post post, ReportReason reportReason) {
+        // 도메인 Post를 엔티티로 변환
+        PostEntity postEntity = PostEntity.fromModel(post);
+        log.info("====================================================");
+        log.info(postEntity.getId().toString());
+        log.info(postEntity.getTitle());
+        log.info(reportReason.toString());
+        // PESSIMISTIC_WRITE 잠금으로 count 쿼리 실행
+        long count = reportJpaRepository.countReportsByPostAndReason(postEntity, reportReason);
+        log.info("count>> " + count);
+        return count;
     }
 }

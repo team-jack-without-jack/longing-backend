@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ReportRepository {
     PostReport create(Post post, User user, PostReport postReport);
     Optional<PostReport> findOne(User reporter, Post post, ReportReason reportReason);
+    long countByPostAndReportReasonForUpdate(Post post, ReportReason reportReason);
 }
