@@ -16,6 +16,8 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
     Optional<PostEntity> findById(long id);
     void deleteById(long id);
 
+    Optional<PostEntity> findByIdAndUserId(Long postId, Long userId);
+
     @EntityGraph(attributePaths = {"postLikeEntities"})
     @Query("SELECT p, " +
             "CASE WHEN pb.user.id = :userId THEN TRUE ELSE FALSE END AS bookmarked, " +

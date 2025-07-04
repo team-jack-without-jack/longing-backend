@@ -1,4 +1,4 @@
-package com.longing.longing.common.domain;
+package com.longing.longing.common.exceptions;
 
 import com.longing.longing.common.ErrorCode;
 import lombok.Getter;

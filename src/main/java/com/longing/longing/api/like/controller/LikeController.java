@@ -1,14 +1,10 @@
 package com.longing.longing.api.like.controller;
 
-import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.response.ApiResponse;
-import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.like.controller.port.LikeService;
 import com.longing.longing.api.like.domain.LikePostCreate;
 import com.longing.longing.api.like.domain.LikePostDelete;
-import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.domain.User;
-import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

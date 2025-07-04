@@ -1,10 +1,7 @@
 package com.longing.longing.api.post.service;
 
-import com.longing.longing.api.post.service.PostServiceImpl;
 import com.longing.longing.common.domain.PostImage;
-import com.longing.longing.common.domain.ResourceNotFoundException;
-import com.longing.longing.common.service.FakeS3ImageService;
-import com.longing.longing.config.auth.dto.CustomUserDetails;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.mock.FakePostImageRepository;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeUserRepository;

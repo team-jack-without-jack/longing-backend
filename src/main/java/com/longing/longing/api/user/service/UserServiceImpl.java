@@ -1,9 +1,8 @@
 package com.longing.longing.api.user.service;
 
 import com.longing.longing.api.user.domain.UserUpdate;
-import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageServiceImpl;
-import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.controller.port.UserService;
 import com.longing.longing.api.user.domain.User;

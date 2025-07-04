@@ -4,10 +4,11 @@ import com.longing.longing.api.post.controller.port.PostService;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.domain.PostCreate;
 import com.longing.longing.api.post.service.port.PostRepository;
+import com.longing.longing.common.ErrorCode;
 import com.longing.longing.common.domain.PostImage;
-import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.exceptions.CustomException;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageService;
-import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.common.service.port.PostImageRepository;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.post.domain.PostUpdate;
@@ -61,6 +62,11 @@ public class PostServiceImpl implements PostService {
         postImageRepository.save(postImage);
     }
 
+    private void checkPostIsMadeByUser(long postId, User user) {
+        postRepository.findByIdAndUserId(postId, user.getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
     @Override
     public Page<Post> getPostList(User user, String keyword, int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
@@ -104,7 +110,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void deletePost(Long postId) {
+    public void deletePost(Long postId, User user) {
+        checkPostIsMadeByUser(postId, user);
+        postRepository.deleteById(postId);
+    }
+
+    @Override
+    public void blockPost(long postId) {
         postRepository.deleteById(postId);
     }
 
