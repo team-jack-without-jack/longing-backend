@@ -19,4 +19,5 @@ public interface PostService {
     Post updatePost(User user, Long postId, PostUpdate postUpdate, List<MultipartFile> images);
     void deletePost(Long postId);
 
+    void blockPost(long postId);
 }
