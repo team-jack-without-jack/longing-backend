@@ -54,3 +54,4 @@ Dockerfile
 /longing-logs/
 /nohup.out
 
+src/main/generated

@@ -1,16 +1,14 @@
 package com.longing.longing.common;
 
-import com.longing.longing.common.domain.ResourceNotFoundException;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.exceptions.AlreadyLikedException;
 import com.longing.longing.common.exceptions.AlreadyReportedPostException;
 import com.longing.longing.common.exceptions.CustomException;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.utils.slack.SlackUtils;
 import io.micrometer.core.lang.Nullable;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,8 +19,6 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice

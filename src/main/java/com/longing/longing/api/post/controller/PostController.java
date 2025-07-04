@@ -106,9 +106,10 @@ public class PostController {
      */
     @DeleteMapping("/{id}")
     public ApiResponse<?> deletePost(
-            @PathVariable("id") long postId
+            @PathVariable("id") long postId,
+            @AuthenticationPrincipal User user
     ) {
-        postService.deletePost(postId);
+        postService.deletePost(postId, user);
         return ApiResponse.ok(null);
     }
 
@@ -139,8 +140,7 @@ public class PostController {
             @RequestParam(defaultValue = "0") long postId,
             @AuthenticationPrincipal User user
     ) {
-        log.info("postId>> " + postId);
-        postService.deletePost(postId);
+        postService.blockPost(postId);
         return ApiResponse.ok(null);
     }
 

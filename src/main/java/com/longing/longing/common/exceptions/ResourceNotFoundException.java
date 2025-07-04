@@ -1,4 +1,4 @@
-package com.longing.longing.common.domain;
+package com.longing.longing.common.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String datasource, long id) {

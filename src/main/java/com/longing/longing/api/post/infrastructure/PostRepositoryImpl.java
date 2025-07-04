@@ -306,6 +306,12 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public Optional<Post> findByIdAndUserId(Long id, Long userId) {
+        return postJpaRepository.findByIdAndUserId(id, userId).map(PostEntity::toModel);
+    }
+
+
+    @Override
     public void incrementLikeCount(Long postId) {
         postJpaRepository.incrementLikeCount(postId);
     }

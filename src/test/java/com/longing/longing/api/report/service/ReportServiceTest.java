@@ -7,7 +7,6 @@ import com.longing.longing.api.report.domain.ReportCreate;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.Role;
 import com.longing.longing.api.user.domain.User;
-import com.longing.longing.common.domain.ResourceNotFoundException;
 import com.longing.longing.common.exceptions.AlreadyReportedPostException;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeReportRepository;

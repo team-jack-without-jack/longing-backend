@@ -17,7 +17,7 @@ public interface PostService {
     Page<Post> getMyPostList(User user, String keyword, int page, int size, String sortBy, String sortDirection);
     Post getPost(User user, Long postId);
     Post updatePost(User user, Long postId, PostUpdate postUpdate, List<MultipartFile> images);
-    void deletePost(Long postId);
+    void deletePost(Long postId, User user);
 
     void blockPost(long postId);
 }
