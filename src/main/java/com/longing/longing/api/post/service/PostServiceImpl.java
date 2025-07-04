@@ -119,4 +119,9 @@ public class PostServiceImpl implements PostService {
     public void blockPost(long postId) {
         postRepository.deleteById(postId);
     }
+
+    @Override
+    public void blockPost(long postId) {
+
+    }
 }
