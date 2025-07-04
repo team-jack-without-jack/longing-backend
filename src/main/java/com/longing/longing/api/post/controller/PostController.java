@@ -134,6 +134,16 @@ public class PostController {
         return ApiResponse.ok(postList);
     }
 
+    @PostMapping("/block")
+    public ApiResponse<?> blockPost(
+            @RequestParam(defaultValue = "0") long postId,
+            @AuthenticationPrincipal User user
+    ) {
+        log.info("postId>> " + postId);
+        postService.deletePost(postId);
+        return ApiResponse.ok(null);
+    }
+
 
     // 응답 데이터를 담을 내부 정적 클래스
     static class DeleteResponse {
