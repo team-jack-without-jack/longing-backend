@@ -39,11 +39,6 @@ public class UserRepositoryImpl implements UserRepository {
         return userJpaRepository.findByEmailAndProvider(email, provider).map(UserEntity::toModel);
     }
 
-//    @Override
-//    public User getById(long id) {
-//        return null;
-//    }
-
     @Override
     public void deleteById(long id) {
         userJpaRepository.deleteById(id);

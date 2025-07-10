@@ -41,13 +41,8 @@ public class ReportRepositoryImpl implements ReportRepository {
     public long countByPostAndReportReasonForUpdate(Post post, ReportReason reportReason) {
         // 도메인 Post를 엔티티로 변환
         PostEntity postEntity = PostEntity.fromModel(post);
-        log.info("====================================================");
-        log.info(postEntity.getId().toString());
-        log.info(postEntity.getTitle());
-        log.info(reportReason.toString());
+
         // PESSIMISTIC_WRITE 잠금으로 count 쿼리 실행
-        long count = reportJpaRepository.countReportsByPostAndReason(postEntity, reportReason);
-        log.info("count>> " + count);
-        return count;
+        return reportJpaRepository.countReportsByPostAndReason(postEntity, reportReason);
     }
 }

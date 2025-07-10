@@ -129,10 +129,10 @@ public class PostRepositoryImpl implements PostRepository {
                 .collect(Collectors.toList());
 
         long total = queryFactory
-                .select(post.count())
+                .select(post)
                 .from(post)
                 .where(post.deleted.eq(false))
-                .fetchOne();
+                .fetch().size();
 
         return new PageImpl<>(posts, pageable, total);
     }
@@ -186,10 +186,10 @@ public class PostRepositoryImpl implements PostRepository {
                 .collect(Collectors.toList());
 
         long total = queryFactory
-                .select(post.count())
+                .select(post)
                 .from(post)
                 .where(condition)
-                .fetchOne();
+                .fetch().size();
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -231,27 +231,6 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findMyPostsWithLikeCountAndSearch(Long userId, String keyword, Pageable pageable) {
-//        Page<Object[]> results = postJpaRepository.findMyPostsWithLikeCountAndSearch(userId, keyword, pageable);
-//
-//        // Object[]를 안전하게 Post로 변환
-//        List<Post> postEntities = results.getContent().stream().map(result -> {
-//            if (result.length < 3) {
-//                throw new IllegalStateException("Query result is invalid: " + Arrays.toString(result));
-//            }
-//
-//            PostEntity postEntity = (result[0] instanceof PostEntity) ? (PostEntity) result[0] : null;
-//            Boolean bookmarked = (result[1] instanceof Boolean) ? (Boolean) result[1] : false;
-//            Boolean liked = (result[2] instanceof Boolean) ? (Boolean) result[2] : false;
-//
-//            if (postEntity == null) {
-//                throw new IllegalStateException("PostEntity is null in query result");
-//            }
-//
-//            return postEntity.toModel(bookmarked, liked);
-//        }).collect(Collectors.toList());
-//
-//        return new PageImpl<>(postEntities, pageable, results.getTotalElements());
-
         QPostEntity post = QPostEntity.postEntity;
         QPostBookmarkEntity bookmark = QPostBookmarkEntity.postBookmarkEntity;
         QPostLikeEntity like = QPostLikeEntity.postLikeEntity;
@@ -284,14 +263,14 @@ public class PostRepositoryImpl implements PostRepository {
 
         // --- count 쿼리 ---
         long total = queryFactory
-                .select(post.count())
+                .select(post)
                 .from(post)
                 .where(
                         post.user.id.eq(userId),
                         post.title.containsIgnoreCase(keyword)
                                 .or(post.content.containsIgnoreCase(keyword))
                 )
-                .fetchOne();
+                .fetch().size();
 
         // --- Tuple -> Post 변환 ---
         List<Post> posts = results.stream().map(tuple -> {
