@@ -63,4 +63,9 @@ public class FakeUserRepository implements UserRepository {
     public void deleteById(long id) {
 
     }
+
+    @Override
+    public void blockUser(User user, User blockedUser) {
+
+    }
 }

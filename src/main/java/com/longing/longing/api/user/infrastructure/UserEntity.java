@@ -19,6 +19,7 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Getter
@@ -75,6 +76,12 @@ public class UserEntity extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "reporter")
     private List<PostReportEntity> postReportEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<UserBlockEntity> blocksMade = new ArrayList<>();
+
+    @OneToMany(mappedBy = "blockedUser")
+    private List<UserBlockEntity> blockedByOthers = new ArrayList<>();
 
     // 기본 생성자 추가
     public UserEntity() {

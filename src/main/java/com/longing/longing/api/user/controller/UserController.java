@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotNull;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/user")
@@ -48,6 +50,15 @@ public class UserController {
         String email = userDetails.getEmail();
         Provider provider = userDetails.getProvider();
         userService.deavtivateUser(email, provider);
+        return ApiResponse.ok(true);
+    }
+
+    @PostMapping("/block")
+    public ApiResponse<Boolean> blockUser(
+            @NotNull @RequestParam long blockUserId,
+            @AuthenticationPrincipal User user
+    ) {
+        userService.blockUser(user, blockUserId);
         return ApiResponse.ok(true);
     }
 }

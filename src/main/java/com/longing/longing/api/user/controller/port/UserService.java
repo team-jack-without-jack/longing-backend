@@ -12,4 +12,6 @@ public interface UserService {
     User updateUser(User user, UserUpdate userUpdate, MultipartFile profileImage);
 
     void deavtivateUser(String email, Provider provider);
+
+    void blockUser(User user, long blockUserId);
 }

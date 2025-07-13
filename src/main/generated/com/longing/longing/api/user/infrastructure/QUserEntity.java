@@ -22,6 +22,10 @@ public class QUserEntity extends EntityPathBase<UserEntity> {
 
     public final com.longing.longing.common.QBaseTimeEntity _super = new com.longing.longing.common.QBaseTimeEntity(this);
 
+    public final ListPath<UserBlockEntity, QUserBlockEntity> blockedByOthers = this.<UserBlockEntity, QUserBlockEntity>createList("blockedByOthers", UserBlockEntity.class, QUserBlockEntity.class, PathInits.DIRECT2);
+
+    public final ListPath<UserBlockEntity, QUserBlockEntity> blocksMade = this.<UserBlockEntity, QUserBlockEntity>createList("blocksMade", UserBlockEntity.class, QUserBlockEntity.class, PathInits.DIRECT2);
+
     public final ListPath<com.longing.longing.api.comment.infrastructure.CommentEntity, com.longing.longing.api.comment.infrastructure.QCommentEntity> commentEntities = this.<com.longing.longing.api.comment.infrastructure.CommentEntity, com.longing.longing.api.comment.infrastructure.QCommentEntity>createList("commentEntities", com.longing.longing.api.comment.infrastructure.CommentEntity.class, com.longing.longing.api.comment.infrastructure.QCommentEntity.class, PathInits.DIRECT2);
 
     //inherited
