@@ -13,6 +13,7 @@ import java.util.Optional;
 public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userJpaRepository;
+    private final UserBlockJpaRepository userBlockJpaRepository;
 
     @Override
     public User save(User user) {
@@ -47,5 +48,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void deleteById(long id) {
         userJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public void blockUser(User user, User blockedUser) {
+        userBlockJpaRepository.save(UserBlockEntity.fromModel(user, blockedUser));
     }
 }

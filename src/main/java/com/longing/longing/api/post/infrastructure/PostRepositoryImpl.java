@@ -1,6 +1,7 @@
 package com.longing.longing.api.post.infrastructure;
 
 import com.longing.longing.api.like.infrastructure.QPostLikeEntity;
+import com.longing.longing.api.user.infrastructure.QUserBlockEntity;
 import com.longing.longing.bookmark.infrastructure.QPostBookmarkEntity;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.service.port.PostRepository;
@@ -69,8 +70,16 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findAll(Long userId, Pageable pageable) {
-        PathBuilder<PostEntity> postPath = new PathBuilder<>(PostEntity.class, "post");
+//        PathBuilder<PostEntity> postPath = new PathBuilder<>(PostEntity.class, "post");
+//        // 정렬 조건 만들기
+//        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        QPostEntity post = QPostEntity.postEntity;
+
+        QUserBlockEntity userBlock = QUserBlockEntity.userBlockEntity;
         // 정렬 조건 만들기
+//        PathBuilder<PostEntity> postPath = new PathBuilder<>(PostEntity.class, "post");
+        PathBuilder<PostEntity> postPath =
+                new PathBuilder<>(PostEntity.class, post.getMetadata().getName());
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
         for (Sort.Order order : pageable.getSort()) {
             String property = order.getProperty();
@@ -80,6 +89,7 @@ public class PostRepositoryImpl implements PostRepository {
             switch (property) {
                 case "id":
                     orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getNumber(property, Long.class)));
+                    break;
                 case "title":
                 case "content":
                     orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getString(property)));
@@ -97,6 +107,16 @@ public class PostRepositoryImpl implements PostRepository {
             }
         }
 
+//         차단된 작성자 필터용 서브쿼리 (NOT EXISTS)
+        BooleanExpression notBlocked = JPAExpressions
+                .selectOne()
+                .from(userBlock)
+                .where(
+                        userBlock.user.id.eq(userId),                  // 차단한 사람 = 현재 유저
+                        userBlock.blockedUser.id.eq(post.user.id)    // 차단된 사람 = 게시글 작성자
+                )
+                .notExists();
+
         // 쿼리 실행
         List<Tuple> results = queryFactory
                 .select(
@@ -113,7 +133,10 @@ public class PostRepositoryImpl implements PostRepository {
                                 .exists()
                 )
                 .from(post)
-                .where(post.deleted.eq(false))
+                .where(
+                        post.deleted.eq(false),
+                        notBlocked
+                )
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -131,7 +154,10 @@ public class PostRepositoryImpl implements PostRepository {
         long total = queryFactory
                 .select(post.count())
                 .from(post)
-                .where(post.deleted.eq(false))
+                .where(
+                        post.deleted.eq(false),
+                        notBlocked
+                )
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total);
