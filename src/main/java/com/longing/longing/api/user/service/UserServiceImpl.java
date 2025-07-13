@@ -1,6 +1,7 @@
 package com.longing.longing.api.user.service;
 
 import com.longing.longing.api.user.domain.UserUpdate;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.api.user.Provider;
@@ -51,5 +52,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Users", email));
 
         userRepository.deleteById(user.getId());
+    }
+
+    @Override
+    public void blockUser(User user, long blockUserId) {
+        User blockedUser = userRepository.findById(blockUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Users Id", blockUserId));
+        userRepository.blockUser(user, blockedUser);
     }
 }
