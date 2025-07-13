@@ -55,7 +55,7 @@ public class UserController {
 
     @PostMapping("/block")
     public ApiResponse<Boolean> blockUser(
-            @NotNull @RequestParam() long blockUserId,
+            @NotNull @RequestParam long blockUserId,
             @AuthenticationPrincipal User user
     ) {
         userService.blockUser(user, blockUserId);

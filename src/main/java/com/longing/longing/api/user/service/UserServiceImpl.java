@@ -58,6 +58,16 @@ public class UserServiceImpl implements UserService {
     public void blockUser(User user, long blockUserId) {
         User blockedUser = userRepository.findById(blockUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users Id", blockUserId));
+
+        /**
+         * TODO
+         */
+//        checkIsAlreadyBlockedUser(user, blockUserId);
+
         userRepository.blockUser(user, blockedUser);
     }
+
+//    private boolean checkIsAlreadyBlockedUser(User user, long blockUserId) {
+//        userRepository.findBy
+//    }
 }

@@ -29,7 +29,7 @@ public class UserBlockEntity extends BaseTimeEntity {
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "blocked_user_id")
     private UserEntity blockedUser;
 
     @Builder
