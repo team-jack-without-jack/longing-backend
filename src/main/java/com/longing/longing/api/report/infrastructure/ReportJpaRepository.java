@@ -26,6 +26,5 @@ public interface ReportJpaRepository extends JpaRepository<PostReportEntity, Lon
             @Param("post")   PostEntity post,
             @Param("reason") ReportReason reason
     );
-
 }
 

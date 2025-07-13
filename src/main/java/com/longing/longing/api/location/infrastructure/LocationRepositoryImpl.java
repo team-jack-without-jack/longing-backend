@@ -2,6 +2,10 @@ package com.longing.longing.api.location.infrastructure;
 
 import com.longing.longing.api.location.service.port.LocationRepository;
 import com.longing.longing.api.location.domain.Location;
+import com.longing.longing.common.infrastructure.QLocationImageEntity;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +17,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.longing.longing.api.location.infrastructure.QLocationEntity.locationEntity;
+import static com.longing.longing.common.infrastructure.QLocationImageEntity.locationImageEntity;
+import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
 @Repository
@@ -34,34 +42,26 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     @Override
     public Optional<Location> findByIdWithImages(Long id) {
-        return locationJpaRepository.findByIdWithImages(id).map(LocationEntity::toModel);
-    }
+//        return locationJpaRepository.findByIdWithImages(id).map(LocationEntity::toModel);
 
-//    @Override
-//    public Page<Location> findAll(Pageable pageable) {
-//        List<Location> locations = locationJpaRepository.findAll(pageable)
-//                .stream()
-//                .map(LocationEntity::toModel)
-//                .collect(Collectors.toList());
-//
-//        return new PageImpl<>(locations, pageable, locations.size());
-//    }
+        /**
+         * to querydsl
+         */
+        LocationEntity location = queryFactory
+                .select(locationEntity)
+                .from(locationEntity)
+                .leftJoin(locationEntity.locationImageEntities, locationImageEntity)
+                .where(locationEntity.id.eq(id))
+                .fetchOne();
+
+        return Optional.ofNullable(location)
+                .map(LocationEntity::toModel);
+    }
 
     @Override
     public void deleteById(Long locationId) {
         locationJpaRepository.deleteById(locationId);
     }
-
-//    @Override
-//    public Page<Location> findAllWithSearch(String keyword, Pageable pageable) {
-//        List<Location> locationEntities = locationJpaRepository.findAllwithSearch(keyword, pageable)
-//                .stream()
-//                .map(LocationEntity::toModel)
-//                .collect(Collectors.toList());
-//
-//        return new PageImpl<>(locationEntities, pageable, locationEntities.size());
-//    }
-
 
     @Override
     public Page<Location> findAll(Pageable pageable) {
@@ -83,10 +83,27 @@ public class LocationRepositoryImpl implements LocationRepository {
 
     @Override
     public Page<Location> findAllWithSearch(String keyword, Pageable pageable) {
-        Page<LocationEntity> locationList = locationJpaRepository.findAllWithSearch(keyword, pageable);
+        Predicate searchKeyword = ExpressionUtils.anyOf(
+                nameLike(keyword),
+                addressLike(keyword)
+        );
+
+        List<LocationEntity> locationList = queryFactory
+                .select(locationEntity)
+                .from(locationEntity)
+                .leftJoin(locationEntity.locationImageEntities, locationImageEntity)
+                .where(searchKeyword)
+                .fetch();
+
+        long totalCount = queryFactory
+                .select(locationEntity)
+                .from(locationEntity)
+                .leftJoin(locationEntity.locationImageEntities, locationImageEntity)
+                .where(searchKeyword)
+                .stream().count();
 
         // 엔티티 목록 → 도메인 객체 목록으로 변환
-        List<Location> content = locationList.getContent()
+        List<Location> content = locationList
                 .stream()
                 .map(LocationEntity::toModel)
                 .collect(Collectors.toList());
@@ -95,8 +112,16 @@ public class LocationRepositoryImpl implements LocationRepository {
         return new PageImpl<>(
                 content,
                 pageable,
-                locationList.getTotalElements()
+                totalCount
         );
+    }
+
+    private Predicate nameLike(String keyword) {
+        return hasText(keyword) ? locationEntity.name.contains(keyword) : null;
+    }
+
+    private Predicate addressLike(String keyword) {
+        return hasText(keyword) ? locationEntity.name.contains(keyword) : null;
     }
 
 }

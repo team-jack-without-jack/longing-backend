@@ -21,10 +21,6 @@ public interface LocationJpaRepository extends JpaRepository<LocationEntity, Lon
     )
     Optional<LocationEntity> findByIdWithImages(@Param("id") Long id);
 
-//    @EntityGraph(attributePaths = {"locationEntities"})
-//    @Query("SELECT l FROM LocationEntity l " +
-//            "WHERE l.name LIKE %:keyword%")
-//    Page<LocationEntity> findAllwithSearch(@Param("keyword") String keyword, Pageable pageable);
 
     /**
      * 키워드가 없을 때는 JpaRepository.findAll(Pageable)이 호출되므로 별도 메서드가 필요 없습니다.

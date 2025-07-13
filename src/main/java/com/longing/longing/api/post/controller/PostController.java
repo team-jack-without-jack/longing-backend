@@ -143,18 +143,4 @@ public class PostController {
         postService.blockPost(postId);
         return ApiResponse.ok(null);
     }
-
-
-    // 응답 데이터를 담을 내부 정적 클래스
-    static class DeleteResponse {
-        private final boolean result;
-
-        public DeleteResponse(boolean result) {
-            this.result = result;
-        }
-
-        public boolean isResult() {
-            return result;
-        }
-    }
 }
