@@ -80,6 +80,7 @@ public class PostRepositoryImpl implements PostRepository {
             switch (property) {
                 case "id":
                     orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getNumber(property, Long.class)));
+                    break;
                 case "title":
                 case "content":
                     orderSpecifiers.add(new OrderSpecifier<>(direction, postPath.getString(property)));
