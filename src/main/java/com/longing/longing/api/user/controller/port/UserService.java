@@ -14,4 +14,6 @@ public interface UserService {
     void deavtivateUser(String email, Provider provider);
 
     void blockUser(User user, long blockUserId);
+
+    void cancelBlockUser(User user, long blockUserId);
 }

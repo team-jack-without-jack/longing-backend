@@ -61,4 +61,14 @@ public class UserController {
         userService.blockUser(user, blockUserId);
         return ApiResponse.ok(true);
     }
+
+    @DeleteMapping("/block")
+    public ApiResponse<Boolean> cancelBlockUser(
+            @NotNull @RequestParam long blockUserId,
+            @AuthenticationPrincipal User user
+    ) {
+        log.info("blockUserId>> " + blockUserId);
+        userService.cancelBlockUser(user, blockUserId);
+        return ApiResponse.ok(true);
+    }
 }
