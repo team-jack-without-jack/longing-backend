@@ -31,10 +31,8 @@ public class PostServiceTest {
         FakePostRepository fakePostRepository = new FakePostRepository();
         FakeUserRepository fakeUserRepository = new FakeUserRepository();
         FakePostImageRepository fakePostImageRepository = new FakePostImageRepository();
-//        FakeS3ImageService fakeS3ImageService = new FakeS3ImageService();
         this.postService = PostServiceImpl.builder()
                 .postRepository(fakePostRepository)
-//                .s3ImageService(fakeS3ImageService)
                 .postImageRepository(fakePostImageRepository)
                 .build();
         User user1 = User.builder()
@@ -159,5 +157,32 @@ public class PostServiceTest {
         assertThatThrownBy(() -> {
             postService.getPost(user1, postId);
         }).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void 게시글을_삭제한다() {
+        // given
+        User user1 = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .nationality("KOREA")
+                .introduction("hello world")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .picture("test_picture")
+                .build();
+
+        Long postId = 1L;
+
+        // when
+        postService.deletePost(postId, user1);
+
+        // then
+        assertThatThrownBy(() -> {
+            postService.getPost(user1, postId);
+        }).isInstanceOf(ResourceNotFoundException.class);
+
     }
 }

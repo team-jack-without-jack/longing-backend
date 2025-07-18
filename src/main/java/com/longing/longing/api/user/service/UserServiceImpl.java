@@ -8,6 +8,7 @@ import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.controller.port.UserService;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 
 @Slf4j
+@Builder
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
