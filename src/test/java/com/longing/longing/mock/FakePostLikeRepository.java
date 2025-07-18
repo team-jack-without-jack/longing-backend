@@ -37,10 +37,10 @@ public class FakePostLikeRepository implements PostLikeRepository {
         }
     }
 
-    @Override
-    public Optional<PostLike> findById(long likeId) {
-        return postLikeList.stream().filter(item -> item.getId().equals(likeId)).findAny();
-    }
+//    @Override
+//    public Optional<PostLike> findById(long likeId) {
+//        return postLikeList.stream().filter(item -> item.getId().equals(likeId)).findAny();
+//    }
 
     @Override
     public void deleteById(long likeId) {

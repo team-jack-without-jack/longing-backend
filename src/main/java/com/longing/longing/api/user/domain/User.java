@@ -5,6 +5,8 @@ import com.longing.longing.api.user.Role;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class User {
 
@@ -25,6 +27,9 @@ public class User {
     private String nationality;
     private String introduction;
 
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
+
     @Builder
     public User(
             Long id,
@@ -35,7 +40,9 @@ public class User {
             String providerId,
             Role role,
             String nationality,
-            String introduction
+            String introduction,
+            LocalDateTime createdDate,
+            LocalDateTime modifiedDate
     ) {
         this.id = id;
         this.name = name;
@@ -46,6 +53,8 @@ public class User {
         this.role = role;
         this.nationality = nationality;
         this.introduction = introduction;
+        this.createdDate = createdDate;
+        this.modifiedDate = modifiedDate;
     }
 
     public User update(UserUpdate userUpdate, String profileImageAddress) {

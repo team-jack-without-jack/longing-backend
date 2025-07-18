@@ -1,5 +1,6 @@
 package com.longing.longing.api.user.controller;
 
+import com.longing.longing.api.user.controller.response.UserResponse;
 import com.longing.longing.api.user.domain.UserUpdate;
 import com.longing.longing.common.response.ApiResponse;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
@@ -8,6 +9,7 @@ import com.longing.longing.api.user.controller.port.UserService;
 import com.longing.longing.api.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,5 +62,29 @@ public class UserController {
     ) {
         userService.blockUser(user, blockUserId);
         return ApiResponse.ok(true);
+    }
+
+    @DeleteMapping("/block")
+    public ApiResponse<Boolean> cancelBlockUser(
+            @NotNull @RequestParam long blockUserId,
+            @AuthenticationPrincipal User user
+    ) {
+        log.info("blockUserId>> " + blockUserId);
+        userService.cancelBlockUser(user, blockUserId);
+        return ApiResponse.ok(true);
+    }
+
+    @GetMapping("/block")
+    public ApiResponse<Page<UserResponse>> getBlockedUserList(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+            @AuthenticationPrincipal User user
+    ) {
+        Page<User> blockedUserList = userService.getBlockedUserList(user, keyword, page, size, sortBy, sortDirection);
+        Page<UserResponse> responsePage = blockedUserList.map(UserResponse::fromDomain);
+        return ApiResponse.ok(responsePage);
     }
 }

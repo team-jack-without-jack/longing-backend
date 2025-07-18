@@ -46,9 +46,6 @@ public class PostController {
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal User user
     ) {
-        log.info("=============");
-        log.info("title> " + title);
-        log.info("content> " + content);
         PostCreate postCreate = PostCreate.builder()
                 .title(title)
                 .content(content)
@@ -142,19 +139,5 @@ public class PostController {
     ) {
         postService.blockPost(postId);
         return ApiResponse.ok(null);
-    }
-
-
-    // 응답 데이터를 담을 내부 정적 클래스
-    static class DeleteResponse {
-        private final boolean result;
-
-        public DeleteResponse(boolean result) {
-            this.result = result;
-        }
-
-        public boolean isResult() {
-            return result;
-        }
     }
 }

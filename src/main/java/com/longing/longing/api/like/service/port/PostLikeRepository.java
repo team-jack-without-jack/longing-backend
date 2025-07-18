@@ -11,6 +11,5 @@ public interface PostLikeRepository {
     Optional<PostLike> findByPostAndUser(Post post, User user);
     void save(PostLike postLike);
 
-    Optional<PostLike> findById(long likeId);
     void deleteById(long likeId);
 }
