@@ -18,4 +18,6 @@ public interface UserService {
     void cancelBlockUser(User user, long blockUserId);
 
     Page<User> getBlockedUserList(User user, String keyword, int page, int size, String sortBy, String sortDirection);
+
+    User getUserProfile(long userId);
 }

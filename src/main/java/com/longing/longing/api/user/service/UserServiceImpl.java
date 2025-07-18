@@ -102,9 +102,10 @@ public class UserServiceImpl implements UserService {
 
     }
 
-//    private boolean checkIsAlreadyBlockedUser(User user, long blockUserId) {
-//        userRepository.findBy
-//    }
-
+    @Override
+    public User getUserProfile(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found, id = ", userId));
+    }
 
 }
