@@ -1,20 +1,28 @@
 package com.longing.longing.api.user.service;
 
+import com.longing.longing.api.user.domain.UserBlock;
 import com.longing.longing.api.user.domain.UserUpdate;
-import com.longing.longing.api.user.infrastructure.UserEntity;
 import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.controller.port.UserService;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
+
 @Slf4j
+@Builder
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -67,7 +75,35 @@ public class UserServiceImpl implements UserService {
         userRepository.blockUser(user, blockedUser);
     }
 
+    @Override
+    public void cancelBlockUser(User user, long blockUserId) {
+        User blockedUser = userRepository.findById(blockUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Users Id", blockUserId));
+
+        log.info("blockUser.getId() " + blockedUser.getId());
+
+        UserBlock userBlock = userRepository.findBlockedData(user, blockedUser)
+                .orElseThrow(() -> new EntityNotFoundException("this user is not blocked by" + blockedUser.getEmail()));
+
+        log.info("userBlock.getId() " + userBlock.getId());
+
+        userRepository.deleteByUserBlockedId(userBlock.getId());
+    }
+
+    @Override
+    public Page<User> getBlockedUserList(User user, String keyword, int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            return postRepository.findAll(user.getId(), pageable);
+//        }
+        return userRepository.findBlockedUserList(user.getId(), keyword, pageable);
+
+    }
+
 //    private boolean checkIsAlreadyBlockedUser(User user, long blockUserId) {
 //        userRepository.findBy
 //    }
+
+
 }

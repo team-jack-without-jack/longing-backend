@@ -46,7 +46,7 @@ public class FakePostRepository implements PostRepository {
 
     @Override
     public void deleteById(Long postId) {
-
+        data.removeIf(post -> post.getId().equals(postId));
     }
 
     @Override
@@ -61,7 +61,10 @@ public class FakePostRepository implements PostRepository {
 
     @Override
     public Optional<Post> findByIdAndUserId(Long id, Long userId) {
-        return Optional.empty();
+        return data.stream()
+                .filter(item -> item.getId().equals(id)
+                        && item.getUser().getId().equals(userId))
+                .findAny();
     }
 
     @Override

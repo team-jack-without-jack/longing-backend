@@ -46,9 +46,6 @@ public class PostController {
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal User user
     ) {
-        log.info("=============");
-        log.info("title> " + title);
-        log.info("content> " + content);
         PostCreate postCreate = PostCreate.builder()
                 .title(title)
                 .content(content)
