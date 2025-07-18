@@ -120,5 +120,4 @@ public class UserController {
         User userProfile = userService.getUserProfile(userId);
         return ApiResponse.ok(UserResponse.fromDomain(userProfile));
     }
-
 }
