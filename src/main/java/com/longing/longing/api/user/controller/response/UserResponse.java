@@ -16,12 +16,12 @@ public class UserResponse {
     private final String email;
     private final String picture;
     private final Provider provider;
-    private final String providerId;
-    private final Role role;
+//    private final String providerId;
+//    private final Role role;
     private final String nationality;
     private final String introduction;
-    private final LocalDateTime createdDate;
-    private final LocalDateTime modifiedDate;
+//    private final LocalDateTime createdDate;
+//    private final LocalDateTime modifiedDate;
 
     @Builder
     public UserResponse(
@@ -30,23 +30,24 @@ public class UserResponse {
             String email,
             String picture,
             Provider provider,
-            String providerId,
-            Role role,
+//            String providerId,
+//            Role role,
             String nationality,
-            String introduction,
-            LocalDateTime createdDate,
-            LocalDateTime modifiedDate) {
+            String introduction
+//            LocalDateTime createdDate,
+//            LocalDateTime modifiedDate
+    ) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.picture = picture;
         this.provider = provider;
-        this.providerId = providerId;
-        this.role = role;
+//        this.providerId = providerId;
+//        this.role = role;
         this.nationality = nationality;
         this.introduction = introduction;
-        this.createdDate = createdDate;
-        this.modifiedDate = modifiedDate;
+//        this.createdDate = createdDate;
+//        this.modifiedDate = modifiedDate;
     }
 
     public static UserResponse fromDomain(User user) {
@@ -56,12 +57,12 @@ public class UserResponse {
                 .email(user.getEmail())
                 .picture(user.getPicture())
                 .provider(user.getProvider())
-                .providerId(user.getProviderId())
-                .role(user.getRole())
+//                .providerId(user.getProviderId())
+//                .role(user.getRole())
                 .nationality(user.getNationality())
                 .introduction(user.getIntroduction())
-                .createdDate(user.getCreatedDate())
-                .modifiedDate(user.getModifiedDate())
+//                .createdDate(user.getCreatedDate())
+//                .modifiedDate(user.getModifiedDate())
                 .build();
     }
 }
