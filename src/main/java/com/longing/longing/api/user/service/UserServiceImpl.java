@@ -2,6 +2,7 @@ package com.longing.longing.api.user.service;
 
 import com.longing.longing.api.user.domain.UserBlock;
 import com.longing.longing.api.user.domain.UserUpdate;
+import com.longing.longing.api.user.infrastructure.UserEntity;
 import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.service.S3ImageServiceImpl;
 import com.longing.longing.api.user.Provider;
