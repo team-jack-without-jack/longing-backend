@@ -28,4 +28,6 @@ public interface PostRepository {
     void decrementCommentCount(Long postId);
 
     void flush();
+
+    Page<Post> findByUserId(long userId, Pageable pageable);
 }
