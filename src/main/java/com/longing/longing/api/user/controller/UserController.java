@@ -113,6 +113,11 @@ public class UserController {
     }
 
 
+    /**
+     * user 프로필 조회 api
+     * @param userId
+     * @return
+     */
     @GetMapping("/{id}")
     public ApiResponse<UserResponse> getPost(
             @PathVariable("id") Long userId
