@@ -140,4 +140,18 @@ public class PostController {
         postService.blockPost(postId);
         return ApiResponse.ok(null);
     }
+
+    @GetMapping("/user/{userId}")
+    public ApiResponse<Page<PostResponse>> getUserPostList(
+            @PathVariable("userId") long userId,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Page<Post> postList = postService.getUserPostList(userId, keyword, page, size, sortBy, sortDirection);
+        Page<PostResponse> responsePage = postList.map(PostResponse::fromDomain);
+        return ApiResponse.ok(responsePage);
+    }
 }

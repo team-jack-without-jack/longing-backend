@@ -341,6 +341,10 @@ public class PostRepositoryImpl implements PostRepository {
         postJpaRepository.flush();
     }
 
+    @Override
+    public Page<Post> findByUserId(long userId, Pageable pageable) {
+        return postJpaRepository.findByUserId(userId, pageable).map(PostEntity::toModel);
+    }
 
 
 }
