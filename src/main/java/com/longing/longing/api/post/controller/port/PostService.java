@@ -20,4 +20,6 @@ public interface PostService {
     void deletePost(Long postId, User user);
 
     void blockPost(long postId);
+
+    Page<Post> getUserPostList(long userId, String keyword, int page, int size, String sortBy, String sortDirection);
 }

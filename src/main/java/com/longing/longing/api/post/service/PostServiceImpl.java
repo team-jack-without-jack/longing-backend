@@ -119,4 +119,11 @@ public class PostServiceImpl implements PostService {
     public void blockPost(long postId) {
         postRepository.deleteById(postId);
     }
+
+    @Override
+    public Page<Post> getUserPostList(long userId, String keyword, int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return postRepository.findByUserId(userId, pageable);
+    }
 }
