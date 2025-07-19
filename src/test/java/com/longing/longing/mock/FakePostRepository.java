@@ -114,4 +114,9 @@ public class FakePostRepository implements PostRepository {
     public void flush() {
 
     }
+
+    @Override
+    public Page<Post> findByUserId(long userId, Pageable pageable) {
+        return null;
+    }
 }
