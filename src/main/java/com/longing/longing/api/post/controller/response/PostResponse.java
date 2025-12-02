@@ -53,6 +53,7 @@ public class PostResponse {
         this.modifiedDate = modifiedDate;
     }
 
+
     public static PostResponse fromDomain(Post post) {
         return PostResponse.builder()
                 .id(post.getId())
