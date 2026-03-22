@@ -1,3 +1,3 @@
 # longing-backend
 
-![스크린샷 2026-03-22 오전 11.38.08.png](../../%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-03-22%20%EC%98%A4%EC%A0%84%2011.38.08.png)
+<img width="1080" height="743" alt="스크린샷 2026-03-22 오전 11 38 08" src="https://github.com/user-attachments/assets/814432d5-9588-4532-9731-8e4dc8cc3f31" />
