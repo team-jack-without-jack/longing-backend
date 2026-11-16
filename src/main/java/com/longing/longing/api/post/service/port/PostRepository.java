@@ -9,8 +9,15 @@ import java.util.Optional;
 
 public interface PostRepository {
     Optional<Post> findById(Long id, Long userId);
+    Optional<Post> findByIdForUpdate(Long id);
 
     Post save(Post post);
+
+    /**
+     * 제목·본문·수정 시각만 바꾸고 바뀐 행 수를 반환한다. 없거나 삭제된 게시글이면 0이다.
+     * 좋아요·댓글 수와 이미지는 그대로 둔다. 요청 EntityManager를 반영 후 비운다 (#126).
+     */
+    int updateContent(long postId, String title, String content);
 
     Page<Post> findAll(Long userId, Pageable pageable);
 
