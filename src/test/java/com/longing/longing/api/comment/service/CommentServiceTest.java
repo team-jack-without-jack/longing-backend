@@ -154,6 +154,31 @@ public class CommentServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
+    @Test
+    void 삭제된_댓글을_수정하면_RESOURCE_NOT_FOUND다() {
+        FakePostRepository posts = new FakePostRepository();
+        FakeCommentRepository comments = new FakeCommentRepository();
+        CommentServiceImpl service = serviceWith(comments, posts);
+        seed(posts, comments);
+        comments.softDelete(1L);
+
+        assertThatThrownBy(() -> service.updateComment(user, 1L, CommentUpdate.builder().content("edited").build()))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void 내용_없이_수정하면_내용은_그대로_두고_수정_시각만_바꾼다() {
+        FakePostRepository posts = new FakePostRepository();
+        FakeCommentRepository comments = new FakeCommentRepository();
+        CommentServiceImpl service = serviceWith(comments, posts);
+        seed(posts, comments);
+
+        Comment result = service.updateComment(user, 1L, CommentUpdate.builder().build());
+
+        assertThat(result.getContent()).isEqualTo("post comment");
+        assertThat(result.getModifiedDate()).isNotNull();
+    }
+
     private CommentServiceImpl serviceWith(FakeCommentRepository comments, FakePostRepository posts) {
         return CommentServiceImpl.builder()
                 .commentRepository(comments)
