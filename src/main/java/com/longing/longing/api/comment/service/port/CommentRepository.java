@@ -13,7 +13,11 @@ public interface CommentRepository {
     Page<Comment> findByPostId(long postId, Pageable pageable);
 
     List<Comment> getCommentList(long postId, long lastCommentId, Pageable pageable);
-    void deleteById(long commentId);
+    /**
+     * 아직 삭제되지 않은 댓글이면 soft delete하고 1, 이미 삭제됐거나 없으면 0을 반환한다 (#126).
+     * 동시에 지우는 요청 중 하나만 1을 받는다.
+     */
+    int softDelete(long commentId);
 
     Optional<Comment> findByIdAndUserId(long commentId, long id);
 }

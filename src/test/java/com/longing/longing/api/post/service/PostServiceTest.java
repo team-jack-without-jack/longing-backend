@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -184,5 +185,44 @@ public class PostServiceTest {
             postService.getPost(user1, postId);
         }).isInstanceOf(ResourceNotFoundException.class);
 
+    }
+
+    @Test
+    void updatePost는_수정하는_동안_바뀐_좋아요_수를_덮어쓰지_않는다() {
+        // 수정 요청이 게시글을 읽은 직후 다른 요청이 좋아요 2개를 반영한 상황
+        FakePostRepository racingPosts = new FakePostRepository() {
+            private boolean first = true;
+
+            @Override
+            public Optional<Post> findById(Long id, Long userId) {
+                Optional<Post> read = super.findById(id, userId);
+                if (first) {
+                    first = false;
+                    incrementLikeCount(id);
+                    incrementLikeCount(id);
+                }
+                return read;
+            }
+        };
+        User author = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .name("test_name")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("1")
+                .build();
+        racingPosts.save(Post.builder().id(1L).title("title").content("content").user(author).build());
+        PostServiceImpl service = PostServiceImpl.builder()
+                .postRepository(racingPosts)
+                .postImageRepository(new FakePostImageRepository())
+                .build();
+
+        Post result = service.updatePost(author, 1L, PostUpdate.builder().title("new title").build(),
+                Collections.emptyList());
+
+        assertThat(result.getTitle()).isEqualTo("new title");
+        assertThat(result.getContent()).isEqualTo("content");
+        assertThat(result.getLikeCount()).isEqualTo(2);
     }
 }
