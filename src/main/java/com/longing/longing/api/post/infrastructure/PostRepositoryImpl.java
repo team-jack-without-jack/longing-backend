@@ -40,6 +40,11 @@ public class PostRepositoryImpl implements PostRepository {
     private final PostJpaRepository postJpaRepository;
     private final JPAQueryFactory queryFactory;
 
+    @Override
+    public Optional<Post> findByIdForUpdate(Long id) {
+        return postJpaRepository.findByIdForUpdate(id).map(PostEntity::toModel);
+    }
+
     public Optional<Post> findById(Long id, Long userId) {
 //        return postJpaRepository.findById(id).map(PostEntity::toModel);
         return postJpaRepository.findById(id).map(postEntity -> {
@@ -66,6 +71,11 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public Post save(Post post) {
         return postJpaRepository.save(PostEntity.fromModel(post)).toModel();
+    }
+
+    @Override
+    public int updateContent(long postId, String title, String content) {
+        return postJpaRepository.updateContent(postId, title, content, LocalDateTime.now());
     }
 
     @Override

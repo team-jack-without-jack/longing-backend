@@ -43,8 +43,8 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public void deleteById(long commentId) {
-        commentJpaRepository.deleteById(commentId);
+    public int softDelete(long commentId) {
+        return commentJpaRepository.softDeleteById(commentId);
     }
 
     @Override

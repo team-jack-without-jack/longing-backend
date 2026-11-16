@@ -1,0 +1,762 @@
+package com.longing.longing.api;
+
+import com.longing.longing.api.comment.controller.port.CommentService;
+import com.longing.longing.api.comment.infrastructure.CommentRepositoryImpl;
+import com.longing.longing.api.comment.service.CommentServiceImpl;
+import com.longing.longing.api.comment.service.port.CommentRepository;
+import com.longing.longing.api.post.controller.port.PostService;
+import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.domain.PostUpdate;
+import com.longing.longing.api.post.infrastructure.PostEntity;
+import com.longing.longing.api.post.infrastructure.PostJpaRepository;
+import com.longing.longing.api.post.infrastructure.PostRepositoryImpl;
+import com.longing.longing.api.post.service.PostServiceImpl;
+import com.longing.longing.api.post.service.port.PostRepository;
+import com.longing.longing.api.report.ReportReason;
+import com.longing.longing.api.report.controller.port.ReportService;
+import com.longing.longing.api.report.domain.ReportCreate;
+import com.longing.longing.api.report.infrastructure.PostReportEntity;
+import com.longing.longing.api.report.infrastructure.ReportRepositoryImpl;
+import com.longing.longing.api.report.service.ReportServiceImpl;
+import com.longing.longing.api.report.service.port.ReportRepository;
+import com.longing.longing.api.user.Provider;
+import com.longing.longing.api.user.Role;
+import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.user.infrastructure.UserEntity;
+import com.longing.longing.api.user.infrastructure.UserJpaRepository;
+import com.longing.longing.api.user.infrastructure.UserRepositoryImpl;
+import com.longing.longing.api.user.service.port.UserRepository;
+import com.longing.longing.common.domain.PostImage;
+import com.longing.longing.common.exceptions.AlreadyReportedPostException;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
+import com.longing.longing.common.infrastructure.PostImageRepositoryImpl;
+import com.longing.longing.common.service.S3ImageService;
+import com.longing.longing.common.service.port.PostImageRepository;
+import com.longing.longing.config.QueryDslConfig;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
+import org.springframework.orm.jpa.EntityManagerHolder;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+// 동시성 테스트는 최대 THREADS(8)개 스레드가 각자 커넥션을 쥔 채 게시글 잠금을 기다릴 수 있다.
+// 스레드 수를 늘리면 maximum-pool-size도 함께 늘린다.
+@DataJpaTest(properties = {
+        "spring.jpa.hibernate.ddl-auto=create",
+        "spring.jpa.database-platform=org.hibernate.dialect.MariaDB106Dialect",
+        "spring.datasource.hikari.maximum-pool-size=12"
+})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+@Import({QueryDslConfig.class, PostRepositoryImpl.class, ReportRepositoryImpl.class, CommentRepositoryImpl.class,
+        UserRepositoryImpl.class, PostImageRepositoryImpl.class})
+class ConcurrentWriteConsistencyIntegrationTest {
+
+    static final MariaDBContainer<?> MARIADB = new MariaDBContainer<>(DockerImageName.parse("mariadb:10.6"));
+
+    private static final int THREADS = 8;
+    /** 확인 단계 뒤에 멈추는 시간. 그 사이 다른 요청이 같은 확인을 통과할 틈을 만든다. */
+    private static final long PAUSE_MS = 300;
+
+    static {
+        MARIADB.start();
+    }
+
+    @DynamicPropertySource
+    static void datasource(DynamicPropertyRegistry registry) {
+        // 잠금 회귀가 생기면 50초가 아니라 10초 만에 실패하게 한다.
+        registry.add("spring.datasource.url", () -> withSessionVariable(MARIADB.getJdbcUrl(), "innodb_lock_wait_timeout=10"));
+        registry.add("spring.datasource.username", MARIADB::getUsername);
+        registry.add("spring.datasource.password", MARIADB::getPassword);
+        registry.add("spring.datasource.driver-class-name", MARIADB::getDriverClassName);
+    }
+
+    @MockBean S3ImageService s3ImageService;
+
+    @Autowired ReportRepository reportRepository;
+    @Autowired CommentRepository commentRepository;
+    @Autowired PostRepository postRepository;
+    @Autowired PostImageRepository postImageRepository;
+    @Autowired UserRepository userRepository;
+    @Autowired PostJpaRepository postJpaRepository;
+    @Autowired UserJpaRepository userJpaRepository;
+    @Autowired JdbcTemplate jdbc;
+    @Autowired EntityManagerFactory entityManagerFactory;
+    @Autowired PlatformTransactionManager transactionManager;
+    @Autowired DataSource dataSource;
+
+    private User member;
+    private long postId;
+
+    @BeforeEach
+    void setUp() {
+        truncate("post_reports", "comments", "post_images", "post_likes", "post_bookmarks", "posts", "users");
+        // 게시글 id가 사용자 id와 겹치지 않게 해서 인자 순서 실수를 테스트가 잡게 한다.
+        jdbc.execute("ALTER TABLE posts AUTO_INCREMENT = 1001");
+        member = saveUser("member@example.com", "member-1");
+        postId = seedPost(member);
+    }
+
+    // ---- 신고 ----
+
+    @Test
+    void concurrentReportsFromSameUserSaveOne() throws Exception {
+        AtomicInteger checks = new AtomicInteger();
+        ReportService racing = reportService(pausingAfter(ReportRepository.class, reportRepository, "exists", checks));
+
+        List<Object> results = runConcurrently(THREADS, () -> inTransaction(() ->
+                racing.createPostReport(postId, report(ReportReason.HARASSMENT), member)));
+
+        // 모든 요청이 확인 단계를 지났다(경쟁이 실제로 일어났다).
+        assertThat(checks).hasValue(THREADS);
+        assertThat(failures(results)).hasSize(THREADS - 1)
+                .allSatisfy(e -> assertThat(e).isInstanceOf(AlreadyReportedPostException.class));
+        assertThat(reportRows(member.getId(), ReportReason.HARASSMENT)).isEqualTo(1);
+        // 한 사람의 연타로는 자동 삭제 기준(같은 사유 3건)을 채울 수 없다.
+        assertThat(postDeleted()).isFalse();
+    }
+
+    @Test
+    void concurrentReportsFromThreeUsersDeleteThePost() throws Exception {
+        List<User> reporters = Arrays.asList(member,
+                saveUser("r2@example.com", "r-2"), saveUser("r3@example.com", "r-3"));
+        AtomicInteger next = new AtomicInteger();
+        AtomicInteger checks = new AtomicInteger();
+        ReportService racing = reportService(pausingAfter(ReportRepository.class, reportRepository, "exists", checks));
+
+        List<Object> results = runConcurrently(reporters.size(), () -> inTransaction(() ->
+                racing.createPostReport(postId, report(ReportReason.HARASSMENT), reporters.get(next.getAndIncrement()))));
+
+        assertThat(checks).hasValue(reporters.size());
+        assertThat(failures(results)).isEmpty();
+        // 신고 행 수는 보지 않는다. 자동 삭제(postRepository.deleteById → em.remove)가 cascade로
+        // 그 게시글의 신고를 하드 삭제하기 때문이다(기존 동작, #126 범위 밖).
+        assertThat(postDeleted()).isTrue();
+    }
+
+    @Test
+    void reportReasonsAreCountedSeparatelyAndDeletedPostCannotBeReported() {
+        User second = saveUser("r2@example.com", "r-2");
+        User third = saveUser("r3@example.com", "r-3");
+        ReportService service = reportService(reportRepository);
+
+        inTransaction(() -> service.createPostReport(postId, report(ReportReason.HARASSMENT), member));
+        inTransaction(() -> service.createPostReport(postId, report(ReportReason.HARASSMENT), second));
+        inTransaction(() -> service.createPostReport(postId, report(ReportReason.ADVERTISEMENT), third));
+        assertThat(postDeleted()).isFalse();
+
+        inTransaction(() -> service.createPostReport(postId, report(ReportReason.HARASSMENT), third));
+        assertThat(postDeleted()).isTrue();
+
+        assertThatThrownBy(() -> inTransaction(() ->
+                service.createPostReport(postId, report(ReportReason.OTHERS), member)))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // ---- 스키마 ----
+
+    @Test
+    void hibernateSchemaHasTheReportUniqueIndex() {
+        assertThat(uniqueIndexColumns("post_reports", PostReportEntity.REPORTER_POST_REASON_UNIQUE_CONSTRAINT))
+                .containsExactly("reporter_id", "post_id", "report_reason");
+    }
+
+    @Test
+    void reportMigrationCleansDuplicatesAddsConstraintAndRollsBack() throws Exception {
+        String forward = script("scripts/sql/126-post-report-unique.sql");
+        String rollback = script("scripts/sql/126-post-report-unique-rollback.sql");
+        assertThat(forward).contains("ALTER TABLE post_reports");
+        assertThat(rollback).contains("ALTER TABLE post_reports");
+        long m = member.getId();
+        long o = saveUser("other@example.com", "other-1").getId();
+        long secondPostId = seedPost(member);
+
+        // 같은 스크립트를 이전 스키마 모양(외래 키 포함, unique 없음)의 별도 테이블에 적용한다.
+        dropMigrationTables();
+        try {
+            jdbc.execute("CREATE TABLE mig_post_reports (id BIGINT AUTO_INCREMENT PRIMARY KEY, "
+                    + "report_reason VARCHAR(255) NOT NULL, post_id BIGINT, reporter_id BIGINT, "
+                    + "CONSTRAINT fk_mig_pr_post FOREIGN KEY (post_id) REFERENCES posts (id), "
+                    + "CONSTRAINT fk_mig_pr_reporter FOREIGN KEY (reporter_id) REFERENCES users (id))");
+            jdbc.update("INSERT INTO mig_post_reports (id, reporter_id, post_id, report_reason) VALUES "
+                            + "(1, ?, ?, 'HARASSMENT'), (2, ?, ?, 'HARASSMENT'), (3, ?, ?, 'HARASSMENT'), "
+                            + "(4, ?, ?, 'ADVERTISEMENT'), (5, ?, ?, 'HARASSMENT'), (6, ?, ?, 'HARASSMENT'), "
+                            + "(7, ?, ?, 'HARASSMENT')",
+                    m, postId, m, postId, m, postId, m, postId, o, postId, o, postId, m, secondPostId);
+
+            runScript(onMigrationTables(forward));
+
+            // (신고자, 게시글, 사유)마다 가장 오래된 행만 남고, 지운 행은 백업 테이블에 있다.
+            assertThat(ids("mig_post_reports")).containsExactly(1L, 4L, 5L, 7L);
+            assertThat(ids("backup_126_post_reports")).containsExactly(2L, 3L, 6L);
+            // 드리프트 방지: 운영 스크립트가 만든 인덱스가 엔티티(Hibernate)가 만든 것과 같아야 한다.
+            assertThat(uniqueIndexColumns("mig_post_reports", PostReportEntity.REPORTER_POST_REASON_UNIQUE_CONSTRAINT))
+                    .isEqualTo(uniqueIndexColumns("post_reports", PostReportEntity.REPORTER_POST_REASON_UNIQUE_CONSTRAINT))
+                    .containsExactly("reporter_id", "post_id", "report_reason");
+            assertThatThrownBy(() -> jdbc.update(
+                    "INSERT INTO mig_post_reports (reporter_id, post_id, report_reason) VALUES (?, ?, 'HARASSMENT')",
+                    m, postId))
+                    .isInstanceOf(DataIntegrityViolationException.class)
+                    .hasMessageContaining(PostReportEntity.REPORTER_POST_REASON_UNIQUE_CONSTRAINT);
+
+            // 다시 실행해도 실패하지 않고 백업이 늘지 않는다.
+            runScript(onMigrationTables(forward));
+            assertThat(ids("backup_126_post_reports")).containsExactly(2L, 3L, 6L);
+
+            runScript(onMigrationTables(rollback));
+
+            assertThat(uniqueIndexColumns("mig_post_reports", PostReportEntity.REPORTER_POST_REASON_UNIQUE_CONSTRAINT))
+                    .isEmpty();
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS "
+                    + "WHERE CONSTRAINT_SCHEMA = DATABASE() AND CONSTRAINT_NAME IN ('fk_mig_pr_post', 'fk_mig_pr_reporter')",
+                    Long.class)).isEqualTo(2L);
+
+            // 제약이 없는 동안 생긴 중복도 적용 스크립트를 다시 실행하면 백업·정리되고 제약이 다시 생긴다.
+            jdbc.update("INSERT INTO mig_post_reports (id, reporter_id, post_id, report_reason) VALUES (8, ?, ?, 'HARASSMENT')",
+                    m, postId);
+
+            runScript(onMigrationTables(forward));
+
+            assertThat(ids("mig_post_reports")).containsExactly(1L, 4L, 5L, 7L);
+            assertThat(ids("backup_126_post_reports")).containsExactly(2L, 3L, 6L, 8L);
+            assertThat(uniqueIndexColumns("mig_post_reports", PostReportEntity.REPORTER_POST_REASON_UNIQUE_CONSTRAINT))
+                    .containsExactly("reporter_id", "post_id", "report_reason");
+        } finally {
+            dropMigrationTables();
+        }
+    }
+
+    @Test
+    void commentCountRecountFixesDriftedCounts() throws Exception {
+        long drifted = postId;
+        long stale = seedPost(member);
+        long correct = seedPost(member);
+        seedComment(drifted, member, false);
+        seedComment(drifted, member, false);
+        seedComment(drifted, member, true);
+        seedComment(correct, member, false);
+        // 이중 감소 등으로 틀어진 값
+        jdbc.update("UPDATE posts SET comment_count = ? WHERE id = ?", -2, drifted);
+        jdbc.update("UPDATE posts SET comment_count = ? WHERE id = ?", 5, stale);
+        long deletedPost = seedPost(member);
+        seedComment(deletedPost, member, false);
+        // 삭제된 게시글은 cascade로 댓글이 soft delete돼도 수가 그대로라 늘 어긋나 보인다. 재계산 대상이 아니다.
+        jdbc.update("UPDATE posts SET deleted = 1, comment_count = 7 WHERE id = ?", deletedPost);
+
+        String recount = script("scripts/sql/126-comment-count-recount.sql");
+        runScript(recount);
+
+        assertThat(commentCountOf(drifted)).isEqualTo(2);
+        assertThat(commentCountOf(stale)).isZero();
+        assertThat(commentCountOf(correct)).isEqualTo(1);
+        assertThat(commentCountOf(deletedPost)).isEqualTo(7);
+
+        // 다시 실행해도 그대로다.
+        runScript(recount);
+        assertThat(commentCountOf(drifted)).isEqualTo(2);
+        assertThat(commentCountOf(correct)).isEqualTo(1);
+        assertThat(commentCountOf(stale)).isZero();
+    }
+
+    @Test
+    void recountWaitsForInFlightCommentWriterAndKeepsCommentsCommittedMeanwhile() throws Exception {
+        long drifted = postId;
+        jdbc.update("UPDATE posts SET comment_count = 5 WHERE id = ?", drifted);   // 실제 0개
+        long clean = seedPost(member);
+        seedComment(clean, member, false);                                          // 1개, 맞음
+        String recount = script("scripts/sql/126-comment-count-recount.sql");
+        ExecutorService runner = Executors.newSingleThreadExecutor();
+        try (Connection writer = dataSource.getConnection()) {
+            writer.setAutoCommit(false);
+            // 댓글 생성과 같은 순서로, 아직 커밋하지 않은 쓰기: 게시글 댓글 수 증가(행 잠금) → 댓글 삽입
+            try (Statement statement = writer.createStatement()) {
+                statement.executeUpdate("UPDATE posts SET comment_count = comment_count + 1 WHERE id = " + drifted);
+                statement.executeUpdate("INSERT INTO comments (content, post_id, user_id, deleted) VALUES ('w', "
+                        + drifted + ", " + member.getId() + ", 0)");
+            }
+            Future<?> running = runner.submit(() -> runScript(recount));
+            awaitLockWait();
+            // 재계산이 잠금을 기다리는 동안 다른 게시글에 댓글이 커밋된다.
+            seedComment(clean, member, false);
+            writer.commit();
+            running.get(30, TimeUnit.SECONDS);
+        } finally {
+            runner.shutdownNow();
+        }
+
+        assertThat(commentCountOf(drifted)).isEqualTo(1);
+        assertThat(commentCountOf(clean)).isEqualTo(2);
+    }
+
+    // ---- 댓글 ----
+
+    @Test
+    void concurrentDeletesOfSameCommentDecrementOnce() throws Exception {
+        long commentId = seedComment(postId, member, false);
+        AtomicInteger checks = new AtomicInteger();
+        CommentService racing = commentService(pausingAfter(CommentRepository.class, commentRepository, "findById", checks));
+
+        List<Object> results = runConcurrently(THREADS, () -> inTransaction(() -> {
+            racing.deleteComment(member, commentId);
+            return "deleted";
+        }));
+
+        assertThat(checks).hasValue(THREADS);
+        assertThat(results).containsOnlyOnce("deleted");
+        assertThat(failures(results)).hasSize(THREADS - 1)
+                .allSatisfy(e -> assertThat(e).isInstanceOf(ResourceNotFoundException.class));
+        assertThat(commentCountOf(postId)).isZero();
+        assertThat(commentDeleted(commentId)).isTrue();
+    }
+
+    @Test
+    void deletingAlreadyDeletedCommentIsNotFoundAndKeepsCount() {
+        long commentId = seedComment(postId, member, false);
+        CommentService service = commentService(commentRepository);
+
+        inTransaction(() -> {
+            service.deleteComment(member, commentId);
+            return null;
+        });
+
+        assertThatThrownBy(() -> inTransaction(() -> {
+            service.deleteComment(member, commentId);
+            return null;
+        })).isInstanceOf(ResourceNotFoundException.class);
+        assertThat(commentCountOf(postId)).isZero();
+    }
+
+    @Test
+    void deleteThatLosesTheRaceRollsBackTheDecrement() throws Exception {
+        long commentId = seedComment(postId, member, false);
+        AtomicBoolean interleaved = new AtomicBoolean();
+        // 이 요청이 댓글을 읽은 직후 다른 요청이 같은 댓글을 지운 상황
+        CommentService racing = commentService(afterFirstCall(CommentRepository.class, commentRepository, "findById",
+                interleaved, () -> jdbc.update("UPDATE comments SET deleted = 1 WHERE id = ?", commentId)));
+
+        assertThatThrownBy(() -> inTransaction(() -> {
+            racing.deleteComment(member, commentId);
+            return null;
+        })).isInstanceOf(ResourceNotFoundException.class);
+
+        assertThat(interleaved).isTrue();
+        // 먼저 줄였던 댓글 수가 롤백으로 되돌아갔다.
+        assertThat(commentCountOf(postId)).isEqualTo(1);
+    }
+
+    // ---- 게시글 수정 ----
+
+    @Test
+    void updateKeepsCountersChangedWhileUpdating() throws Exception {
+        jdbc.update("UPDATE posts SET modified_date = '2000-01-01 00:00:00' WHERE id = ?", postId);
+        AtomicBoolean interleaved = new AtomicBoolean();
+        PostRepository racingPosts = afterFirstCall(PostRepository.class, postRepository, "findById", interleaved, () ->
+                // 수정 요청이 게시글을 읽은 직후, 다른 요청이 좋아요 2개·댓글 3개를 반영한 상황
+                jdbc.update("UPDATE posts SET like_count = like_count + 2, comment_count = comment_count + 3 WHERE id = ?",
+                        postId));
+        PostService service = postService(racingPosts);
+
+        Post updated = inRequest(() -> service.updatePost(member, postId, update("new title", "new content"),
+                Collections.emptyList()));
+
+        assertThat(interleaved).isTrue();
+
+        assertThat(jdbc.queryForMap("SELECT title, content, like_count, comment_count FROM posts WHERE id = ?", postId))
+                .containsEntry("title", "new title")
+                .containsEntry("content", "new content")
+                .containsEntry("like_count", 2)
+                .containsEntry("comment_count", 3);
+        assertThat(updated.getTitle()).isEqualTo("new title");
+        assertThat(updated.getLikeCount()).isEqualTo(2);
+        assertThat(updated.getCommentCount()).isEqualTo(3);
+        LocalDateTime modified = jdbc.queryForObject("SELECT modified_date FROM posts WHERE id = ?", LocalDateTime.class, postId);
+        assertThat(modified).isAfter(LocalDateTime.of(2000, 1, 2, 0, 0));
+        assertThat(updated.getModifiedDate()).isEqualTo(modified);
+    }
+
+    @Test
+    void updateWithoutNewImagesKeepsExistingImages() throws Exception {
+        seedImage("https://cdn.example.com/a.jpg");
+        seedImage("https://cdn.example.com/b.jpg");
+
+        Post updated = inRequest(() -> postService(postRepository)
+                .updatePost(member, postId, update("new title", null), Collections.emptyList()));
+
+        assertThat(activeImages()).isEqualTo(2);
+        assertThat(updated.getPostImageList()).hasSize(2);
+        assertThat(updated.getTitle()).isEqualTo("new title");
+        assertThat(updated.getContent()).isEqualTo("content");
+    }
+
+    @Test
+    void updateWithNewImageAddsItAndReturnsFreshPost() throws Exception {
+        seedImage("https://cdn.example.com/a.jpg");
+        when(s3ImageService.uploadPostImage(any(), anyString())).thenReturn("https://cdn.example.com/new.jpg");
+        MockMultipartFile image = new MockMultipartFile("images", "new.jpg", "image/jpeg", new byte[]{1, 2, 3});
+
+        Post updated = inRequest(() -> postService(postRepository)
+                .updatePost(member, postId, update("new title", "new content"), Collections.singletonList(image)));
+
+        assertThat(activeImages()).isEqualTo(2);
+        // 같은 요청(EntityManager) 안에서 다시 조회해도 바뀐 제목과 새 이미지가 보여야 한다.
+        assertThat(updated.getTitle()).isEqualTo("new title");
+        assertThat(updated.getPostImageList()).hasSize(2)
+                .extracting(PostImage::getAddress).contains("https://cdn.example.com/new.jpg");
+    }
+
+    @Test
+    void updateDoesNotTouchPostDeletedMeanwhile() throws Exception {
+        AtomicBoolean interleaved = new AtomicBoolean();
+        PostRepository racingPosts = afterFirstCall(PostRepository.class, postRepository, "findById", interleaved, () ->
+                // 수정 요청이 게시글을 읽은 직후 게시글이 삭제된 상황(작성자 삭제·차단·신고 자동 삭제)
+                jdbc.update("UPDATE posts SET deleted = 1 WHERE id = ?", postId));
+
+        assertThatThrownBy(() -> inRequest(() -> postService(racingPosts)
+                .updatePost(member, postId, update("new title", null), Collections.emptyList())))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        assertThat(interleaved).isTrue();
+        assertThat(postDeleted()).isTrue();
+        assertThat(jdbc.queryForObject("SELECT title FROM posts WHERE id = ?", String.class, postId)).isEqualTo("title");
+    }
+
+    // ---- helpers ----
+
+    private ReportService reportService(ReportRepository reports) {
+        return ReportServiceImpl.builder().reportRepository(reports).postRepository(postRepository).build();
+    }
+
+    private CommentService commentService(CommentRepository comments) {
+        return CommentServiceImpl.builder()
+                .commentRepository(comments)
+                .userRepository(userRepository)
+                .postJpaRepository(postJpaRepository)
+                .postRepository(postRepository)
+                .build();
+    }
+
+    private PostService postService(PostRepository posts) {
+        return PostServiceImpl.builder()
+                .postRepository(posts)
+                .s3ImageService(s3ImageService)
+                .postImageRepository(postImageRepository)
+                .build();
+    }
+
+    private static ReportCreate report(ReportReason reason) {
+        return ReportCreate.builder().reportReason(reason).build();
+    }
+
+    private static PostUpdate update(String title, String content) {
+        return PostUpdate.builder().title(title).content(content).build();
+    }
+
+    private User saveUser(String email, String providerId) {
+        return userJpaRepository.save(UserEntity.builder()
+                .name(email).email(email)
+                .provider(Provider.GOOGLE).providerId(providerId).role(Role.GUEST)
+                .build()).toModel();
+    }
+
+    private long seedPost(User owner) {
+        return postJpaRepository.save(PostEntity.builder()
+                .title("title").content("content").user(UserEntity.fromModel(owner))
+                .build()).getId();
+    }
+
+    private long seedComment(long targetPostId, User author, boolean deleted) {
+        KeyHolder key = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO comments (content, post_id, user_id, deleted) VALUES ('hello', ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            statement.setLong(1, targetPostId);
+            statement.setLong(2, author.getId());
+            statement.setBoolean(3, deleted);
+            return statement;
+        }, key);
+        if (!deleted) {
+            jdbc.update("UPDATE posts SET comment_count = comment_count + 1 WHERE id = ?", targetPostId);
+        }
+        return key.getKey().longValue();
+    }
+
+    private void seedImage(String address) {
+        jdbc.update("INSERT INTO post_images (address, post_id, user_id, deleted) VALUES (?, ?, ?, 0)",
+                address, postId, member.getId());
+    }
+
+    private void truncate(String... tables) {
+        jdbc.execute((ConnectionCallback<Void>) connection -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("SET FOREIGN_KEY_CHECKS = 0");
+                try {
+                    for (String table : tables) {
+                        statement.execute("TRUNCATE TABLE " + table);
+                    }
+                } finally {
+                    statement.execute("SET FOREIGN_KEY_CHECKS = 1");
+                }
+            }
+            return null;
+        });
+    }
+
+    private long count(String table) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM " + table, Long.class);
+    }
+
+    private long reportRows(long reporterId, ReportReason reason) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM post_reports WHERE reporter_id = ? AND post_id = ? "
+                + "AND report_reason = ?", Long.class, reporterId, postId, reason.name());
+    }
+
+    private boolean postDeleted() {
+        return jdbc.queryForObject("SELECT deleted FROM posts WHERE id = ?", Boolean.class, postId);
+    }
+
+    private int commentCountOf(long targetPostId) {
+        return jdbc.queryForObject("SELECT comment_count FROM posts WHERE id = ?", Integer.class, targetPostId);
+    }
+
+    private boolean commentDeleted(long commentId) {
+        return jdbc.queryForObject("SELECT deleted FROM comments WHERE id = ?", Boolean.class, commentId);
+    }
+
+    private long activeImages() {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM post_images WHERE post_id = ? AND deleted = 0",
+                Long.class, postId);
+    }
+
+    /** 서비스의 @Transactional과 같은 트랜잭션(REQUIRED) 안에서 실행한다. 직접 만든 서비스에는 트랜잭션 프록시가 없다. */
+    private <T> T inTransaction(Supplier<T> task) {
+        return new TransactionTemplate(transactionManager).execute(status -> task.get());
+    }
+
+    /**
+     * 운영의 open-in-view(OpenEntityManagerInViewInterceptor)처럼 요청 스레드에 EntityManager를 묶고 task를 실행한다.
+     * 게시글 경로는 PostEntity.toModel()이 user를 지연 로딩하므로 이 안에서 호출해야 한다. 중첩 호출은 지원하지 않는다.
+     */
+    private <T> T inRequest(Callable<T> task) throws Exception {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        TransactionSynchronizationManager.bindResource(entityManagerFactory, new EntityManagerHolder(entityManager));
+        try {
+            return task.call();
+        } finally {
+            TransactionSynchronizationManager.unbindResource(entityManagerFactory);
+            EntityManagerFactoryUtils.closeEntityManager(entityManager);
+        }
+    }
+
+    /**
+     * checkMethod가 끝날 때마다 PAUSE_MS만큼 멈춘다. 확인과 쓰기 사이에 다른 요청이 끼어들 틈을 만든다.
+     * 호출 수를 checks에 세어서, 테스트가 경쟁이 실제로 일어났는지 확인할 수 있게 한다.
+     */
+    private static <S> S pausingAfter(Class<S> type, S target, String checkMethod, AtomicInteger checks) {
+        requireMethod(type, checkMethod);
+        InvocationHandler handler = (proxy, method, args) -> {
+            Object result = invoke(target, method, args);
+            if (method.getName().equals(checkMethod)) {
+                checks.incrementAndGet();
+                Thread.sleep(PAUSE_MS);
+            }
+            return result;
+        };
+        return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, handler));
+    }
+
+    /** methodName이 처음 끝난 직후에 action을 한 번 실행하고 ran을 true로 바꾼다. 읽은 직후 다른 요청이 끼어든 상황을 만든다. */
+    private static <S> S afterFirstCall(Class<S> type, S target, String methodName, AtomicBoolean ran, Runnable action) {
+        requireMethod(type, methodName);
+        InvocationHandler handler = (proxy, method, args) -> {
+            Object result = invoke(target, method, args);
+            if (method.getName().equals(methodName) && ran.compareAndSet(false, true)) {
+                action.run();
+            }
+            return result;
+        };
+        return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, handler));
+    }
+
+    private static Object invoke(Object target, Method method, Object[] args) throws Throwable {
+        try {
+            return method.invoke(target, args);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
+    }
+
+    /** 이름 오타로 프록시가 조용히 아무 일도 안 하는 일을 막는다. */
+    private static void requireMethod(Class<?> type, String name) {
+        if (Arrays.stream(type.getMethods()).noneMatch(m -> m.getName().equals(name))) {
+            throw new IllegalArgumentException(type.getSimpleName() + " has no method " + name);
+        }
+    }
+
+    private static List<Object> runConcurrently(int threads, Callable<?> task) throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        CountDownLatch ready = new CountDownLatch(threads);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            List<Future<Object>> futures = new ArrayList<>();
+            for (int i = 0; i < threads; i++) {
+                futures.add(pool.submit(() -> {
+                    ready.countDown();
+                    start.await();
+                    try {
+                        return task.call();
+                    } catch (Exception e) {
+                        return e;
+                    }
+                }));
+            }
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            List<Object> results = new ArrayList<>();
+            for (Future<Object> future : futures) {
+                results.add(future.get(90, TimeUnit.SECONDS));
+            }
+            return results;
+        } finally {
+            pool.shutdownNow();
+            // 멈춘 스레드가 커넥션을 쥔 채 다음 테스트의 TRUNCATE와 겹치지 않게 끝날 때까지 기다린다.
+            // finally에서 단언하면 원래 실패를 가리므로 기록만 한다.
+            if (!pool.awaitTermination(10, TimeUnit.SECONDS)) {
+                System.err.println("runConcurrently: worker threads still running after 10s");
+            }
+        }
+    }
+
+    private static String withSessionVariable(String jdbcUrl, String variable) {
+        return jdbcUrl + (jdbcUrl.contains("?") ? "&" : "?") + "sessionVariables=" + variable;
+    }
+
+    private static List<Object> failures(List<Object> results) {
+        return results.stream().filter(r -> r instanceof Throwable).collect(Collectors.toList());
+    }
+
+    private List<String> uniqueIndexColumns(String table, String index) {
+        return jdbc.queryForList("SELECT COLUMN_NAME FROM information_schema.STATISTICS "
+                        + "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ? AND NON_UNIQUE = 0 "
+                        + "ORDER BY SEQ_IN_INDEX",
+                String.class, table, index);
+    }
+
+    private List<Long> ids(String table) {
+        return jdbc.queryForList("SELECT id FROM " + table + " ORDER BY id", Long.class);
+    }
+
+    private static String script(String path) throws IOException {
+        return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+    }
+
+    /** 테이블 이름만 mig_*로 바꾼다. backup_126_post_reports, uk_post_reports_…는 앞에 '_'가 있어 그대로 남는다. */
+    private static String onMigrationTables(String script) {
+        return script.replaceAll("\\bpost_reports\\b", "mig_post_reports");
+    }
+
+    private void runScript(String script) {
+        jdbc.execute((ConnectionCallback<Void>) connection -> {
+            try {
+                ScriptUtils.executeSqlScript(connection, new EncodedResource(
+                        new ByteArrayResource(script.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
+            } finally {
+                // 스크립트가 중간에 실패해도 풀로 돌아가는 커넥션에 열린 트랜잭션·임시 테이블·바뀐 격리 수준이 남지 않게 한다.
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("ROLLBACK");
+                    statement.execute("DROP TEMPORARY TABLE IF EXISTS recount_126_targets");
+                    statement.execute("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+                }
+            }
+            return null;
+        });
+    }
+
+    /** 다른 트랜잭션이 잠금을 기다리는 상태가 될 때까지 기다린다. INNODB_TRX는 PROCESS 권한이 필요해서 root로 본다. */
+    private void awaitLockWait() throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        // Testcontainers MariaDB는 root 비밀번호를 앱 사용자 비밀번호와 같게 둔다.
+        try (Connection root = DriverManager.getConnection(MARIADB.getJdbcUrl(), "root", MARIADB.getPassword());
+             Statement statement = root.createStatement()) {
+            while (true) {
+                try (ResultSet rows = statement.executeQuery(
+                        "SELECT COUNT(*) FROM information_schema.INNODB_TRX WHERE trx_state = 'LOCK WAIT' "
+                                + "AND trx_query LIKE '%recount_126_targets%'")) {
+                    rows.next();
+                    if (rows.getLong(1) > 0) {
+                        return;
+                    }
+                }
+                if (System.nanoTime() > deadline) {
+                    throw new IllegalStateException("recount did not start waiting for the post row lock");
+                }
+                Thread.sleep(50);
+            }
+        }
+    }
+
+    private void dropMigrationTables() {
+        jdbc.execute("DROP TABLE IF EXISTS backup_126_post_reports");
+        jdbc.execute("DROP TABLE IF EXISTS mig_post_reports");
+    }
+}

@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -30,19 +28,12 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 
     @Override
-    public Optional<PostReport> findOne(User reporter, Post post, ReportReason reportReason) {
-        UserEntity userEntity = UserEntity.fromModel(reporter);
-        PostEntity postEntity = PostEntity.fromModel(post);
-        return reportJpaRepository.findByReporterAndPostAndReportReason(userEntity, postEntity, reportReason)
-                .map(PostReportEntity::toModel);
+    public boolean exists(long reporterId, long postId, ReportReason reportReason) {
+        return reportJpaRepository.existsByReporterIdAndPostIdAndReportReason(reporterId, postId, reportReason);
     }
 
     @Override
-    public long countByPostAndReportReasonForUpdate(Post post, ReportReason reportReason) {
-        // 도메인 Post를 엔티티로 변환
-        PostEntity postEntity = PostEntity.fromModel(post);
-
-        // PESSIMISTIC_WRITE 잠금으로 count 쿼리 실행
-        return reportJpaRepository.countReportsByPostAndReason(postEntity, reportReason);
+    public long countReporters(long postId, ReportReason reportReason) {
+        return reportJpaRepository.countReporters(postId, reportReason);
     }
 }
