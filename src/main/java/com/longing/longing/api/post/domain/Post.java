@@ -3,6 +3,7 @@ package com.longing.longing.api.post.domain;
 import com.longing.longing.api.comment.domain.Comment;
 import com.longing.longing.common.domain.PostImage;
 import com.longing.longing.api.user.domain.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -30,6 +31,8 @@ public class Post {
     private boolean liked;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
+    @JsonIgnore
+    private String clientRequestId;
 
     @Builder
     public Post(
@@ -44,7 +47,8 @@ public class Post {
             boolean bookmarked,
             boolean liked,
             LocalDateTime createdDate,
-            LocalDateTime modifiedDate
+            LocalDateTime modifiedDate,
+            String clientRequestId
     ) {
         this.id = id;
         this.title = title;
@@ -58,13 +62,19 @@ public class Post {
         this.liked = liked;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
+        this.clientRequestId = clientRequestId;
     }
 
     public static Post from(User user, PostCreate postCreate) {
+        return from(user, postCreate, null);
+    }
+
+    public static Post from(User user, PostCreate postCreate, String clientRequestId) {
         return Post.builder()
                 .title(postCreate.getTitle())
                 .content(postCreate.getContent())
                 .user(user)
+                .clientRequestId(clientRequestId)
                 .build();
     }
 

@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Builder
@@ -38,8 +39,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public Post createPost(User user, PostCreate postCreate, List<MultipartFile> images) {
-        Post post = Post.from(user, postCreate);
+    public Post createPost(User user, PostCreate postCreate, List<MultipartFile> images, String clientRequestId) {
+        Post post = Post.from(user, postCreate, clientRequestId);
         post = postRepository.save(post);
 
         log.info("title:: " + post.getTitle());
@@ -53,6 +54,15 @@ public class PostServiceImpl implements PostService {
         }
 
         return post;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Post> findByClientRequestId(long userId, String clientRequestId) {
+        if (clientRequestId == null) {
+            return Optional.empty();
+        }
+        return postRepository.findByUserIdAndClientRequestId(userId, clientRequestId);
     }
 
     private void uploadAndSaveImage(MultipartFile image, Post post, User user) {

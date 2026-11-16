@@ -15,4 +15,6 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
     List<CommentEntity> findByPostIdAndIdGreaterThanOrderByIdAsc(long postId, long lastCommentId, Pageable pageable);
 
     void deleteById(long id);
+
+    Optional<CommentEntity> findByUserIdAndClientRequestId(Long userId, String clientRequestId);
 }

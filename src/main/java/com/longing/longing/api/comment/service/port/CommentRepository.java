@@ -16,4 +16,6 @@ public interface CommentRepository {
     void deleteById(long commentId);
 
     Optional<Comment> findByIdAndUserId(long commentId, long id);
+
+    Optional<Comment> findByUserIdAndClientRequestId(long userId, String clientRequestId);
 }

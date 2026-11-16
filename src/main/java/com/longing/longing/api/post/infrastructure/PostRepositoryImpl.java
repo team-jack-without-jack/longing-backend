@@ -346,5 +346,8 @@ public class PostRepositoryImpl implements PostRepository {
         return postJpaRepository.findByUserId(userId, pageable).map(PostEntity::toModel);
     }
 
-
+    @Override
+    public Optional<Post> findByUserIdAndClientRequestId(long userId, String clientRequestId) {
+        return postJpaRepository.findByUserIdAndClientRequestId(userId, clientRequestId).map(PostEntity::toModel);
+    }
 }

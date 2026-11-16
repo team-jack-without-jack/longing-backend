@@ -29,6 +29,7 @@ public class FakePostRepository implements PostRepository {
                     .title(post.getTitle())
                     .content(post.getContent())
                     .user(post.getUser())
+                    .clientRequestId(post.getClientRequestId())
                     .build();
             data.add(newPost);
             return newPost;
@@ -118,5 +119,17 @@ public class FakePostRepository implements PostRepository {
     @Override
     public Page<Post> findByUserId(long userId, Pageable pageable) {
         return null;
+    }
+
+    @Override
+    public Optional<Post> findByUserIdAndClientRequestId(long userId, String clientRequestId) {
+        if (clientRequestId == null) {
+            return Optional.empty();
+        }
+        return data.stream()
+                .filter(item -> item.getUser() != null
+                        && item.getUser().getId() == userId
+                        && clientRequestId.equals(item.getClientRequestId()))
+                .findAny();
     }
 }

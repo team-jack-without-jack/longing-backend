@@ -7,9 +7,12 @@ import com.longing.longing.api.user.domain.User;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CommentService {
-    Comment createComment(User user, CommentCreate commentCreate);
+    Comment createComment(User user, CommentCreate commentCreate, String clientRequestId);
+
+    Optional<Comment> findByClientRequestId(long userId, String clientRequestId);
     Comment updateComment(User user, long commentId, CommentUpdate commentUpdate);
 
     List<Comment> getCommentList(long postId, long lastCommentId, int limit);

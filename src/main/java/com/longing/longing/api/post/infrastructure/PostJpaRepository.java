@@ -84,4 +84,6 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, Long> {
     void decrementCommentCount(Long postId);
 
     Page<PostEntity> findByUserId(long userId, Pageable pageable);
+
+    Optional<PostEntity> findByUserIdAndClientRequestId(Long userId, String clientRequestId);
 }

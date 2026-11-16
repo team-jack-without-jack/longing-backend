@@ -24,10 +24,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Getter
 @Entity
-@Table(name = "posts")
+@Table(name = "posts", uniqueConstraints = @UniqueConstraint(
+        name = PostEntity.CLIENT_REQUEST_UNIQUE_CONSTRAINT,
+        columnNames = {"user_id", "client_request_id"}))
 @SQLDelete(sql = "UPDATE posts SET deleted = true, deleted_date = NOW() WHERE id = ?")
 @Where(clause = "deleted = false")
 public class PostEntity extends BaseTimeEntity {
+    /** scripts/sql/122-create-dedupe.sql과 같은 이름. 중복 키 위반 판별에 사용한다. */
+    public static final String CLIENT_REQUEST_UNIQUE_CONSTRAINT = "uk_posts_user_client_request";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -63,6 +68,10 @@ public class PostEntity extends BaseTimeEntity {
     @Column(columnDefinition = "integer default 0")
     private int commentCount = 0;
 
+    /** Redis 키처럼 대소문자를 구분하도록 바이너리 정렬(MariaDB 기본 _ci 정렬은 abc와 ABC를 같게 본다). */
+    @Column(name = "client_request_id", columnDefinition = "VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin")
+    private String clientRequestId;
+
     public PostEntity() {
 
     }
@@ -74,7 +83,8 @@ public class PostEntity extends BaseTimeEntity {
             String content,
             UserEntity user,
             int likeCount,
-            int commentCount
+            int commentCount,
+            String clientRequestId
     ) {
         this.id = id;
         this.title = title;
@@ -82,6 +92,7 @@ public class PostEntity extends BaseTimeEntity {
         this.user = user;
         this.likeCount = likeCount;
         this.commentCount = commentCount;
+        this.clientRequestId = clientRequestId;
     }
 
     public static PostEntity fromModel(Post post) {
@@ -92,6 +103,7 @@ public class PostEntity extends BaseTimeEntity {
                 .user(UserEntity.fromModel(post.getUser()))
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
+                .clientRequestId(post.getClientRequestId())
                 .build();
     }
 
@@ -108,6 +120,7 @@ public class PostEntity extends BaseTimeEntity {
                 .commentCount(commentCount)
                 .createdDate(getCreatedDate())
                 .modifiedDate(getModifiedDate())
+                .clientRequestId(clientRequestId)
                 .build();
     }
 
@@ -126,6 +139,7 @@ public class PostEntity extends BaseTimeEntity {
                 .liked(liked)
                 .createdDate(getCreatedDate())
                 .modifiedDate(getModifiedDate())
+                .clientRequestId(clientRequestId)
                 .build();
     }
 
