@@ -59,7 +59,8 @@ public class UserEntity extends BaseTimeEntity {
     @Column
     private String introduction;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    // 회원 탈퇴의 게시글 삭제는 PostRepository.softDeleteAllByUserId가 처리한다. cascade를 두지 않는다 (#128).
+    @OneToMany(mappedBy = "user")
     private List<PostEntity> postEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")

@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -185,6 +186,30 @@ public class PostServiceTest {
             postService.getPost(user1, postId);
         }).isInstanceOf(ResourceNotFoundException.class);
 
+    }
+
+    @Test
+    void 지울_게시글이_이미_없으면_작성자_삭제는_조용히_끝난다() {
+        // 작성자 확인은 통과했지만, 동시에 들어온 다른 삭제가 먼저 지운 상황(softDelete 0행)
+        User writer = User.builder().id(1L).email("w@test.com").name("w").role(Role.GUEST)
+                .provider(Provider.GOOGLE).providerId("w").build();
+        FakePostRepository posts = new FakePostRepository() {
+            @Override
+            public int softDelete(long postId) {
+                return 0;
+            }
+        };
+        posts.save(Post.builder().id(1L).title("t").content("c").user(writer).build());
+        PostServiceImpl service = PostServiceImpl.builder().postRepository(posts).build();
+
+        assertThatCode(() -> service.deletePost(1L, writer)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void 없는_게시글을_차단해도_조용히_끝난다() {
+        PostServiceImpl service = PostServiceImpl.builder().postRepository(new FakePostRepository()).build();
+
+        assertThatCode(() -> service.blockPost(999L)).doesNotThrowAnyException();
     }
 
     @Test

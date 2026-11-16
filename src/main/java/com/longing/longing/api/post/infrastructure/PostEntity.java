@@ -42,19 +42,21 @@ public class PostEntity extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    // 삭제는 PostRepository.softDelete가 게시글 행을 먼저 잠근 뒤 한 문장씩 처리한다 (#128).
+    // cascade를 두지 않는다. em.remove의 cascade가 신고까지 하드 삭제했고, 자식 행부터 잠가 교착 상태를 만들었다.
+    @OneToMany(mappedBy = "post")
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post")
     private List<PostLikeEntity> postLikeEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post")
     private List<PostBookmarkEntity> postBookmarkEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post")
     private List<PostImageEntity> postImageEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post")
     private List<PostReportEntity> postReportEntities = new ArrayList<>();
 
     @Column(columnDefinition = "integer default 0")
