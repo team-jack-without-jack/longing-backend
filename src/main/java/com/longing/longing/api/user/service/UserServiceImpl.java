@@ -1,6 +1,5 @@
 package com.longing.longing.api.user.service;
 
-import com.longing.longing.api.user.domain.UserBlock;
 import com.longing.longing.api.user.domain.UserUpdate;
 import com.longing.longing.api.user.infrastructure.UserEntity;
 import com.longing.longing.common.exceptions.ResourceNotFoundException;
@@ -11,7 +10,6 @@ import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityNotFoundException;
-
-@Slf4j
 @Builder
 @Service
 @RequiredArgsConstructor
@@ -63,32 +58,29 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(user.getId());
     }
 
+    /**
+     * 멱등: 이미 차단했으면 그대로 성공한다 (#124).
+     * 동시 요청이 모두 "없음"을 봐도 blockIfAbsent가 unique 제약으로 한 행만 남긴다.
+     * blockIfAbsent는 트랜잭션 밖에서 호출해야 하므로 @Transactional을 붙이지 않는다.
+     */
     @Override
     public void blockUser(User user, long blockUserId) {
         User blockedUser = userRepository.findById(blockUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users Id", blockUserId));
 
-        /**
-         * TODO
-         */
-//        checkIsAlreadyBlockedUser(user, blockUserId);
-
-        userRepository.blockUser(user, blockedUser);
+        if (userRepository.isBlocked(user.getId(), blockedUser.getId())) {
+            return;
+        }
+        userRepository.blockIfAbsent(user, blockedUser);
     }
 
+    /** 멱등: 차단 관계가 없어도 성공하고, 중복 행이 남아 있으면 함께 지운다 (#124). */
     @Override
     public void cancelBlockUser(User user, long blockUserId) {
         User blockedUser = userRepository.findById(blockUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Users Id", blockUserId));
 
-        log.info("blockUser.getId() " + blockedUser.getId());
-
-        UserBlock userBlock = userRepository.findBlockedData(user, blockedUser)
-                .orElseThrow(() -> new EntityNotFoundException("this user is not blocked by" + blockedUser.getEmail()));
-
-        log.info("userBlock.getId() " + userBlock.getId());
-
-        userRepository.deleteByUserBlockedId(userBlock.getId());
+        userRepository.unblock(user.getId(), blockedUser.getId());
     }
 
     @Override

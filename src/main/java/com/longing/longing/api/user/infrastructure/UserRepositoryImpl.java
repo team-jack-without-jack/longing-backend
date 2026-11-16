@@ -2,8 +2,8 @@ package com.longing.longing.api.user.infrastructure;
 
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.domain.User;
-import com.longing.longing.api.user.domain.UserBlock;
 import com.longing.longing.api.user.service.port.UserRepository;
+import com.longing.longing.common.persistence.UniqueInserts;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,18 +56,20 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void blockUser(User user, User blockedUser) {
-        userBlockJpaRepository.save(UserBlockEntity.fromModel(user, blockedUser));
+    public boolean isBlocked(long userId, long blockedUserId) {
+        return userBlockJpaRepository.existsByUserIdAndBlockedUserId(userId, blockedUserId);
     }
 
     @Override
-    public Optional<UserBlock> findBlockedData(User user, User blockedUser) {
-        return userBlockJpaRepository.findByUserIdAndBlockedUserId(user.getId(), blockedUser.getId()).map(UserBlockEntity::toModel);
+    public boolean blockIfAbsent(User user, User blockedUser) {
+        return UniqueInserts.insertIfAbsent(
+                () -> userBlockJpaRepository.save(UserBlockEntity.fromModel(user, blockedUser)),
+                UserBlockEntity.USER_BLOCKED_UNIQUE_CONSTRAINT);
     }
 
     @Override
-    public void deleteByUserBlockedId(long userBlockId) {
-        userBlockJpaRepository.deleteById(userBlockId);
+    public int unblock(long userId, long blockedUserId) {
+        return userBlockJpaRepository.deleteByUserIdAndBlockedUserId(userId, blockedUserId);
     }
 
     @Override
