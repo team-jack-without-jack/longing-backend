@@ -6,6 +6,7 @@ import com.longing.longing.mock.FakePostImageRepository;
 import com.longing.longing.mock.FakePostRepository;
 import com.longing.longing.mock.FakeUserRepository;
 import com.longing.longing.api.post.domain.Post;
+import com.longing.longing.api.post.domain.PostCreate;
 import com.longing.longing.api.post.domain.PostUpdate;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.Role;
@@ -186,6 +187,32 @@ public class PostServiceTest {
             postService.getPost(user1, postId);
         }).isInstanceOf(ResourceNotFoundException.class);
 
+    }
+
+    @Test
+    void createPostStoresClientRequestIdAndFindsItOnlyForTheSameUser() {
+        // given
+        User writer = User.builder()
+                .id(7L)
+                .email("writer@test.com")
+                .name("writer")
+                .role(Role.GUEST)
+                .provider(Provider.GOOGLE)
+                .providerId("7")
+                .build();
+        PostCreate postCreate = PostCreate.builder().title("title").content("content").build();
+
+        // when
+        Post created = postService.createPost(writer, postCreate, null, "key-1");
+
+        // then
+        assertThat(created.getClientRequestId()).isEqualTo("key-1");
+        assertThat(postService.findByClientRequestId(7L, "key-1").map(Post::getClientRequestId).orElse(null))
+                .isEqualTo("key-1");
+        assertThat(postService.findByClientRequestId(8L, "key-1").isPresent()).isFalse();
+        assertThat(postService.findByClientRequestId(7L, "other").isPresent()).isFalse();
+        assertThat(postService.findByClientRequestId(7L, null).isPresent()).isFalse();
+        assertThat(postService.findByClientRequestId(1L, null).isPresent()).isFalse();
     }
 
     @Test

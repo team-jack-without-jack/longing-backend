@@ -7,8 +7,13 @@ import com.longing.longing.api.comment.controller.response.CommentResponse;
 import com.longing.longing.api.comment.domain.CommentUpdate;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.common.response.ApiResponse;
+import com.longing.longing.api.comment.service.GuardedCommentCreator;
+import com.longing.longing.common.writeguard.CreateOutcome;
+import com.longing.longing.common.writeguard.CreateResponses;
+import com.longing.longing.common.writeguard.IdempotencyKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +28,7 @@ import java.util.stream.Collectors;
 public class CommentController {
 
     private final CommentService commentService;
+    private final GuardedCommentCreator guardedCommentCreator;
 
     @GetMapping("/post/{id}/comment")
     public ApiResponse<List<CommentResponse>> getCommentListByPost(
@@ -36,12 +42,14 @@ public class CommentController {
     }
 
     @PostMapping("/comment")
-    public ApiResponse<Comment> createComment(
+    public ResponseEntity<ApiResponse<Comment>> createComment(
             @RequestBody @Valid CommentCreate commentCreate,
+            @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey,
             @AuthenticationPrincipal User user
             ) {
-        Comment comment = commentService.createComment(user, commentCreate);
-        return ApiResponse.created(comment);
+        CreateOutcome<Comment> outcome = guardedCommentCreator.create(
+                user, commentCreate, IdempotencyKey.parse(idempotencyKey));
+        return CreateResponses.created(outcome);
     }
 
     @PatchMapping("/comment/{id}")

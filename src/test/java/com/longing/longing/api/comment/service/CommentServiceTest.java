@@ -77,7 +77,7 @@ public class CommentServiceTest {
                 .build();
 
         // when
-        Comment createdComment = commentService.createComment(user, commentCreate);
+        Comment createdComment = commentService.createComment(user, commentCreate, null);
         List<Comment> commentList = commentService.getCommentList(1L, 1L, 10);
 
         // then
@@ -119,6 +119,26 @@ public class CommentServiceTest {
 
         // then
         assertThat(result.getContent()).isEqualTo("update comment");
+    }
+
+    @Test
+    void createCommentStoresClientRequestIdAndFindsItOnlyForTheSameUser() {
+        // given
+        CommentCreate commentCreate = CommentCreate.builder()
+                .postId(1L)
+                .content("keyed comment")
+                .build();
+
+        // when
+        Comment created = commentService.createComment(user, commentCreate, "key-1");
+
+        // then
+        assertThat(created.getClientRequestId()).isEqualTo("key-1");
+        assertThat(commentService.findByClientRequestId(1L, "key-1").map(Comment::getContent).orElse(null))
+                .isEqualTo("keyed comment");
+        assertThat(commentService.findByClientRequestId(2L, "key-1").isPresent()).isFalse();
+        assertThat(commentService.findByClientRequestId(1L, null).isPresent()).isFalse();
+        assertThat(commentService.findByClientRequestId(1L, "other").isPresent()).isFalse();
     }
 
     @Test

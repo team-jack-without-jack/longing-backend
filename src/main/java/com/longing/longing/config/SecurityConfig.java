@@ -6,10 +6,12 @@ import com.longing.longing.config.auth.JwtAuthenticationFilter;
 import com.longing.longing.config.auth.JwtTokenProvider;
 import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.service.port.UserRepository;
+import com.longing.longing.common.writeguard.CreateResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -78,6 +80,8 @@ public class SecurityConfig implements WebMvcConfigurer {
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
+        // 브라우저 클라이언트가 재요청 여부와 재시도 대기 시간을 읽을 수 있도록 노출한다(#122).
+        configuration.setExposedHeaders(List.of(CreateResponses.REPLAYED_HEADER, HttpHeaders.RETRY_AFTER));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

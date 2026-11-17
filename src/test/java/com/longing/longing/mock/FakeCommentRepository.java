@@ -24,6 +24,7 @@ public class FakeCommentRepository implements CommentRepository {
                     .content(comment.getContent())
                     .user(comment.getUser())
                     .post(comment.getPost())
+                    .clientRequestId(comment.getClientRequestId())
                     .build();
             comments.add(newComment);
             return newComment;
@@ -79,6 +80,18 @@ public class FakeCommentRepository implements CommentRepository {
                 .filter(c -> c.getId().equals(commentId)
                         && c.getUser() != null
                         && c.getUser().getId().equals(id))
+                .findAny();
+    }
+
+    @Override
+    public Optional<Comment> findByUserIdAndClientRequestId(long userId, String clientRequestId) {
+        if (clientRequestId == null) {
+            return Optional.empty();
+        }
+        return comments.stream()
+                .filter(c -> c.getUser() != null
+                        && c.getUser().getId() == userId
+                        && clientRequestId.equals(c.getClientRequestId()))
                 .findAny();
     }
 }

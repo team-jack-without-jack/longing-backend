@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Builder
@@ -49,11 +50,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment createComment(User user, CommentCreate commentCreate) {
+    public Comment createComment(User user, CommentCreate commentCreate, String clientRequestId) {
         Post post = postRepository.findById(commentCreate.getPostId(), user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", commentCreate.getPostId()));
 
-        Comment comment = Comment.from(user, post, commentCreate);
+        Comment comment = Comment.from(user, post, commentCreate, clientRequestId);
 
         postRepository.incrementCommentCount(post.getId());
         return commentRepository.save(comment);
@@ -67,6 +68,15 @@ public class CommentServiceImpl implements CommentService {
      * 게시글 행을 먼저 잠그는 순서라 신고 자동 삭제(게시글 잠금 → 댓글 일괄 soft delete)와는 교착 상태가 없다.
      * 게시글 삭제·회원 탈퇴도 게시글 행을 먼저 잠그므로(#128) 교착 상태가 없다.
      */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Comment> findByClientRequestId(long userId, String clientRequestId) {
+        if (clientRequestId == null) {
+            return Optional.empty();
+        }
+        return commentRepository.findByUserIdAndClientRequestId(userId, clientRequestId);
+    }
+
     @Override
     @Transactional
     public void deleteComment(User user, long commentId) {

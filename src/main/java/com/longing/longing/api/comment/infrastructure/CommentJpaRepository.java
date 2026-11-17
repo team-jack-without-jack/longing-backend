@@ -41,4 +41,6 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
             + "WHERE c.id = :id AND c.user.id = :userId AND c.deleted = false")
     int updateContent(@Param("id") Long id, @Param("userId") Long userId, @Param("content") String content,
                       @Param("now") LocalDateTime now);
+
+    Optional<CommentEntity> findByUserIdAndClientRequestId(Long userId, String clientRequestId);
 }

@@ -42,6 +42,8 @@ dependencies {
 	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.9'
 	implementation 'com.slack.api:slack-api-client:1.45.3'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.apache.commons:commons-pool2'
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'  // jjwt-api
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3' // jjwt-impl

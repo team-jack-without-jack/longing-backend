@@ -58,5 +58,8 @@ public class CommentRepositoryImpl implements CommentRepository {
         return commentJpaRepository.findByIdAndUserId(commentId, id).map(CommentEntity::toModel);
     }
 
-
+    @Override
+    public Optional<Comment> findByUserIdAndClientRequestId(long userId, String clientRequestId) {
+        return commentJpaRepository.findByUserIdAndClientRequestId(userId, clientRequestId).map(CommentEntity::toModel);
+    }
 }

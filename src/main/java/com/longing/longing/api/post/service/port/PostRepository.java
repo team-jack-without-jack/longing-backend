@@ -51,4 +51,6 @@ public interface PostRepository {
     void flush();
 
     Page<Post> findByUserId(long userId, Pageable pageable);
+
+    Optional<Post> findByUserIdAndClientRequestId(long userId, String clientRequestId);
 }

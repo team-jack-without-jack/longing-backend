@@ -27,4 +27,6 @@ public interface CommentRepository {
     int updateContent(long commentId, long userId, String content);
 
     Optional<Comment> findByIdAndUserId(long commentId, long id);
+
+    Optional<Comment> findByUserIdAndClientRequestId(long userId, String clientRequestId);
 }
