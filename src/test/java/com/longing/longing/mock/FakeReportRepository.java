@@ -8,7 +8,6 @@ import com.longing.longing.api.user.domain.User;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class FakeReportRepository implements ReportRepository {
 
@@ -49,18 +48,20 @@ public class FakeReportRepository implements ReportRepository {
     }
 
     @Override
-    public Optional<PostReport> findOne(User reporter, Post post, ReportReason reportReason) {
+    public boolean exists(long reporterId, long postId, ReportReason reportReason) {
         return postReports.stream()
-                .filter(c -> c.getReporter() != null
-                        && c.getReporter().getId().equals(reporter.getId())
-                        && c.getPost().getId().equals(post.getId())
-                        && c.getReportReason().equals(reportReason)
-                )
-                .findAny();
+                .anyMatch(r -> r.getReporter() != null
+                        && r.getReporter().getId().equals(reporterId)
+                        && r.getPost().getId().equals(postId)
+                        && r.getReportReason() == reportReason);
     }
-  
+
     @Override
-    public long countByPostAndReportReasonForUpdate(Post post, ReportReason reportReason) {
-        return 0;
+    public long countReporters(long postId, ReportReason reportReason) {
+        return postReports.stream()
+                .filter(r -> r.getPost().getId().equals(postId) && r.getReportReason() == reportReason)
+                .map(r -> r.getReporter().getId())
+                .distinct()
+                .count();
     }
 }

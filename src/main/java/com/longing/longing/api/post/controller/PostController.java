@@ -9,10 +9,15 @@ import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.post.domain.PostCreate;
 import com.longing.longing.api.post.domain.PostUpdate;
 import com.longing.longing.api.user.domain.User;
+import com.longing.longing.api.post.service.GuardedPostCreator;
+import com.longing.longing.common.writeguard.CreateOutcome;
+import com.longing.longing.common.writeguard.CreateResponses;
+import com.longing.longing.common.writeguard.IdempotencyKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +35,7 @@ import java.util.stream.Collectors;
 public class PostController {
 
     private final PostService postService;
+    private final GuardedPostCreator guardedPostCreator;
 
     /**
      * 게시글 생성
@@ -40,18 +46,20 @@ public class PostController {
      * @return
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<Post> CreatePost(
+    public ResponseEntity<ApiResponse<Post>> CreatePost(
             @RequestPart("title") @NotBlank @Max(100) String title, // title 필드 받기
             @RequestPart("content") @NotBlank @Max(3000) String content, // content 필드 받기
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @RequestHeader(value = IdempotencyKey.HEADER, required = false) String idempotencyKey,
             @AuthenticationPrincipal User user
     ) {
         PostCreate postCreate = PostCreate.builder()
                 .title(title)
                 .content(content)
                 .build();
-        Post createdPost = postService.createPost(user, postCreate, images);
-        return ApiResponse.created(createdPost);
+        CreateOutcome<Post> outcome = guardedPostCreator.create(
+                user, postCreate, images, IdempotencyKey.parse(idempotencyKey));
+        return CreateResponses.created(outcome);
     }
 
     /**

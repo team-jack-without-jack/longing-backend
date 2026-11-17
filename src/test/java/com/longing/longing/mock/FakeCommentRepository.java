@@ -6,6 +6,7 @@ import com.longing.longing.api.post.domain.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ public class FakeCommentRepository implements CommentRepository {
                     .content(comment.getContent())
                     .user(comment.getUser())
                     .post(comment.getPost())
+                    .clientRequestId(comment.getClientRequestId())
                     .build();
             comments.add(newComment);
             return newComment;
@@ -49,8 +51,27 @@ public class FakeCommentRepository implements CommentRepository {
     }
 
     @Override
-    public void deleteById(long commentId) {
+    public int softDelete(long commentId) {
+        return comments.removeIf(c -> c.getId().equals(commentId)) ? 1 : 0;
+    }
+
+    @Override
+    public int updateContent(long commentId, long userId, String content) {
+        Optional<Comment> found = findByIdAndUserId(commentId, userId);
+        if (!found.isPresent()) {
+            return 0;
+        }
+        Comment old = found.get();
         comments.removeIf(c -> c.getId().equals(commentId));
+        comments.add(Comment.builder()
+                .id(old.getId())
+                .content(content != null ? content : old.getContent())
+                .user(old.getUser())
+                .post(old.getPost())
+                .createdDate(old.getCreatedDate())
+                .modifiedDate(LocalDateTime.now())
+                .build());
+        return 1;
     }
 
     @Override
@@ -59,6 +80,18 @@ public class FakeCommentRepository implements CommentRepository {
                 .filter(c -> c.getId().equals(commentId)
                         && c.getUser() != null
                         && c.getUser().getId().equals(id))
+                .findAny();
+    }
+
+    @Override
+    public Optional<Comment> findByUserIdAndClientRequestId(long userId, String clientRequestId) {
+        if (clientRequestId == null) {
+            return Optional.empty();
+        }
+        return comments.stream()
+                .filter(c -> c.getUser() != null
+                        && c.getUser().getId() == userId
+                        && clientRequestId.equals(c.getClientRequestId()))
                 .findAny();
     }
 }

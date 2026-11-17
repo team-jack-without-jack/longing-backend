@@ -8,9 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostService {
-    Post createPost(User user, PostCreate postCreate, List<MultipartFile> images);
+    Post createPost(User user, PostCreate postCreate, List<MultipartFile> images, String clientRequestId);
+
+    Optional<Post> findByClientRequestId(long userId, String clientRequestId);
 //    Post createPost(CustomUserDetails userDtails, PostCreate postCreate);
 
     Page<Post> getPostList(User user, String keyword, int page, int size, String sortBy, String sortDirection);

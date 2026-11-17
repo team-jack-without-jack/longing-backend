@@ -2,7 +2,6 @@ package com.longing.longing.api.user.service.port;
 
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.domain.User;
-import com.longing.longing.api.user.domain.UserBlock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,11 +23,17 @@ public interface UserRepository {
 
     void deleteById(long id);
 
-    void blockUser(User user, User blockedUser);
+    boolean isBlocked(long userId, long blockedUserId);
 
-    Optional<UserBlock> findBlockedData(User user, User blockedUser);
+    /**
+     * 차단했으면 true, 이미 차단돼 있으면 false (#124).
+     * 동시 요청은 unique 제약이 한 행만 남긴다. 트랜잭션 밖에서 호출해야 한다.
+     * 위반으로 롤백되면 요청의 EntityManager(open-in-view)가 clear되어, 호출 전에 읽은 엔티티는 준영속이 된다.
+     */
+    boolean blockIfAbsent(User user, User blockedUser);
 
-    void deleteByUserBlockedId(long userBlockId);
+    /** 해당 차단을 모두 지우고 지운 행 수를 반환한다. */
+    int unblock(long userId, long blockedUserId);
 
     Page<User> findBlockedUserList(Long id, String keyword, Pageable pageable);
 }
