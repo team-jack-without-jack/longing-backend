@@ -22,41 +22,42 @@ public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
     private final PostRepository postRepository;
 
-    private void checkAlreadyReportedPost(User reporter, Post post, ReportReason reportReason) {
-        reportRepository.findOne(reporter, post, reportReason)
-                .ifPresent(r -> {
-                    throw new AlreadyReportedPostException("you already reported this post!");
-                });
-    }
+    /**
+     * 같은 사유 신고가 이 수 이상이면 게시글을 자동 삭제한다(soft delete).
+     * 신고 행은 삭제 근거로 남는다. 좋아요·북마크는 지워지고 댓글·이미지는 soft delete된다 (#128).
+     */
+    private static final int AUTO_DELETE_THRESHOLD = 3;
+
+    /**
+     * 게시글 신고 (#126).
+     * 게시글 행을 트랜잭션의 첫 쿼리로 잠가 같은 게시글의 신고를 한 줄로 세운다. 그래서 중복 확인·저장·집계·자동 삭제가
+     * 다른 신고와 섞이지 않고, 저장 뒤 서로 잠그며 집계하던 교착 상태도 생기지 않는다.
+     * REPEATABLE READ의 스냅샷은 잠금 뒤 첫 일반 조회에서 만들어지므로 앞서 커밋된 신고를 모두 본다.
+     * 잠금보다 앞에 다른 조회를 넣지 않는다.
+     * 이미 열린 트랜잭션 안에서 호출하지 않는다. 그 트랜잭션이 앞서 조회했다면 스냅샷이 잠금보다 먼저 만들어진다.
+     */
     @Override
     @Transactional
     public PostReport createPostReport(Long postId, ReportCreate reportCreate, User reporter) {
         ReportReason reportReason = reportCreate.getReportReason();
 
-        Post post = postRepository.findById(postId, reporter.getId())
+        Post post = postRepository.findByIdForUpdate(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
 
-        /**
-         * 유저가 이미 신고한 게시글인지 확인
-         */
-        checkAlreadyReportedPost(reporter, post, reportReason);
+        if (reportRepository.exists(reporter.getId(), post.getId(), reportReason)) {
+            throw new AlreadyReportedPostException("you already reported this post!");
+        }
 
         PostReport postReport = PostReport.builder()
                 .post(post)
                 .reporter(reporter)
                 .reportReason(reportReason)
                 .build();
-
         PostReport createdReport = reportRepository.create(post, reporter, postReport);
 
-        /**
-         * 해당 게시글의 신고가 동일 사유로 3번인 경우 postDelete
-         */
-        long totalByReason = reportRepository.countByPostAndReportReasonForUpdate(post, reportReason);
-        if (totalByReason >= 3) {
-            postRepository.deleteById(post.getId());
+        if (reportRepository.countReporters(post.getId(), reportReason) >= AUTO_DELETE_THRESHOLD) {
+            postRepository.softDelete(post.getId());
         }
-
         return createdReport;
     }
 }

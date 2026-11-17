@@ -102,6 +102,14 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
+    /**
+     * 게시글 수정 (#126).
+     * 제목·본문·수정 시각만 UPDATE 한 문장으로 바꾼다. 읽어 둔 게시글 전체를 다시 저장(merge)하지 않는다.
+     * merge는 그사이 바뀐 좋아요·댓글 수를 옛 값으로 덮어쓰고, 비어 있는 이미지 목록 때문에 기존 이미지를 모두 지웠다(재현 확인).
+     * 수정 사이에 게시글이 삭제됐으면 바꾸지 않고 RESOURCE_NOT_FOUND다. 제목·본문은 마지막 요청의 값으로 쓰인다.
+     * 응답은 다시 조회한 게시글이라 카운터와 이미지가 최신이다.
+     * 게시글 조회(PostEntity.toModel)가 작성자와 이미지를 지연 로딩하므로 open-in-view가 켜져 있어야 한다(꺼지면 LazyInitializationException).
+     */
     @Override
     public Post updatePost(User user, Long postId, PostUpdate postUpdate, List<MultipartFile> images) {
         Post post = postRepository.findById(postId, user.getId())
@@ -116,18 +124,27 @@ public class PostServiceImpl implements PostService {
         }
 
         post.update(postUpdate);
-        return postRepository.save(post);
+        if (postRepository.updateContent(post.getId(), post.getTitle(), post.getContent()) == 0) {
+            throw new ResourceNotFoundException("Posts", postId);
+        }
+        return postRepository.findById(postId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
+    /**
+     * 작성자 삭제 (#128). 삭제는 PostRepository.softDelete가 게시글 행을 먼저 잠그고 처리한다.
+     * 동시에 두 번 지우면 늦은 요청은 지울 것이 없어 0을 받는다. 지금처럼 오류 없이 끝낸다.
+     */
     @Override
     public void deletePost(Long postId, User user) {
         checkPostIsMadeByUser(postId, user);
-        postRepository.deleteById(postId);
+        postRepository.softDelete(postId);
     }
 
+    /** 게시글 차단. 권한 확인 없이 게시글을 지우는 문제는 #131에서 다룬다. */
     @Override
     public void blockPost(long postId) {
-        postRepository.deleteById(postId);
+        postRepository.softDelete(postId);
     }
 
     @Override

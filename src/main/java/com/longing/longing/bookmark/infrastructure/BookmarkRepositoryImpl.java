@@ -4,8 +4,8 @@ import com.longing.longing.bookmark.service.port.BookmarkRepository;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.bookmark.domain.PostBookmark;
 import com.longing.longing.api.post.infrastructure.PostEntity;
-import com.longing.longing.api.user.domain.User;
 import com.longing.longing.api.user.infrastructure.UserEntity;
+import com.longing.longing.common.persistence.UniqueInserts;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -19,8 +19,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import java.util.Optional;
-
 import static com.longing.longing.bookmark.domain.QPostBookmark.postBookmark;
 import static com.longing.longing.api.like.domain.QPostLike.postLike;
 import static com.longing.longing.api.post.domain.QPost.post;
@@ -31,20 +29,23 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
     private final BookmarkJpaRepository bookmarkJpaRepository;
     private final JPAQueryFactory queryFactory;
 
-    public Optional<PostBookmark> findByPostAndUser(Post post, User user) {
-        return bookmarkJpaRepository.findByPostIdAndUserId(post.getId(), user.getId()).map(PostBookmarkEntity::toModel);
+    @Override
+    public boolean exists(long userId, long postId) {
+        return bookmarkJpaRepository.existsByUserIdAndPostId(userId, postId);
     }
 
     @Override
-    public void save(PostBookmark postBookmark) {
-        PostEntity postEntity   = PostEntity.fromModel(postBookmark.getPost());
-        UserEntity userEntity   = UserEntity.fromModel(postBookmark.getUser());
-        bookmarkJpaRepository.save(PostBookmarkEntity.fromModel(postEntity, userEntity));
+    public boolean saveIfAbsent(PostBookmark postBookmark) {
+        PostEntity postEntity = PostEntity.fromModel(postBookmark.getPost());
+        UserEntity userEntity = UserEntity.fromModel(postBookmark.getUser());
+        return UniqueInserts.insertIfAbsent(
+                () -> bookmarkJpaRepository.save(PostBookmarkEntity.fromModel(postEntity, userEntity)),
+                PostBookmarkEntity.USER_POST_UNIQUE_CONSTRAINT);
     }
 
     @Override
-    public void deleteById(Long postId) {
-        bookmarkJpaRepository.deleteById(postId);
+    public int delete(long userId, long postId) {
+        return bookmarkJpaRepository.deleteByUserIdAndPostId(userId, postId);
     }
 
 //    @Override
@@ -91,7 +92,8 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
                 .join(postBookmark.post, post)
                 .leftJoin(postLike) // 좋아요 테이블과 조인
                 .on(postLike.post.eq(post).and(postLike.user.id.eq(userId)))
-                .where(postBookmark.user.id.eq(userId))
+                .where(postBookmark.user.id.eq(userId)
+                        .and(post.deleted.isFalse())) // 지워진 게시글에 남은 북마크는 보이지 않게 한다 (#128)
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -110,7 +112,8 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
                 .select(post.count())
                 .from(postBookmark)
                 .join(postBookmark.post, post)
-                .where(postBookmark.user.id.eq(userId))
+                .where(postBookmark.user.id.eq(userId)
+                        .and(post.deleted.isFalse())) // 지워진 게시글에 남은 북마크는 보이지 않게 한다 (#128)
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, totalCount != null ? totalCount : 0);

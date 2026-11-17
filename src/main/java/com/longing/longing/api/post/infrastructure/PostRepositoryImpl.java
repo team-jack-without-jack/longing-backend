@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,6 +40,11 @@ public class PostRepositoryImpl implements PostRepository {
 
     private final PostJpaRepository postJpaRepository;
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Optional<Post> findByIdForUpdate(Long id) {
+        return postJpaRepository.findByIdForUpdate(id).map(PostEntity::toModel);
+    }
 
     public Optional<Post> findById(Long id, Long userId) {
 //        return postJpaRepository.findById(id).map(PostEntity::toModel);
@@ -66,6 +72,11 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public Post save(Post post) {
         return postJpaRepository.save(PostEntity.fromModel(post)).toModel();
+    }
+
+    @Override
+    public int updateContent(long postId, String title, String content) {
+        return postJpaRepository.updateContent(postId, title, content, LocalDateTime.now());
     }
 
     @Override
@@ -165,8 +176,46 @@ public class PostRepositoryImpl implements PostRepository {
 
 
 
-    public void deleteById(Long postId) {
-        postJpaRepository.deleteById(postId);
+    @Override
+    @Transactional
+    public int softDelete(long postId) {
+        // 게시글 행을 먼저 잠근다. 게시글 행을 먼저 잠그는 쓰기(댓글 작성·삭제, 좋아요, 신고)와 같은 순서라 서로 교착 상태가 없다.
+        if (!postJpaRepository.findByIdForUpdate(postId).isPresent()) {
+            return 0;
+        }
+        return softDeleteLocked(postId, LocalDateTime.now());
+    }
+
+    @Override
+    @Transactional
+    public int softDeleteAllByUserId(long userId) {
+        // 게시글을 모두 잠근 뒤에 자식 문장을 실행한다. 자식 문장이 남긴 간격 잠금(gap lock)을 쥔 채 다음 게시글을 기다리면,
+        // 그 게시글을 먼저 잠그고 좋아요·댓글·북마크를 넣으려는 요청과 교착 상태가 된다.
+        // 잠금은 기본 키로 한 건씩 건다. 한 문장으로 여러 게시글을 잠그면 실행 계획에 따라 다른 사용자의 게시글 행까지 잠글 수 있다.
+        List<Long> locked = new ArrayList<>();
+        for (Long postId : postJpaRepository.findIdsByUserId(userId)) {
+            if (postJpaRepository.findByIdForUpdate(postId).isPresent()) {
+                locked.add(postId);
+            }
+        }
+        LocalDateTime now = LocalDateTime.now();
+        int deleted = 0;
+        for (Long postId : locked) {
+            deleted += softDeleteLocked(postId, now);
+        }
+        return deleted;
+    }
+
+    /**
+     * 잠근 게시글의 자식을 한 문장씩 처리한 뒤 게시글을 soft delete한다. 신고는 건드리지 않는다.
+     * 같은 삭제로 지운 행은 같은 deleted_date(JVM 시각)를 가진다.
+     */
+    private int softDeleteLocked(long postId, LocalDateTime now) {
+        postJpaRepository.deleteLikesOf(postId);
+        postJpaRepository.deleteBookmarksOf(postId);
+        postJpaRepository.softDeleteCommentsOf(postId, now);
+        postJpaRepository.softDeleteImagesOf(postId, now);
+        return postJpaRepository.softDeletePost(postId, now);
     }
 
     @Override

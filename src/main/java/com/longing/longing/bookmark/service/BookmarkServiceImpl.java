@@ -16,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,38 +25,40 @@ public class BookmarkServiceImpl implements BookmarkService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
+    /**
+     * 멱등: 이미 북마크했으면 그대로 성공한다 (#124).
+     * 동시 요청이 모두 "없음"을 봐도 saveIfAbsent가 unique 제약으로 한 행만 남긴다.
+     * saveIfAbsent는 트랜잭션 밖에서 호출해야 하므로 @Transactional을 붙이지 않는다.
+     * 게시글 조회(PostEntity.toModel)가 작성자를 지연 로딩하므로 open-in-view가 켜져 있어야 한다(꺼지면 LazyInitializationException).
+     */
     @Override
-    @Transactional
     public void addBookmark(CustomUserDetails userDetails, Long postId) {
         User user = userRepository.findByEmailAndProvider(userDetails.getEmail(), userDetails.getProvider())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         Post post = postRepository.findById(postId, user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-        // bookmark 여부 확인
-        if (bookmarkRepository.findByPostAndUser(post, user).isPresent()) {
-            throw new IllegalStateException("You already bookmarked this post");
+        if (bookmarkRepository.exists(user.getId(), post.getId())) {
+            return;
         }
-
-        PostBookmark postBookmark = PostBookmark.builder()
+        bookmarkRepository.saveIfAbsent(PostBookmark.builder()
                 .post(post)
                 .user(user)
-                .build();
-        bookmarkRepository.save(postBookmark);
+                .build());
     }
 
+    /**
+     * 멱등: 북마크가 없어도 성공하고, 중복 행이 남아 있으면 함께 지운다 (#124).
+     * 게시글 조회(PostEntity.toModel)가 작성자를 지연 로딩하므로 open-in-view가 켜져 있어야 한다(꺼지면 LazyInitializationException).
+     */
     @Override
-    @Transactional
     public void removeBookmark(CustomUserDetails userDetails, Long postId) {
         User user = userRepository.findByEmailAndProvider(userDetails.getEmail(), userDetails.getProvider())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         Post post = postRepository.findById(postId, user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-        PostBookmark postBookmark = bookmarkRepository.findByPostAndUser(post, user)
-                .orElseThrow(() -> new IllegalStateException("You did not bookmark this post"));
-
-        bookmarkRepository.deleteById(postBookmark.getId());
+        bookmarkRepository.delete(user.getId(), post.getId());
     }
 
     @Override
