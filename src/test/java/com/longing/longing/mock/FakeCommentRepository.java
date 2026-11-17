@@ -49,8 +49,8 @@ public class FakeCommentRepository implements CommentRepository {
     }
 
     @Override
-    public void deleteById(long commentId) {
-        comments.removeIf(c -> c.getId().equals(commentId));
+    public int softDelete(long commentId) {
+        return comments.removeIf(c -> c.getId().equals(commentId)) ? 1 : 0;
     }
 
     @Override

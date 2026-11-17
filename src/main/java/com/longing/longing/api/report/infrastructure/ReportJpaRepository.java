@@ -1,30 +1,15 @@
 package com.longing.longing.api.report.infrastructure;
 
-import com.longing.longing.api.post.infrastructure.PostEntity;
 import com.longing.longing.api.report.ReportReason;
-import com.longing.longing.api.user.infrastructure.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import javax.persistence.LockModeType;
-import java.util.Optional;
-
 public interface ReportJpaRepository extends JpaRepository<PostReportEntity, Long> {
 
-    Optional<PostReportEntity> findByReporterAndPostAndReportReason(UserEntity reporter, PostEntity post, ReportReason reportReason);
+    boolean existsByReporterIdAndPostIdAndReportReason(Long reporterId, Long postId, ReportReason reportReason);
 
-//    long countByPostAndReportReasonForUpdate(PostEntity postEntity, ReportReason reportReason);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select count(r) "
-            + "from PostReportEntity r "
-            + "where r.post = :post "
-            + "  and r.reportReason = :reason")
-    long countReportsByPostAndReason(
-            @Param("post")   PostEntity post,
-            @Param("reason") ReportReason reason
-    );
+    /** 같은 게시글·사유를 신고한 서로 다른 사용자 수. 마이그레이션 전 중복 행이 남아 있어도 한 사람은 한 번만 센다 (#126). */
+    @Query("SELECT COUNT(DISTINCT r.reporter.id) FROM PostReportEntity r WHERE r.post.id = :postId AND r.reportReason = :reason")
+    long countReporters(@Param("postId") Long postId, @Param("reason") ReportReason reason);
 }
-
