@@ -74,8 +74,15 @@ public class FakePostRepository implements PostRepository {
     }
 
     @Override
-    public void deleteById(Long postId) {
-        data.removeIf(post -> post.getId().equals(postId));
+    public int softDelete(long postId) {
+        return data.removeIf(post -> post.getId().equals(postId)) ? 1 : 0;
+    }
+
+    @Override
+    public int softDeleteAllByUserId(long userId) {
+        int before = data.size();
+        data.removeIf(post -> post.getUser() != null && post.getUser().getId().equals(userId));
+        return before - data.size();
     }
 
     @Override

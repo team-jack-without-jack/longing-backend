@@ -24,7 +24,7 @@ public class ReportServiceImpl implements ReportService {
 
     /**
      * 같은 사유 신고가 이 수 이상이면 게시글을 자동 삭제한다(soft delete).
-     * 삭제는 엔티티 삭제라 cascade로 그 게시글의 신고·좋아요·북마크 행이 하드 삭제된다(기존 동작, 후속 과제).
+     * 신고 행은 삭제 근거로 남는다. 좋아요·북마크는 지워지고 댓글·이미지는 soft delete된다 (#128).
      */
     private static final int AUTO_DELETE_THRESHOLD = 3;
 
@@ -56,7 +56,7 @@ public class ReportServiceImpl implements ReportService {
         PostReport createdReport = reportRepository.create(post, reporter, postReport);
 
         if (reportRepository.countReporters(post.getId(), reportReason) >= AUTO_DELETE_THRESHOLD) {
-            postRepository.deleteById(post.getId());
+            postRepository.softDelete(post.getId());
         }
         return createdReport;
     }

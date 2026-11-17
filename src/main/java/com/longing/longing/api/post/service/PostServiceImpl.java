@@ -121,15 +121,20 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
     }
 
+    /**
+     * 작성자 삭제 (#128). 삭제는 PostRepository.softDelete가 게시글 행을 먼저 잠그고 처리한다.
+     * 동시에 두 번 지우면 늦은 요청은 지울 것이 없어 0을 받는다. 지금처럼 오류 없이 끝낸다.
+     */
     @Override
     public void deletePost(Long postId, User user) {
         checkPostIsMadeByUser(postId, user);
-        postRepository.deleteById(postId);
+        postRepository.softDelete(postId);
     }
 
+    /** 게시글 차단. 권한 확인 없이 게시글을 지우는 문제는 #131에서 다룬다. */
     @Override
     public void blockPost(long postId) {
-        postRepository.deleteById(postId);
+        postRepository.softDelete(postId);
     }
 
     @Override
