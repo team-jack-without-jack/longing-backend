@@ -92,7 +92,8 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
                 .join(postBookmark.post, post)
                 .leftJoin(postLike) // 좋아요 테이블과 조인
                 .on(postLike.post.eq(post).and(postLike.user.id.eq(userId)))
-                .where(postBookmark.user.id.eq(userId))
+                .where(postBookmark.user.id.eq(userId)
+                        .and(post.deleted.isFalse())) // 지워진 게시글에 남은 북마크는 보이지 않게 한다 (#128)
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -111,7 +112,8 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
                 .select(post.count())
                 .from(postBookmark)
                 .join(postBookmark.post, post)
-                .where(postBookmark.user.id.eq(userId))
+                .where(postBookmark.user.id.eq(userId)
+                        .and(post.deleted.isFalse())) // 지워진 게시글에 남은 북마크는 보이지 않게 한다 (#128)
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, totalCount != null ? totalCount : 0);
