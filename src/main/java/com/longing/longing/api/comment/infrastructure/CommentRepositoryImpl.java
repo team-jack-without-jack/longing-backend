@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,11 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public int softDelete(long commentId) {
         return commentJpaRepository.softDeleteById(commentId);
+    }
+
+    @Override
+    public int updateContent(long commentId, long userId, String content) {
+        return commentJpaRepository.updateContent(commentId, userId, content, LocalDateTime.now());
     }
 
     @Override

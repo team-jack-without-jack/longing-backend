@@ -19,5 +19,12 @@ public interface CommentRepository {
      */
     int softDelete(long commentId);
 
+    /**
+     * 작성자의 삭제되지 않은 댓글이면 내용과 수정 시각을 바꾸고 1, 아니면 0을 반환한다 (#129).
+     * content가 null이면 내용은 그대로 두고 수정 시각만 바꾼다.
+     * 동시에 커밋된 삭제를 되돌리지 않는다. 영속성 컨텍스트를 반영 후 비운다.
+     */
+    int updateContent(long commentId, long userId, String content);
+
     Optional<Comment> findByIdAndUserId(long commentId, long id);
 }

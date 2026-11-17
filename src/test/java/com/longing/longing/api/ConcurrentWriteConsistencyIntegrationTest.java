@@ -1,6 +1,8 @@
 package com.longing.longing.api;
 
 import com.longing.longing.api.comment.controller.port.CommentService;
+import com.longing.longing.api.comment.domain.Comment;
+import com.longing.longing.api.comment.domain.CommentUpdate;
 import com.longing.longing.api.comment.infrastructure.CommentRepositoryImpl;
 import com.longing.longing.api.comment.service.CommentServiceImpl;
 import com.longing.longing.api.comment.service.port.CommentRepository;
@@ -54,6 +56,7 @@ import org.springframework.orm.jpa.EntityManagerHolder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -76,6 +79,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -95,6 +99,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -335,7 +340,7 @@ class ConcurrentWriteConsistencyIntegrationTest {
                         + drifted + ", " + member.getId() + ", 0)");
             }
             Future<?> running = runner.submit(() -> runScript(recount));
-            awaitLockWait();
+            awaitLockWait("recount_126_targets");
             // 재계산이 잠금을 기다리는 동안 다른 게시글에 댓글이 커밋된다.
             seedComment(clean, member, false);
             writer.commit();
@@ -392,7 +397,8 @@ class ConcurrentWriteConsistencyIntegrationTest {
         AtomicBoolean interleaved = new AtomicBoolean();
         // 이 요청이 댓글을 읽은 직후 다른 요청이 같은 댓글을 지운 상황
         CommentService racing = commentService(afterFirstCall(CommentRepository.class, commentRepository, "findById",
-                interleaved, () -> jdbc.update("UPDATE comments SET deleted = 1 WHERE id = ?", commentId)));
+                interleaved, () -> asAnotherRequest(() ->
+                        jdbc.update("UPDATE comments SET deleted = 1 WHERE id = ?", commentId))));
 
         assertThatThrownBy(() -> inTransaction(() -> {
             racing.deleteComment(member, commentId);
@@ -400,8 +406,112 @@ class ConcurrentWriteConsistencyIntegrationTest {
         })).isInstanceOf(ResourceNotFoundException.class);
 
         assertThat(interleaved).isTrue();
-        // 먼저 줄였던 댓글 수가 롤백으로 되돌아갔다.
+        // 다른 요청의 삭제는 커밋돼 남아 있고, 이 요청이 먼저 줄였던 댓글 수는 롤백으로 되돌아갔다.
+        assertThat(commentDeleted(commentId)).isTrue();
         assertThat(commentCountOf(postId)).isEqualTo(1);
+    }
+
+    @Test
+    void commentUpdateDoesNotResurrectCommentDeletedMeanwhile() {
+        long commentId = seedComment(postId, member, false);
+        AtomicBoolean interleaved = new AtomicBoolean();
+        // 수정 요청이 시작된 뒤 UPDATE 직전에, 다른 요청이 같은 댓글을 지우고 댓글 수를 줄인 상황(댓글 삭제와 같은 결과).
+        // 변경 전에는 이 자리가 "댓글을 읽은 직후"였고, 수정이 엔티티 전체를 merge해 댓글을 되살렸다(reproduction.log).
+        CommentService racing = commentService(beforeFirstCall(CommentRepository.class, commentRepository,
+                "updateContent", interleaved, () -> asAnotherRequest(() -> {
+                    jdbc.update("UPDATE comments SET deleted = 1, deleted_date = NOW() WHERE id = ?", commentId);
+                    jdbc.update("UPDATE posts SET comment_count = comment_count - 1 WHERE id = ?", postId);
+                })));
+
+        Throwable thrown = catchThrowable(() -> inTransaction(() ->
+                racing.updateComment(member, commentId, CommentUpdate.builder().content("edited").build())));
+
+        assertThat(interleaved).isTrue();
+        assertThat(thrown).isInstanceOf(ResourceNotFoundException.class);
+        assertThat(commentDeleted(commentId)).isTrue();
+        // 되살아나거나 새 행으로 다시 생기지 않았다.
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM comments WHERE post_id = ? AND deleted = 0",
+                Long.class, postId)).isZero();
+        assertThat(commentCountOf(postId)).isZero();
+    }
+
+    @Test
+    void commentUpdateChangesContentAndReturnsFreshModifiedDate() {
+        long commentId = seedComment(postId, member, false);
+        jdbc.update("UPDATE comments SET modified_date = '2000-01-01 00:00:00' WHERE id = ?", commentId);
+
+        Comment updated = inTransaction(() -> commentService(commentRepository)
+                .updateComment(member, commentId, CommentUpdate.builder().content("edited").build()));
+
+        assertThat(jdbc.queryForObject("SELECT content FROM comments WHERE id = ?", String.class, commentId))
+                .isEqualTo("edited");
+        LocalDateTime modified = jdbc.queryForObject("SELECT modified_date FROM comments WHERE id = ?",
+                LocalDateTime.class, commentId);
+        assertThat(modified).isAfter(LocalDateTime.of(2000, 1, 2, 0, 0));
+        assertThat(updated.getContent()).isEqualTo("edited");
+        assertThat(updated.getModifiedDate()).isEqualTo(modified);
+    }
+
+    @Test
+    void commentUpdateWithoutContentKeepsContentAndBumpsModifiedDate() {
+        long commentId = seedComment(postId, member, false);
+        jdbc.update("UPDATE comments SET modified_date = '2000-01-01 00:00:00' WHERE id = ?", commentId);
+
+        Comment updated = inTransaction(() -> commentService(commentRepository)
+                .updateComment(member, commentId, CommentUpdate.builder().build()));
+
+        assertThat(jdbc.queryForObject("SELECT content FROM comments WHERE id = ?", String.class, commentId))
+                .isEqualTo("hello");
+        LocalDateTime modified = jdbc.queryForObject("SELECT modified_date FROM comments WHERE id = ?",
+                LocalDateTime.class, commentId);
+        assertThat(modified).isAfter(LocalDateTime.of(2000, 1, 2, 0, 0));
+        assertThat(updated.getContent()).isEqualTo("hello");
+        assertThat(updated.getModifiedDate()).isEqualTo(modified);
+    }
+
+    @Test
+    void commentDeleteArrivingDuringUpdateWaitsThenDeletesOnce() throws Exception {
+        long commentId = seedComment(postId, member, false);
+        AtomicBoolean interleaved = new AtomicBoolean();
+        ExecutorService deleter = Executors.newSingleThreadExecutor();
+        List<Future<?>> deleting = new ArrayList<>();
+        try {
+            // 수정의 UPDATE가 댓글 행을 잠근 직후(아직 커밋 전), 다른 요청이 같은 댓글을 지운다.
+            // 삭제는 게시글 행 → 댓글 행 순서로 잠그므로 댓글 행에서 기다려야 하고, 교착 상태가 나면 안 된다.
+            CommentService updating = commentService(afterFirstCall(CommentRepository.class, commentRepository,
+                    "updateContent", interleaved, () -> {
+                        deleting.add(deleter.submit(() -> inTransaction(() -> {
+                            commentService(commentRepository).deleteComment(member, commentId);
+                            return null;
+                        })));
+                        awaitLockWait("comments set deleted");
+                    }));
+
+            Comment updated = inTransaction(() -> updating.updateComment(member, commentId,
+                    CommentUpdate.builder().content("edited").build()));
+            deleting.get(0).get(30, TimeUnit.SECONDS);
+
+            assertThat(interleaved).isTrue();
+            assertThat(updated.getContent()).isEqualTo("edited");
+        } finally {
+            deleter.shutdownNow();
+        }
+        assertThat(commentDeleted(commentId)).isTrue();
+        assertThat(jdbc.queryForObject("SELECT content FROM comments WHERE id = ?", String.class, commentId))
+                .isEqualTo("edited");
+        assertThat(commentCountOf(postId)).isZero();
+    }
+
+    @Test
+    void someoneElseCannotUpdateTheComment() {
+        long commentId = seedComment(postId, member, false);
+        User stranger = saveUser("stranger@example.com", "stranger-1");
+
+        assertThatThrownBy(() -> inTransaction(() -> commentService(commentRepository)
+                .updateComment(stranger, commentId, CommentUpdate.builder().content("hacked").build())))
+                .isInstanceOf(ResourceNotFoundException.class);
+        assertThat(jdbc.queryForObject("SELECT content FROM comments WHERE id = ?", String.class, commentId))
+                .isEqualTo("hello");
     }
 
     // ---- 게시글 수정 ----
@@ -588,6 +698,18 @@ class ConcurrentWriteConsistencyIntegrationTest {
                 Long.class, postId);
     }
 
+    /**
+     * 다른 요청의 쓰기를 흉내 낸다. 별도 트랜잭션(REQUIRES_NEW)으로 바로 커밋한다.
+     * inTransaction 안의 훅에서 그냥 jdbc를 쓰면 바깥 트랜잭션에 묶여, 예외로 롤백될 때 함께 사라진다.
+     * 같은 스레드에서 실행하므로, 바깥 트랜잭션이 이미 잡은 행 잠금이 필요한 쓰기에는 쓸 수 없다(자기 자신을 기다리다 잠금 대기 시간 초과).
+     * 그런 경우는 다른 스레드에서 실행하고 awaitLockWait로 기다린다.
+     */
+    private void asAnotherRequest(Runnable writes) {
+        TransactionTemplate other = new TransactionTemplate(transactionManager);
+        other.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        other.executeWithoutResult(status -> writes.run());
+    }
+
     /** 서비스의 @Transactional과 같은 트랜잭션(REQUIRED) 안에서 실행한다. 직접 만든 서비스에는 트랜잭션 프록시가 없다. */
     private <T> T inTransaction(Supplier<T> task) {
         return new TransactionTemplate(transactionManager).execute(status -> task.get());
@@ -621,6 +743,18 @@ class ConcurrentWriteConsistencyIntegrationTest {
                 Thread.sleep(PAUSE_MS);
             }
             return result;
+        };
+        return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, handler));
+    }
+
+    /** methodName이 처음 시작되기 직전에 action을 한 번 실행하고 ran을 true로 바꾼다. 쓰기 직전에 다른 요청이 끼어든 상황을 만든다. */
+    private static <S> S beforeFirstCall(Class<S> type, S target, String methodName, AtomicBoolean ran, Runnable action) {
+        requireMethod(type, methodName);
+        InvocationHandler handler = (proxy, method, args) -> {
+            if (method.getName().equals(methodName) && ran.compareAndSet(false, true)) {
+                action.run();
+            }
+            return invoke(target, method, args);
         };
         return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, handler));
     }
@@ -732,26 +866,37 @@ class ConcurrentWriteConsistencyIntegrationTest {
         });
     }
 
-    /** 다른 트랜잭션이 잠금을 기다리는 상태가 될 때까지 기다린다. INNODB_TRX는 PROCESS 권한이 필요해서 root로 본다. */
-    private void awaitLockWait() throws Exception {
-        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+    /**
+     * 실행 중인 문장에 queryFragment가 들어 있는 다른 트랜잭션이 잠금을 기다리는 상태가 될 때까지 기다린다.
+     * INNODB_TRX는 PROCESS 권한이 필요해서 root로 본다.
+     * INNODB_TRX는 캐시를 읽고, 이 캐시는 마지막으로 읽힌 뒤 100ms가 지나야 새로 채워진다(CACHE_MIN_IDLE_TIME_US).
+     * 그보다 자주 읽으면 첫 조회 시점의 내용에 묶여 그 뒤의 잠금 대기를 끝내 못 본다. 그래서 200ms 간격으로 본다.
+     */
+    private void awaitLockWait(String queryFragment) {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);   // 잠금 대기 시간 초과(10초)보다 짧게
         // Testcontainers MariaDB는 root 비밀번호를 앱 사용자 비밀번호와 같게 둔다.
         try (Connection root = DriverManager.getConnection(MARIADB.getJdbcUrl(), "root", MARIADB.getPassword());
-             Statement statement = root.createStatement()) {
+             PreparedStatement statement = root.prepareStatement(
+                     "SELECT COUNT(*) FROM information_schema.INNODB_TRX WHERE trx_state = 'LOCK WAIT' "
+                             + "AND trx_query LIKE ?")) {
+            statement.setString(1, "%" + queryFragment + "%");
             while (true) {
-                try (ResultSet rows = statement.executeQuery(
-                        "SELECT COUNT(*) FROM information_schema.INNODB_TRX WHERE trx_state = 'LOCK WAIT' "
-                                + "AND trx_query LIKE '%recount_126_targets%'")) {
+                try (ResultSet rows = statement.executeQuery()) {
                     rows.next();
                     if (rows.getLong(1) > 0) {
                         return;
                     }
                 }
                 if (System.nanoTime() > deadline) {
-                    throw new IllegalStateException("recount did not start waiting for the post row lock");
+                    throw new IllegalStateException("no transaction started waiting for a lock: " + queryFragment);
                 }
-                Thread.sleep(50);
+                Thread.sleep(200);
             }
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
         }
     }
 
