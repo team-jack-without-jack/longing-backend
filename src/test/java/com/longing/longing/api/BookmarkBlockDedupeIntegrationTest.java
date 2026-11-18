@@ -203,10 +203,13 @@ class BookmarkBlockDedupeIntegrationTest {
 
     @Test
     void bookmarkForeignKeyViolationIsNotHiddenAsDuplicate() {
-        Post missing = Post.builder().id(Long.MAX_VALUE).title("missing").content("missing").user(member).build();
+        // 게시글은 저장 전에 잠금 조회로 확인하므로(#133), 없는 사용자로 외래 키 위반을 낸다.
+        User missing = User.builder().id(Long.MAX_VALUE).email("missing@example.com").name("missing")
+                .role(Role.GUEST).provider(Provider.GOOGLE).providerId("missing").build();
+        Post existing = Post.builder().id(postId).title("title").content("content").user(member).build();
 
         assertThatThrownBy(() -> bookmarkRepository.saveIfAbsent(
-                PostBookmark.builder().post(missing).user(member).build()))
+                PostBookmark.builder().post(existing).user(missing).build()))
                 .isInstanceOf(DataIntegrityViolationException.class);
         assertThat(count("post_bookmarks")).isZero();
     }

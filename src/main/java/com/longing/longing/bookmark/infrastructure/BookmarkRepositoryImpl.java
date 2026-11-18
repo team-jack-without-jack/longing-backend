@@ -4,7 +4,9 @@ import com.longing.longing.bookmark.service.port.BookmarkRepository;
 import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.bookmark.domain.PostBookmark;
 import com.longing.longing.api.post.infrastructure.PostEntity;
+import com.longing.longing.api.post.infrastructure.PostJpaRepository;
 import com.longing.longing.api.user.infrastructure.UserEntity;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.common.persistence.UniqueInserts;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.support.TransactionOperations;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,19 +31,29 @@ import static com.longing.longing.api.post.domain.QPost.post;
 public class BookmarkRepositoryImpl implements BookmarkRepository {
     private final BookmarkJpaRepository bookmarkJpaRepository;
     private final JPAQueryFactory queryFactory;
+    private final PostJpaRepository postJpaRepository;
+    private final TransactionOperations transactionOperations;
 
     @Override
     public boolean exists(long userId, long postId) {
         return bookmarkJpaRepository.existsByUserIdAndPostId(userId, postId);
     }
 
+    /**
+     * 게시글 행을 먼저 잠근 뒤 북마크를 넣는다 (#133). 잠금과 삽입은 한 트랜잭션이고, UniqueInserts가 그 트랜잭션을 실행한다.
+     * 게시글 삭제(#128)·좋아요·댓글·신고처럼 게시글 행을 먼저 잠그므로, 게시글 삭제와 교착 상태가 나지 않는다.
+     * 잠금 조회는 최신 커밋을 읽는다. 그래서 그사이 지워진 게시글이면 행을 넣지 않고 ResourceNotFoundException을 던진다.
+     */
     @Override
     public boolean saveIfAbsent(PostBookmark postBookmark) {
-        PostEntity postEntity = PostEntity.fromModel(postBookmark.getPost());
+        long postId = postBookmark.getPost().getId();
         UserEntity userEntity = UserEntity.fromModel(postBookmark.getUser());
-        return UniqueInserts.insertIfAbsent(
-                () -> bookmarkJpaRepository.save(PostBookmarkEntity.fromModel(postEntity, userEntity)),
-                PostBookmarkEntity.USER_POST_UNIQUE_CONSTRAINT);
+        Runnable lockPostThenInsert = () -> transactionOperations.executeWithoutResult(status -> {
+            PostEntity postEntity = postJpaRepository.findByIdForUpdate(postId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Posts", postId));
+            bookmarkJpaRepository.save(PostBookmarkEntity.fromModel(postEntity, userEntity));
+        });
+        return UniqueInserts.insertIfAbsent(lockPostThenInsert, PostBookmarkEntity.USER_POST_UNIQUE_CONSTRAINT);
     }
 
     @Override

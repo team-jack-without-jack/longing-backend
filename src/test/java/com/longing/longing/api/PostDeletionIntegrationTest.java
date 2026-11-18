@@ -183,7 +183,7 @@ class PostDeletionIntegrationTest extends MariaDbIntegrationTestSupport {
         long livePost = seedPost(other);
         seedBookmark(postId, member);
         seedBookmark(livePost, member);
-        // 삭제가 커밋된 뒤 끼어든 북마크 추가처럼, 지워진 게시글에 북마크 행이 남은 상황
+        // #133 이전에 생긴 행처럼, 지워진 게시글에 북마크 행이 남은 상황
         jdbc.update("UPDATE posts SET deleted = 1, deleted_date = NOW() WHERE id = ?", postId);
 
         Page<Post> page = inTransaction(() -> bookmarkRepository.getBookmarkPost(member.getId(), PageRequest.of(0, 10)));
