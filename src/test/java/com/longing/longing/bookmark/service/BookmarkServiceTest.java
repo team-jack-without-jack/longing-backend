@@ -4,6 +4,7 @@ import com.longing.longing.api.post.domain.Post;
 import com.longing.longing.api.user.Provider;
 import com.longing.longing.api.user.Role;
 import com.longing.longing.api.user.domain.User;
+import com.longing.longing.common.exceptions.ResourceNotFoundException;
 import com.longing.longing.config.auth.dto.CustomUserDetails;
 import com.longing.longing.mock.FakeBookmarkRepository;
 import com.longing.longing.mock.FakePostRepository;
@@ -80,7 +81,7 @@ class BookmarkServiceTest {
     @Test
     void 없는_게시글은_북마크할_수_없다() {
         assertThatThrownBy(() -> bookmarkService.addBookmark(member, 99L))
-                .isInstanceOf(EntityNotFoundException.class);
+                .isInstanceOf(ResourceNotFoundException.class);
         assertThat(bookmarkRepository.getSaveIfAbsentCalls()).isZero();
     }
 

@@ -16,8 +16,9 @@ import java.sql.SQLException;
  *
  * <p>호출 규칙:
  * <ul>
- *   <li>트랜잭션 밖에서만 호출한다. insert는 INSERT 하나를 자체 트랜잭션에서 실행하고 반환 전에 끝내야 한다
- *       (예: Spring Data {@code save}). 그래야 위반이 그 트랜잭션만 롤백한다. 호출자 트랜잭션 안이면
+ *   <li>트랜잭션 밖에서만 호출한다. insert는 INSERT를 자체 트랜잭션에서 실행하고 반환 전에 끝내야 한다
+ *       (예: Spring Data {@code save}, 또는 부모 행을 잠근 뒤 INSERT하는 트랜잭션 콜백).
+ *       그래야 위반이 그 트랜잭션만 롤백한다. 호출자 트랜잭션 안이면
  *       위반이 그 트랜잭션을 rollback-only로 만들어 커밋 때 실패하므로 거부한다.</li>
  *   <li>open-in-view로 요청에 EntityManager가 묶여 있으면, 위반으로 롤백될 때 Spring이 그 EntityManager를
  *       clear한다. 호출 전에 읽은 엔티티는 준영속이 되므로 호출 뒤에 지연 로딩하지 않는다.</li>
